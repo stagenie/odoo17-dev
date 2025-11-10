@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_gecafle_avoir_client_form" model="ir.ui.view">
+        <field name="name">gecafle.avoir.client.form</field>
+        <field name="model">gecafle.avoir.client</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="credit_note_id" invisible="1"/>
+                    <field name="credit_note_count" invisible="1"/>
+                    <field name="credit_note_id" invisible="1"/>
+
+                    <button name="action_validate"
+                            string="Valider"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'brouillon'"/>
+<!--    confirm="Voulez-vous créer la note de crédit comptable ?"-->
+                    <button name="action_create_credit_note"
+                            string="Créer Note de Crédit"
+                            type="object"
+                            class="btn-success"
+                            invisible="state != 'valide' or credit_note_id != False"
+                            />
+
+                    <button name="action_print_avoir"
+                            string="Imprimer Avoir"
+                            type="object"
+                            class="btn-info"
+                            invisible="state == 'brouillon'"/>
+
+                    <button name="action_cancel"
+                            string="Annuler"
+                            type="object"
+                            class="btn-danger"
+                            invisible="state == 'annule'"/>
+
+                    <button name="action_draft"
+                            string="Remettre en brouillon"
+                            type="object"
+                            invisible="state != 'annule'"/>
+
+                    <field name="state" widget="statusbar"/>
+                </header>
+
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <!-- Smart button pour les avoirs producteurs -->
+                        <button name="action_view_vendor_credits"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-users"
+                                invisible="avoir_producteur_count == 0">
+                            <field name="avoir_producteur_count"
+                                   widget="statinfo"
+                                   string="Avoirs Producteurs"/>
+                        </button>
+
+                        <!-- Smart button pour la note de crédit -->
+                        <button name="action_view_credit_note"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-file-invoice"
+                                invisible="not credit_note_id">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_text">Note de Crédit</span>
+                            </div>
+                        </button>
+
+                        <!-- Smart button pour le paiement -->
+                        <button name="action_register_payment"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-money"
+                                invisible="not credit_note_id or credit_note_payment_state == 'paid'">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_text">Paiement</span>
+                            </div>
+                        </button>
+                    </div>
+
+                    <!-- Badge de paiement -->
+                    <widget name="web_ribbon"
+                            title="Payé"
+                            invisible="not is_paid"/>
+
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+
+                    <group>
+                        <group>
+                            <field name="vente_id" readonly="1"/>
+                            <field name="client_id" readonly="1"/>
+                            <field name="date"/>
+                            <field name="type_avoir"/>
+                        </group>
+                        <group>
+                            <field name="montant_vente_origine" readonly="1"/>
+                            <field name="montant_avoir"/>
+                            <field name="generer_avoirs_producteurs"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="is_paid" invisible="1"/>
+                        </group>
+                    </group>
+
+                    <group string="Description">
+                        <field name="description" />
+                    </group>
+
+                    <!-- Groupe pour l'état du remboursement -->
+                    <group string="État du remboursement"
+                           invisible="not credit_note_id">
+                        <group>
+                            <field name="credit_note_state"
+                                   string="État note de crédit"
+                                   widget="badge"/>
+                            <field name="credit_note_payment_state"
+                                   string="État paiement"
+                                   widget="badge"
+                                   decoration-success="credit_note_payment_state == 'paid'"
+                                   decoration-warning="credit_note_payment_state == 'partial'"
+                                   decoration-danger="credit_note_payment_state in ['not_paid', False]"/>
+                        </group>
+                        <group>
+                            <field name="credit_note_amount_paid"
+                                   widget="monetary"
+                                   string="Montant payé"/>
+                            <field name="credit_note_amount_residual"
+                                   widget="monetary"
+                                   string="Montant restant"
+                                   invisible="credit_note_payment_state == 'paid'"/>
+                        </group>
+                    </group>
+
+                    <!-- Liste des avoirs producteurs générés -->
+                    <notebook>
+                        <page string="Avoirs Producteurs" invisible="avoir_producteur_count == 0">
+                            <field name="avoir_producteur_ids" readonly="1">
+                                <tree>
+                                    <field name="name"/>
+                                    <field name="producteur_id"/>
+                                    <field name="montant_total" sum="Total"/>
+                                    <field name="state" widget="badge"/>
+                                    <field name="is_paid" invisible="1"/>
+                                    <field name="credit_note_payment_state"
+                                           string="Paiement"
+                                           widget="badge"
+                                           optional="show"
+                                           decoration-success="credit_note_payment_state == 'paid'"
+                                           decoration-warning="credit_note_payment_state == 'partial'"
+                                           decoration-danger="credit_note_payment_state in ['not_paid', False]"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vue liste -->
+    <record id="view_gecafle_avoir_client_tree" model="ir.ui.view">
+        <field name="name">gecafle.avoir.client.tree</field>
+        <field name="model">gecafle.avoir.client</field>
+        <field name="arch" type="xml">
+            <tree decoration-info="state == 'brouillon'"
+                  decoration-success="state == 'valide' and not credit_note_id"
+                  decoration-warning="state == 'comptabilise' and credit_note_payment_state != 'paid'"
+                  decoration-bf="credit_note_payment_state == 'paid'"
+                  decoration-muted="state == 'annule'">
+                <field name="name"/>
+                <field name="date"/>
+                <field name="client_id"/>
+                <field name="vente_id"/>
+                <field name="type_avoir"/>
+                <field name="montant_avoir" sum="Total"/>
+                <field name="state" widget="badge"/>
+                <field name="credit_note_payment_state"
+                       string="Paiement"
+                       widget="badge"
+                       optional="show"
+                       decoration-success="credit_note_payment_state == 'paid'"
+                       decoration-warning="credit_note_payment_state == 'partial'"
+                       decoration-danger="credit_note_payment_state in ['not_paid', False]"/>
+                <field name="est_imprimee" optional="show"/>
+                 <field name="credit_note_id" optional="hide" invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vue recherche -->
+    <record id="view_gecafle_avoir_client_search" model="ir.ui.view">
+        <field name="name">gecafle.avoir.client.search</field>
+        <field name="model">gecafle.avoir.client</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="client_id"/>
+                <field name="vente_id"/>
+                <filter string="Brouillon" name="draft" domain="[('state','=','brouillon')]"/>
+                <filter string="Validé" name="validated" domain="[('state','=','valide')]"/>
+                <filter string="Comptabilisé" name="accounted" domain="[('state','=','comptabilise')]"/>
+                <filter string="Annulé" name="cancelled" domain="[('state','=','annule')]"/>
+                <separator/>
+                <filter string="Payé"
+                        name="paid"
+                        domain="[('credit_note_payment_state','=','paid')]"/>
+                <filter string="Non payé"
+                        name="unpaid"
+                        domain="[('credit_note_payment_state','!=','paid')]"/>
+                <separator/>
+                <filter string="Ce mois" name="this_month"
+                        domain="[('date','>=', (context_today() + relativedelta(day=1)).strftime('%Y-%m-%d'))]"/>
+                <group expand="0" string="Grouper par">
+                    <filter string="Client" name="group_by_client" context="{'group_by':'client_id'}"/>
+                    <filter string="Type" name="group_by_type" context="{'group_by':'type_avoir'}"/>
+                    <filter string="État" name="group_by_state" context="{'group_by':'state'}"/>
+                    <filter string="État paiement" name="group_by_payment"
+                            context="{'group_by':'credit_note_payment_state'}"/>
+                    <filter string="Date" name="group_by_date" context="{'group_by':'date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+</odoo>

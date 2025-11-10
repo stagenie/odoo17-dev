@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue Formulaire Répertoire -->
+    <record id="view_backup_directory_form" model="ir.ui.view">
+        <field name="name">backup.directory.form</field>
+        <field name="model">backup.directory</field>
+        <field name="arch" type="xml">
+            <form string="Répertoire de Sauvegarde">
+                <header>
+                    <button name="action_scan_directory"
+                            type="object"
+                            string="📡 Scanner maintenant"
+                            class="btn-primary"
+                            icon="fa-sync"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button"
+                                type="object"
+                                name="action_view_files"
+                                icon="fa-file-archive">
+                            <field string="Fichiers" name="total_files" widget="statinfo"/>
+                        </button>
+                        <button class="oe_stat_button"
+                                type="object"
+                                name="action_view_size"
+                                icon="fa-database">
+                            <field string="Taille (GB)" name="total_size" widget="statinfo"/>
+                        </button>
+                    </div>
+
+                    <widget name="web_ribbon"
+                            title="Archivé"
+                            invisible="active"/>
+
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" placeholder="Backups Production"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group string="Configuration">
+                            <field name="path"
+                                   placeholder="/var/backups/odoo"
+                                   required="1"/>
+                            <field name="file_pattern"
+                                   placeholder="*.zip,*.sql"/>
+                            <field name="naming_pattern"
+                                   placeholder="(?P&lt;db_name&gt;[\w-]+)_(?P&lt;date&gt;\d{8})"/>
+                            <field name="active"/>
+                        </group>
+                        <group string="Automatisation">
+                            <field name="auto_scan"/>
+                            <field name="scan_interval"
+                                   invisible="not auto_scan"/>
+                            <field name="retention_days"/>
+                            <field name="last_scan_date" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <group string="Synchronisation" col="4">
+                        <field name="auto_sync"/>
+                        <field name="local_sync_path"
+                               placeholder="C:\Backups\Odoo ou /home/user/backups"
+                               invisible="not auto_sync"
+                               colspan="3"/>
+                    </group>
+
+                    <notebook>
+                        <page string="📄 Fichiers détectés" name="files">
+                            <field name="backup_file_ids" readonly="1">
+                                <tree decoration-success="state == 'available'"
+                                      decoration-info="state == 'downloaded'"
+                                      decoration-muted="state == 'deleted'">
+                                    <field name="name"/>
+                                    <field name="database_name"/>
+                                    <field name="backup_date"/>
+                                    <field name="file_size_display"/>
+                                    <field name="state" widget="badge"/>
+                                    <button name="action_download_file"
+                                            type="object"
+                                            string="Télécharger"
+                                            icon="fa-download"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="ℹ️ Informations" name="info">
+                            <group>
+                                <group string="Détails du scan">
+                                    <field name="total_files"/>
+                                    <field name="total_size"/>
+                                    <field name="last_scan_date"/>
+                                </group>
+                                <group string="Patterns de détection">
+                                    <field name="file_pattern"/>
+                                    <field name="naming_pattern" widget="text"/>
+                                </group>
+                            </group>
+
+                            <div class="alert alert-info">
+                                <h4>💡 Aide sur les patterns</h4>
+                                <p><b>Pattern de fichier:</b> Utilisez des wildcards (*.zip, *.sql)</p>
+                                <p><b>Pattern de nommage:</b> Expression régulière pour extraire les infos</p>
+                                <p>Exemple: <code>(?P&lt;db_name&gt;[\w-]+)_(?P&lt;date&gt;\d{8})_(?P&lt;time&gt;\d{6})</code></p>
+                            </div>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vue Tree (Liste) Répertoires -->
+    <record id="view_backup_directory_tree" model="ir.ui.view">
+        <field name="name">backup.directory.tree</field>
+        <field name="model">backup.directory</field>
+        <field name="arch" type="xml">
+            <tree string="Répertoires de Sauvegarde">
+                <field name="name"/>
+                <field name="path"/>
+                <field name="total_files" sum="Total"/>
+                <field name="total_size" sum="Total GB" widget="float" digits="[6,2]"/>
+                <field name="last_scan_date"/>
+                <field name="auto_scan" widget="boolean_toggle"/>
+                <field name="active" widget="boolean_toggle"/>
+                <button name="action_scan_directory"
+                        type="object"
+                        string="Scanner"
+                        icon="fa-sync"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vue Recherche CORRIGÉE (sans datetime.datetime.now()) -->
+    <record id="view_backup_directory_search" model="ir.ui.view">
+        <field name="name">backup.directory.search</field>
+        <field name="model">backup.directory</field>
+        <field name="arch" type="xml">
+            <search string="Rechercher Répertoires">
+                <field name="name"/>
+                <field name="path"/>
+
+                <filter string="Actifs" name="active"
+                        domain="[('active','=',True)]"/>
+                <filter string="Scan Auto" name="auto_scan"
+                        domain="[('auto_scan','=',True)]"/>
+                <filter string="Sync Auto" name="auto_sync"
+                        domain="[('auto_sync','=',True)]"/>
+
+                <separator/>
+
+                <!-- CORRECTION: Utiliser date filters simples sans datetime -->
+                <filter string="Scanné aujourd'hui" name="scanned_today"
+                        domain="[('last_scan_date','&gt;=', context_today()),
+                                 ('last_scan_date','&lt;', context_today() + relativedelta(days=1))]"/>
+                <filter string="Jamais scanné" name="never_scanned"
+                        domain="[('last_scan_date','=',False)]"/>
+
+                <group expand="0" string="Grouper par">
+                    <filter name="group_active" string="État"
+                            context="{'group_by':'active'}"/>
+                    <filter name="group_auto_scan" string="Scan Auto"
+                            context="{'group_by':'auto_scan'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_backup_directories" model="ir.actions.act_window">
+        <field name="name">📁 Répertoires de Backup</field>
+        <field name="res_model">backup.directory</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Configurez votre premier répertoire de sauvegarde
+            </p>
+            <p>
+                Ajoutez les répertoires contenant vos sauvegardes automatiques.<br/>
+                Le système scannera et listera tous les fichiers de backup disponibles.
+            </p>
+        </field>
+    </record>
+</odoo>

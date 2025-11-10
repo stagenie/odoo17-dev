@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue formulaire héritée des producteurs GECAFLE -->
+    <record id="view_gecafle_producteur_form_inherit_sync" model="ir.ui.view">
+        <field name="name">gecafle.producteur.form.inherit.sync</field>
+        <field name="model">gecafle.producteur</field>
+        <field name="inherit_id" ref="adi_gecafle_base_stock.view_gecafle_producteur_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Ajout du champ res_partner_id invisible -->
+            <xpath expr="//field[@name='name']" position="before">
+                <field name="res_partner_id" invisible="1"/>
+                <field name="active" invisible="1"/>
+            </xpath>
+
+            <!-- Smart button pour le partner Odoo -->
+            <xpath expr="//sheet" position="before">
+                <div class="oe_button_box" name="button_box">
+                    <button name="action_open_res_partner"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-building"
+                            invisible="not res_partner_id"
+                            groups="base.group_user">
+                        <div class="o_stat_info">
+                            <span class="o_stat_text">Fournisseur</span>
+                            <span class="o_stat_text">Odoo</span>
+                        </div>
+                    </button>
+                </div>
+            </xpath>
+
+            <!-- Groupe pour les informations de synchronisation -->
+            <xpath expr="//notebook" position="inside">
+                <page string="Synchronisation Odoo"
+                      name="sync_odoo"
+                      invisible="not res_partner_id"
+                      groups="base.group_user">
+                    <group>
+                        <group string="Lien Odoo">
+                            <field name="res_partner_id"
+                                   string="Fournisseur Odoo lié"
+                                   readonly="1"
+                                   options="{'no_create': True}"/>
+                        </group>
+                        <group string="État">
+                            <div>
+                                <span class="badge badge-success">
+                                    <i class="fa fa-check"/> Synchronisé avec Odoo
+                                </span>
+                            </div>
+                        </group>
+                    </group>
+
+                    <!-- Message d'information -->
+                    <div class="alert alert-info mt-3" role="alert">
+                        <i class="fa fa-info-circle"/>
+                        Ce producteur est synchronisé avec le système de facturation Odoo.
+                        Les modifications apportées ici seront automatiquement répercutées.
+                    </div>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Vue liste héritée -->
+    <record id="view_gecafle_producteur_tree_inherit_sync" model="ir.ui.view">
+        <field name="name">gecafle.producteur.tree.inherit.sync</field>
+        <field name="model">gecafle.producteur</field>
+        <field name="inherit_id" ref="adi_gecafle_base_stock.view_gecafle_producteur_tree"/>
+        <field name="arch" type="xml">
+            <!-- Indicateur de synchronisation -->
+            <xpath expr="//field[@name='phone']" position="after">
+                <field name="res_partner_id"
+                       string="Fournisseur Odoo"
+                       optional="show"
+                       readonly="1"/>
+                <field name="active"
+                       string="Actif"
+                       widget="boolean_toggle"
+                       optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Vue de recherche héritée -->
+    <record id="view_gecafle_producteur_search_inherit_sync" model="ir.ui.view">
+        <field name="name">gecafle.producteur.search.inherit.sync</field>
+        <field name="model">gecafle.producteur</field>
+        <field name="inherit_id" ref="adi_gecafle_base_stock.view_gecafle_producteur_search"/>
+        <field name="arch" type="xml">
+            <!-- Filtres de synchronisation -->
+            <xpath expr="//search" position="inside">
+                <separator/>
+                <filter string="Synchronisé Odoo"
+                        name="odoo_synced"
+                        domain="[('res_partner_id', '!=', False)]"/>
+                <filter string="Non synchronisé"
+                        name="not_synced"
+                        domain="[('res_partner_id', '=', False)]"/>
+                <separator/>
+                <filter string="Actif"
+                        name="active"
+                        domain="[('active', '=', True)]"/>
+                <filter string="Archivé"
+                        name="archived"
+                        domain="[('active', '=', False)]"/>
+                <separator/>
+                <filter string="Grouper par état"
+                        name="group_by_active"
+                        context="{'group_by': 'active'}"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- SUPPRIMÉ : La vue kanban problématique -->
+</odoo>

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue tree pour afficher les retours -->
+    <record id="view_gecafle_reception_tree_inherit_retour" model="ir.ui.view">
+        <field name="name">gecafle.reception.tree.inherit.retour</field>
+        <field name="model">gecafle.reception</field>
+        <field name="inherit_id" ref="adi_gecafle_receptions.view_gecafle_reception_tree"/>
+        <field name="arch" type="xml">
+            <!-- Ajouter une colonne pour identifier les retours -->
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="is_return"
+                       widget="boolean_toggle"
+                       string="Retour"
+                       optional="show"/>
+            </xpath>
+
+            <!-- Ajouter la référence à l'avoir -->
+            <xpath expr="//field[@name='producteur_id']" position="after">
+                <field name="avoir_client_id"
+                       string="Avoir lié"
+                       optional="show"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Vue form pour afficher les informations de retour -->
+    <record id="view_gecafle_reception_form_inherit_retour" model="ir.ui.view">
+        <field name="name">gecafle.reception.form.inherit.retour</field>
+        <field name="model">gecafle.reception</field>
+        <field name="inherit_id" ref="adi_gecafle_receptions.view_gecafle_reception_form"/>
+        <field name="arch" type="xml">
+            <!-- Ajouter un badge pour les retours -->
+            <xpath expr="//sheet/h3" position="before">
+                <div invisible="not is_return" class="alert alert-warning">
+                    <strong>📦 RÉCEPTION DE RETOUR</strong>
+                    <span invisible="not avoir_client_id"> - Avoir: <field name="avoir_client_id" readonly="1"/></span>
+                    <span invisible="not reception_origine_id"> - Réception origine: <field name="reception_origine_id" readonly="1"/></span>
+                </div>
+            </xpath>
+
+            <!-- Ajouter un smart button pour voir les retours -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_retours"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-undo"
+                        invisible="reception_retour_count == 0">
+                    <field name="reception_retour_count" widget="statinfo" string="Retour(s)"/>
+                </button>
+            </xpath>
+
+            <!-- Ajouter les champs invisibles -->
+            <xpath expr="//field[@name='producteur_id']" position="after">
+                <field name="is_return" invisible="1"/>
+                <field name="reception_origine_id" invisible="1"/>
+                <field name="avoir_client_id" invisible="1"/>
+                <field name="reception_retour_count" invisible="1"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Action pour afficher les retours -->
+    <record id="action_reception_retours" model="ir.actions.act_window">
+        <field name="name">Réceptions de Retour</field>
+        <field name="res_model">gecafle.reception</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('is_return', '=', True)]</field>
+        <field name="context">{'search_default_group_by_producteur': 1}</field>
+    </record>
+
+    <!-- Menu pour les retours -->
+    <menuitem id="menu_reception_retours"
+              name="Réceptions de Retour"
+              parent="adi_gecafle_receptions.menu_gecafle_reception_root"
+              action="action_reception_retours"
+              sequence="5"/>
+</odoo>

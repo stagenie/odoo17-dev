@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue formulaire entrepôt -->
+    <record id="view_warehouse_form_inherit_production" model="ir.ui.view">
+        <field name="name">stock.warehouse.form.inherit.production</field>
+        <field name="model">stock.warehouse</field>
+        <field name="inherit_id" ref="stock.view_warehouse"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='code']" position="after">
+                <field name="warehouse_type" widget="selection_badge"/>
+                <field name="auto_transfer_to_production"
+                       invisible="warehouse_type != 'raw_material'"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Vue liste avec type -->
+    <record id="view_warehouse_tree_inherit_production" model="ir.ui.view">
+        <field name="name">stock.warehouse.tree.inherit.production</field>
+        <field name="model">stock.warehouse</field>
+        <field name="inherit_id" ref="stock.view_warehouse_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='company_id']" position="after">
+                <field name="warehouse_type" widget="badge"
+                       decoration-info="warehouse_type == 'production'"
+                       decoration-warning="warehouse_type == 'raw_material'"
+                       decoration-success="warehouse_type == 'finished_goods'"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

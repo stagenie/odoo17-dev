@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Menu principal -->
+    <menuitem id="menu_server_control_root"
+              name="Contrôle Serveur"
+              groups="adi_server_control.group_server_control"
+              web_icon="adi_server_control,static/description/barret.png"
+              sequence="100"/>
+
+
+    <!-- Panneau de contrôle -->
+    <menuitem id="menu_server_control_panel"
+              name="Panneau de Contrôle"
+              parent="menu_server_control_root"
+              action="action_server_control_panel"
+              sequence="10"/>
+
+    <!-- Configuration -->
+    <menuitem id="menu_server_control_config"
+              name="Configuration"
+              parent="menu_server_control_root"
+              action="action_server_config"
+              sequence="20"/>
+
+    <menuitem id="menu_database_backup"
+          name="💾 Backup Database"
+          parent="menu_server_control_root"
+          action="action_database_backup_wizard"
+          sequence="15"/>
+</odoo>

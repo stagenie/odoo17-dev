@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Template du Bon de Pesé en Arabe -->
+    <template id="report_bon_pese_document_ar">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page" dir="rtl">
+
+                        <!-- En-tête -->
+                        <div class="text-center mb-4">
+                            <h2 style="text-decoration: underline;">وصل الوزن</h2>
+                        </div>
+
+                        <!-- Informations générales -->
+                        <div class="row mb-3">
+                            <div class="col-8 text-right">
+                                <strong>التاريخ:</strong>
+                                <span t-field="o.date_vente"
+                                      t-options='{"widget": "datetime", "format": "dd/MM/yyyy HH:mm:ss"}'/>
+                            </div>
+                            <div class="col-4">
+                                <strong>العميل:</strong>
+                                <span t-field="o.client_id.name"/>
+                            </div>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-12 text-right">
+                                <strong>المستخدم:</strong>
+                                <span t-esc="o.user_id.name.upper()"/>
+                            </div>
+                        </div>
+
+                        <!-- Tableau des produits AVEC ORDRE INVERSÉ -->
+                        <table class="table table-sm table-bordered">
+                            <thead style="background-color: #f0f0f0;">
+                                <tr>
+                                    <!-- ORDRE INVERSÉ : De droite à gauche -->
+                                    <th class="text-center" width="18%">السعر/الوحدة</th>
+                                    <th class="text-center" width="15%">الوزن الصافي</th>
+                                    <th class="text-center" width="10%">الجودة</th>
+                                    <th class="text-center" width="15%">نوع العبوة</th>
+                                    <th width="30%">التسمية</th>
+                                    <th class="text-center" width="12%">عدد العبوات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="o.detail_vente_ids" t-as="line">
+                                    <tr>
+                                        <!-- DONNÉES DANS LE MÊME ORDRE -->
+                                        <td class="text-center">
+                                            <t t-set="prix_str" t-value="'%.2f' % line.prix_unitaire"/>
+                                            <span t-esc="prix_str.replace('.', ',')"/>
+                                        </td>
+                                        <td class="text-center">
+                                            <t t-set="poids_net_str" t-value="'%.2f' % line.poids_net"/>
+                                            <span t-esc="poids_net_str.replace('.', ',')"/>
+                                        </td>
+                                        <td class="text-center">
+                                            <span t-field="line.qualite_id.name"/>
+                                        </td>
+                                        <td class="text-center">
+                                            <span t-field="line.type_colis_id.name"/>
+                                        </td>
+                                        <td>
+                                            <span t-field="line.produit_id.name"/>
+                                        </td>
+                                        <td class="text-center">
+                                            <span t-field="line.nombre_colis"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+
+                        <!-- Calcul et affichage du total -->
+                        <t t-set="total_colis" t-value="sum(o.detail_vente_ids.mapped('nombre_colis'))"/>
+                        <t t-set="total_poids" t-value="sum(o.detail_vente_ids.mapped('poids_net'))"/>
+
+                        <div class="row mt-4">
+                            <div class="col-12 text-right">
+                                <strong>مجموع العبوات:</strong> <span t-esc="total_colis"/><br/>
+                                <strong>مجموع الوزن الصافي:</strong>
+                                <t t-set="total_poids_str" t-value="'%.2f' % total_poids"/>
+                                <span t-esc="total_poids_str.replace('.', ',')"/> كغ
+                            </div>
+                        </div>
+
+                        <!-- Signature (optionnel) -->
+                        <div class="row mt-5 pt-5">
+                            <div class="col-6 text-right">
+                                <div class="text-center">
+                                    <p>العميل:</p>
+                                    <div style="margin-top: 60px; border-top: 1px solid black; width: 200px; margin-left: auto; margin-right: auto;"></div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-center">
+                                    <p>الوزان:</p>
+                                    <div style="margin-top: 60px; border-top: 1px solid black; width: 200px; margin-left: auto; margin-right: auto;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <!-- Définition du rapport -->
+    <record id="action_report_bon_pese_ar" model="ir.actions.report">
+        <field name="name">وصل الوزن</field>
+        <field name="model">gecafle.vente</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_arabic_reports.report_bon_pese_document_ar</field>
+        <field name="report_file">adi_arabic_reports.report_bon_pese_ar</field>
+        <field name="print_report_name">'وصل الوزن - %s' % (object.name)</field>
+        <field name="paperformat_id" ref="adi_gecafle_ventes.paperformat_a5"/>
+        <field name="binding_model_id" ref="adi_gecafle_ventes.model_gecafle_vente"/>
+        <field name="binding_type">report</field>
+    </record>
+</odoo>

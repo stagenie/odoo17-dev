@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Héritage de la vue du wizard d'avoir express -->
+    <record id="view_gecafle_avoir_express_wizard_form_inherit_stock" model="ir.ui.view">
+        <field name="name">gecafle.avoir.client.wizard.form.inherit.stock</field>
+        <field name="model">gecafle.avoir.client.wizard</field>
+        <field name="inherit_id" ref="adi_gecafle_avoir_automation.view_gecafle_avoir_express_wizard_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Ajouter le toggle après le type d'avoir -->
+            <xpath expr="//field[@name='type_avoir']" position="after">
+                <field name="mode_stock_detail"
+                       widget="boolean_toggle"
+                       invisible="type_avoir == 'consigne'"
+                       string="📋 Avoir sur stock détaillé"/>
+
+            </xpath>
+
+            <!-- Modifier l'affichage du montant -->
+            <xpath expr="//field[@name='montant_avoir']" position="replace">
+                <field name="montant_avoir"
+                       invisible="mode_stock_detail"
+                       required="not mode_stock_detail"/>
+                <field name="montant_calcule"
+                       invisible="not mode_stock_detail"
+                       readonly="1"
+                       widget="monetary"
+                       string="Montant calculé"
+                       class="text-success font-weight-bold"/>
+            </xpath>
+
+            <!-- Ajouter la section des produits APRÈS le groupe principal -->
+            <xpath expr="//group[last()]" position="after">
+                <!-- Options de gestion du retour-->
+                <group invisible="not mode_stock_detail" col="4">
+                    <group colspan="2">
+                        <field name="gerer_retour_stock" widget="boolean_toggle"/>
+                    </group>
+
+                    <group colspan="2" invisible="not gerer_retour_stock">
+                        <field name="type_retour" widget="radio_button"/>
+                    </group>
+                </group>
+
+                <separator string="📋 Sélection des produits à retourner"
+                           invisible="not mode_stock_detail"/>
+
+                <field name="line_ids"
+                       nolabel="1"
+                       invisible="not mode_stock_detail">
+                    <tree editable="bottom"
+                          create="false"
+                          delete="false"
+                          decoration-success="inclure"
+                          decoration-muted="not inclure">
+                        <field name="wizard_id" invisible="1" optional="hide"/>
+                        <field name="detail_vente_id" invisible="1" optional="hide"/>
+                        <field name="currency_id" invisible="1" optional="hide"/>
+                        <field name="prix_unitaire_original" optional="hide" invisible="1"/>
+
+                        <field name="inclure" widget="boolean_toggle" string=""/>
+                        <field name="produit_id" string="Produit" readonly="1"/>
+                        <field name="reception_num" string="N°Rec" readonly="1"/>
+                        <field name="producteur_id" readonly="1"/>
+                        <field name="qualite_id" readonly="1" optional="show"/>
+                        <field name="type_colis_id" readonly="1" optional="show"/>
+                        <field name="nombre_colis_vendu" readonly="1" string="Nb vendus"/>
+                        <field name="nombre_colis_retour"
+                               string="Nb retour"
+                               readonly="not inclure"/>
+                        <field name="qte_vendue" readonly="1" string="Qté vendue (kg)"/>
+                        <field name="qte_retour"
+                               required="inclure"
+                               readonly="not inclure"
+                               string="Qté retour (kg)"/>
+
+                        <!-- Prix unitaire MODIFIABLE avec indication visuelle -->
+                        <field name="prix_unitaire"
+                               widget="monetary"
+                               readonly="not inclure"
+                               decoration-bf="prix_unitaire != prix_unitaire_original"
+                               string="Prix/U"/>
+
+                        <!-- Prix original en lecture seule pour comparaison -->
+                        <field name="prix_unitaire_original"
+                               widget="monetary"
+                               optional="show"
+                               readonly="1"
+                               string="Prix original"/>
+
+                        <field name="montant_total"
+                               widget="monetary"
+                               sum="Total"
+                               readonly="1"/>
+                    </tree>
+                </field>
+
+                <!-- Messages d'aide -->
+                <div class="alert alert-info mt-3"
+                     invisible="not mode_stock_detail or line_ids">
+                    <i class="fa fa-info-circle"/>
+                    Les produits de la vente sont chargés automatiquement.
+                    Cochez les produits à retourner et ajustez les quantités et prix si nécessaire.
+                </div>
+
+                <div class="alert alert-warning mt-3"
+                     invisible="not mode_stock_detail or montant_calcule > 0">
+                    <i class="fa fa-warning"/>
+                    Sélectionnez au moins un produit (toggle) et définissez sa quantité de retour.
+                </div>
+
+                <div class="alert alert-success mt-3"
+                     invisible="not mode_stock_detail or montant_calcule == 0">
+                    <i class="fa fa-check"/>
+                    Prêt à créer l'avoir avec un montant de <strong><field name="montant_calcule" nolabel="1"/></strong>
+                    <span invisible="not gerer_retour_stock">
+                        <br/><i class="fa fa-truck"/> Un retour physique sera créé
+                    </span>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

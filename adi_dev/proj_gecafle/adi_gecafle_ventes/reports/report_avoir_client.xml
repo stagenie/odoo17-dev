@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Template du rapport -->
+    <template id="report_avoir_client_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2 class="text-center">AVOIR CLIENT</h2>
+
+                        <div class="row mt-4">
+                            <div class="col-6">
+                                <strong>Client:</strong> <span t-field="o.client_id.name"/><br/>
+                                <strong>Tél:</strong> <span t-field="o.client_id.tel_mob"/><br/>
+                                <strong>Adresse:</strong> <span t-field="o.client_id.adresse"/>
+                            </div>
+                            <div class="col-6 text-right">
+                                <strong>N° Avoir:</strong> <span t-field="o.name"/><br/>
+                                <strong>Date:</strong> <span t-field="o.date"/><br/>
+                                <strong>Type:</strong> <span t-field="o.type_avoir"/>
+                            </div>
+                        </div>
+
+                        <!-- État -->
+                        <div t-if="o.state == 'annule'" class="alert alert-danger text-center mt-3">
+                            <strong>AVOIR ANNULÉ</strong>
+                        </div>
+
+                        <!-- Informations de la vente d'origine -->
+                        <div class="mt-4 p-3 bg-light">
+                            <h5>Vente d'origine</h5>
+                            <table class="table table-sm">
+                                <tr>
+                                    <td width="50%"><strong>N° Bon de vente:</strong></td>
+                                    <td><span t-field="o.vente_id.name"/></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Date de vente:</strong></td>
+                                    <td><span t-field="o.vente_id.date_vente" t-options='{"widget": "date"}'/></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Montant original:</strong></td>
+                                    <td><strong><span t-field="o.montant_vente_origine"/></strong></td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <!-- Détails de l'avoir -->
+                        <div class="mt-4">
+                            <table class="table table-bordered">
+                                <tr>
+                                    <td><strong>Motif de l'avoir:</strong></td>
+                                    <td><span t-field="o.description"/></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Montant de l'avoir:</strong></td>
+                                    <td class="text-right">
+                                        <strong><span t-field="o.montant_avoir"/></strong>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Nouveau montant à payer:</strong></td>
+                                    <td class="text-right">
+                                        <strong>
+                                            <span t-esc="o.montant_vente_origine - o.montant_avoir"
+                                                  t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                        </strong>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <!-- Répartition sur les producteurs -->
+                        <div t-if="o.avoir_producteur_ids" class="mt-4">
+                            <h5>Répartition sur les producteurs:</h5>
+                            <table class="table table-sm table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Producteur</th>
+                                        <th class="text-right">Montant</th>
+                                        <th>État</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr t-foreach="o.avoir_producteur_ids" t-as="ap">
+                                        <td><span t-field="ap.producteur_id.name"/></td>
+                                        <td class="text-right"><span t-field="ap.montant_total"/></td>
+                                        <td><span t-field="ap.state"/></td>
+                                    </tr>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td class="text-right"><strong>Total:</strong></td>
+                                        <td class="text-right">
+                                            <strong><span t-esc="sum(o.avoir_producteur_ids.mapped('montant_total'))"
+                                                          t-options='{"widget": "monetary", "display_currency": o.currency_id}'/></strong>
+                                        </td>
+                                        <td></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+
+                        <!-- Signatures  Otionnel
+                        <div class="row mt-5">
+                            <div class="col-6">
+                                <p>Le Client:<br/><br/>_____________________</p>
+                            </div>
+                            <div class="col-6 text-right">
+                                <p>Le Responsable:<br/><br/>_____________________</p>
+                            </div>
+                        </div>
+
+
+                        -->
+
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <!-- Définition du rapport -->
+    <record id="action_report_avoir_client" model="ir.actions.report">
+        <field name="name">Avoir Client</field>
+        <field name="model">gecafle.avoir.client</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_gecafle_ventes.report_avoir_client_document</field>
+        <field name="report_file">adi_gecafle_ventes.report_avoir_client</field>
+        <field name="print_report_name">'Avoir Client - %s' % (object.name)</field>
+        <field name="paperformat_id" ref="base.paperformat_euro"/>
+        <field name="binding_model_id" ref="model_gecafle_avoir_client"/>
+        <field name="binding_type">report</field>
+    </record>
+</odoo>

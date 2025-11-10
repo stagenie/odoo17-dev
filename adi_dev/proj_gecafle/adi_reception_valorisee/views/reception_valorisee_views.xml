@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue formulaire héritée pour les réceptions valorisées -->
+    <record id="view_reception_form_valorisee" model="ir.ui.view">
+        <field name="name">gecafle.reception.form.valorisee</field>
+        <field name="model">gecafle.reception</field>
+        <field name="inherit_id" ref="adi_gecafle_receptions.view_gecafle_reception_form_extended"/>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+
+            <!-- SECTION 1: Ajout du toggle et champs invisibles -->
+            <xpath expr="//field[@name='producteur_id']" position="after">
+                <field name="is_achat_valorise" widget="boolean_toggle"/>
+                <field name="invoice_id" invisible="1"/>
+                <field name="currency_id" invisible="1"/>
+            </xpath>
+
+            <!-- SECTION 2: Smart button pour la facture -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_invoice"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-file-invoice-dollar"
+                        invisible="not is_achat_valorise or invoice_count == 0">
+                    <field name="invoice_count" widget="statinfo" string="Facture"/>
+                </button>
+            </xpath>
+
+            <!-- SECTION 3: Boutons dans le header -->
+            <xpath expr="//header" position="inside">
+                <button name="action_create_supplier_invoice"
+                        string="Créer Facture Fournisseur"
+                        type="object"
+                        class="btn-primary"
+                        invisible="not is_achat_valorise or state != 'confirmee' or invoice_id != False"/>
+                <button name="action_print_bon_valorise"
+                        string="Bon Valorisé (FR)"
+                        type="object"
+                        class="btn-secondary"
+                        invisible="not is_achat_valorise or state != 'confirmee'"/>
+                <button name="action_print_bon_valorise_ar"
+                        string="Bon Valorisé (AR)"
+                        type="object"
+                        class="btn-secondary"
+                        invisible="not is_achat_valorise or state != 'confirmee'"/>
+            </xpath>
+
+            <!-- SECTION 4: Modification du tree INLINE des détails (dans le formulaire) -->
+            <xpath expr="//field[@name='details_reception_ids']/tree" position="replace">
+                <tree editable="bottom" limit="200">
+                    <!-- Colonnes toujours visibles -->
+                    <field name="num_seq" string="N°" readonly="1"/>
+                    <field name="designation_id" string="Désignation" required="1"/>
+                    <field name="type_colis_id" string="Type de Colis" required="1"/>
+                    <field name="qualite_id" string="Qualité" required="1"/>
+                    <field name="qte_colis_recue" string="Qté Reçue" sum="Total"/>
+
+                    <!-- Colonnes conditionnelles - utiliser parent.is_achat_valorise dans un tree inline -->
+                    <field name="poids_brut"
+                           string="Poids Brut (kg)"
+                           column_invisible="not parent.is_achat_valorise"
+                           sum="Total Brut"
+                           optional="show"/>
+                    <field name="poids_colis"
+                           string="Poids Colis"
+                           column_invisible="not parent.is_achat_valorise"
+                           sum="Total Colis"
+                           readonly="1"
+                           optional="hide"/>
+                    <field name="poids_net"
+                           string="Poids Net (kg)"
+                           column_invisible="not parent.is_achat_valorise"
+                           sum="Total Net"
+                           readonly="1"
+                           optional="show"/>
+                    <field name="prix_unitaire_achat"
+                           string="Prix/kg"
+                           column_invisible="not parent.is_achat_valorise"
+                           optional="show"/>
+                    <field name="montant_ligne"
+                           string="Montant"
+                           column_invisible="not parent.is_achat_valorise"
+                           widget="monetary"
+                           sum="Total"
+                           readonly="1"
+                           optional="show"/>
+
+                    <!-- Colonnes optionnelles standard -->
+                    <field name="qte_colis_destockes"
+                           string="Qté Destockée"
+                           readonly="1"
+                           optional="hide"/>
+                    <field name="qte_colis_vendus"
+                           string="Qté Vendue"
+                           readonly="1"
+                           optional="hide"/>
+                    <field name="qte_colis_disponibles"
+                           string="Qté Disponible"
+                           readonly="1"
+                           optional="show"/>
+                    <field name="observation"
+                           string="Observation"
+                           optional="hide"/>
+
+                    <!-- Champs invisibles nécessaires -->
+                    <field name="currency_id" invisible="1" optional="hide"/>
+                    <field name="producteur_id" invisible="1" optional="hide"/>
+                </tree>
+            </xpath>
+
+            <!-- SECTION 5: Ajout du groupe des totaux après les détails -->
+            <xpath expr="//field[@name='details_reception_ids']" position="after">
+                <!-- Totaux valorisés visibles uniquement si achat valorisé -->
+                <group string="📊 Totaux de la Réception Valorisée"
+                       invisible="not is_achat_valorise"
+                       class="mt-3">
+                    <group string="Totaux des Poids">
+                        <field name="total_poids_brut"
+                               string="Total Poids Brut (kg)"
+                               readonly="1"/>
+                        <field name="total_poids_colis"
+                               string="Total Poids Colis (kg)"
+                               readonly="1"/>
+                        <field name="total_poids_net"
+                               string="Total Poids Net (kg)"
+                               readonly="1"
+                               style="font-weight: bold;"/>
+                    </group>
+                    <group string="Totaux Financiers">
+                        <field name="montant_total_brut"
+                               string="Montant Total Brut"
+                               widget="monetary"
+                               readonly="1"/>
+                        <field name="montant_total_emballages"
+                               string="- Emballages Achetés"
+                               widget="monetary"
+                               readonly="1"/>
+                        <field name="remise_globale"
+                               string="- Remise Globale"
+                               widget="monetary"
+                               help="Remise manuelle pour arrondir ou accorder une remise producteur"/>
+                        <separator/>
+                        <field name="montant_net_a_payer"
+                               string="Net à Payer"
+                               widget="monetary"
+                               readonly="1"
+                               style="font-weight: bold; font-size: 1.3em; color: #2e7d32;"/>
+                    </group>
+                </group>
+
+                <!-- Message informatif -->
+                <div class="alert alert-success mt-2"
+                     invisible="not is_achat_valorise"
+                     style="margin-top: 10px;">
+                    <i class="fa fa-check-circle"/>
+                    <strong>Mode Achat Valorisé activé</strong> :
+                    Les colonnes de prix et montants sont visibles dans le tableau ci-dessus.
+                </div>
+            </xpath>
+
+            <!-- SECTION 6: Ajout des boutons pour gérer les emballages -->
+            <xpath expr="//field[@name='details_emballage_reception_ids']" position="before">
+                <!-- Boutons d'action pour les emballages -->
+                <div class="mb-2" invisible="not is_achat_valorise or state != 'brouillon'">
+                    <button name="action_select_all_emballages"
+                            string="✓ Tout acheter"
+                            type="object"
+                            class="btn btn-sm btn-success me-2"
+                            icon="fa-check-square-o"
+                            confirm="Voulez-vous marquer tous les emballages comme achetés ?"/>
+
+                    <button name="action_deselect_all_emballages"
+                            string="✗ Ne rien acheter"
+                            type="object"
+                            class="btn btn-sm btn-secondary me-2"
+                            icon="fa-square-o"
+                            confirm="Voulez-vous désélectionner tous les emballages ?"/>
+
+                    <button name="action_apply_default_emballages"
+                            string="↻ Appliquer défaut"
+                            type="object"
+                            class="btn btn-sm btn-info"
+                            icon="fa-magic"
+                            help="Applique la logique par défaut : Non rendu = Acheté, Consigné = Non acheté"/>
+                </div>
+            </xpath>
+
+            <!-- SECTION 7: Modification du tree des emballages (inline) -->
+            <xpath expr="//field[@name='details_emballage_reception_ids']/tree" position="replace">
+                <tree editable="bottom">
+                    <field name="emballage_id" string="Type d'Emballage"/>
+                    <field name="qte_entrantes" string="Qté Entrante"/>
+                    <field name="qte_sortantes" string="Qté Sortante"/>
+
+                    <!-- Colonnes conditionnelles pour le mode valorisé -->
+                    <field name="is_achete"
+                           widget="boolean_toggle"
+                           column_invisible="not parent.is_achat_valorise"
+                           string="Acheté"/>
+                    <field name="qte_achetee"
+                           column_invisible="not parent.is_achat_valorise or not is_achete"
+                           string="Qté Achetée"/>
+                    <field name="prix_unitaire_achat"
+                           column_invisible="not parent.is_achat_valorise or not is_achete"
+                           string="Prix Unitaire"/>
+                    <field name="montant_achat"
+                           column_invisible="not parent.is_achat_valorise or not is_achete"
+                           sum="Total Achat"
+                           widget="monetary"
+                           string="Montant"/>
+
+                    <field name="currency_id" optional="hide" invisible="1"/>
+                </tree>
+            </xpath>
+
+        </field>
+    </record>
+
+    <!-- Vue tree (LISTE) héritée - CORRECTION IMPORTANTE -->
+    <record id="view_reception_tree_valorisee" model="ir.ui.view">
+        <field name="name">gecafle.reception.tree.valorisee</field>
+        <field name="model">gecafle.reception</field>
+        <field name="inherit_id" ref="adi_gecafle_receptions.view_gecafle_reception_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='state']" position="before">
+                <!-- Ajout du champ is_achat_valorise visible -->
+                <field name="is_achat_valorise"
+                       widget="boolean"
+                       optional="show"
+                       string="Valorisé"/>
+                <!-- Le champ montant_net_a_payer avec optional au lieu de column_invisible -->
+                <field name="montant_net_a_payer"
+                       widget="monetary"
+                       optional="hide"
+                       string="Net à Payer"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Vue search pour filtrer les réceptions -->
+    <record id="view_reception_search_valorisee" model="ir.ui.view">
+        <field name="name">gecafle.reception.search.valorisee</field>
+        <field name="model">gecafle.reception</field>
+        <field name="inherit_id" ref="adi_gecafle_receptions.view_gecafle_reception_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='canceled']" position="after">
+                <separator/>
+                <filter string="Achats Valorisés"
+                        name="valorise"
+                        domain="[('is_achat_valorise','=',True)]"/>
+                <filter string="Réceptions Simples"
+                        name="non_valorise"
+                        domain="[('is_achat_valorise','=',False)]"/>
+            </xpath>
+
+            <xpath expr="//group[last()]" position="inside">
+                <filter string="Type (Valorisé/Non valorisé)"
+                        name="group_by_valorise"
+                        context="{'group_by': 'is_achat_valorise'}"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

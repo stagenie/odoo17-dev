@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<data>
+
+
+		<record id="view_caisse_tree" model="ir.ui.view">
+			<field name="name">caisse.tree</field>
+			<field name="model">caisse</field>
+			<field name="arch" type="xml" >
+				<tree  string="caisse" colors= " red:state=='confirm'  ; green:state=='open' " create="false" delete='false' >
+					<field name="name"/>
+					<field name="date"/>
+					<!--<field name="period_id" />-->
+
+					<field name="state"/>
+				</tree>
+			</field>
+		</record>
+
+		 <record id="view_caisse_form" model="ir.ui.view">
+			<field name="name">caisse.form</field>
+			<field name="model">caisse</field>
+			<field name="priority">2</field>
+			<field name="arch" type="xml">
+				<form string="caisse" create="false" delete="false">
+					<header>                                
+						<button name="button_ouv" states="draft" string="Ouvrir la caisse" type="object" class="oe_highlight"/>
+						<button name="caisse.caisse_date_action" states="open" string="Fermer la caisse" type="action"/>
+						<button name="%(caisse.actions_wizard_selection_periode_id)d" type="action" string="Imprimer le rapport de caisse"/>
+						<field name="state" widget="statusbar" statusbar_visible="draft,confirm"/>
+					</header>
+				
+				<sheet string="Caisse">
+					<group>
+						<group>
+							<field name="annee" required="1" readonly="state != 'draft'"/>
+							<field name="mois" required="type_c == 'mensuel'" invisible="type_c == 'annuel'" readonly="state != 'draft'"/>
+						</group>
+						<group>
+							<div>
+								<h2><field name="name" class="oe_inline" style="width:100px;" readonly="1"/></h2>
+							</div>
+						</group>
+					</group>
+					<group>
+						<group>
+							<field name="user_id" readonly="state != 'draft'" string="Responsable"/>
+							<field name="compte_id" readonly="state != 'draft'" string="Compte"/>
+							<field name="journal_id" widget="selection"/>  
+							<field name="caisse_prec" string="Caisse précédente" domain="[('state','=','confirm'),('type_c','=',type_c)]" readonly="state != 'draft'" invisible="type_c != 'annuel'"/>
+						</group>
+						<group>
+							<field name="date" readonly="state != 'draft'"/>
+							<field name="date_cloture" readonly="1"/>
+							<field name="type_caisse" required="1" style="width:auto;" readonly="state != 'draft'"/>
+							<field name="type_c" style="width:auto;" required="1" invisible="1"/>
+							<field name="total_char" invisible="1"/>                          
+							<field name="currency" invisible="1"/>                          
+						</group>
+					</group>
+					<notebook>
+						<page string="Recette" invisible="state == 'draft'">
+							<field name="line_ids">
+								<tree editable="false" create="false" string="lignes" delete="false">
+									<field name="type_trans" invisible="1" readonly="1"/>
+									<field name="date" readonly="1"/>
+									<field name="type_payment"/>
+									<field name="name" readonly="1"/>
+									<field name="designation" readonly="1"/> 
+									<field name="montant" sum="Recette" readonly="1"/>
+									<field name="affiche_rapport" readonly="0" invisible="1"/>
+								</tree>                           
+							</field>    
+						</page>  
+						<page string="Dépense" invisible="state == 'draft'">
+							<field name="d_ids">
+								<tree editable="false" create="false" string="lignes" delete="false">
+									<field name="type_trans" invisible="1"/>                                   
+									<field name="date" readonly="1"/>
+									<field name="type_payment"/>
+									<field name="name" readonly="1"/>
+									<field name="designation" readonly="1"/> 
+									<field name="montant_d" sum="Dépense" readonly="1"/>
+									<field name="montant_d" sum="Dépense" invisible="1"/>
+									<field name="affiche_rapport" readonly="0" invisible="1"/>
+								</tree>                           
+							</field>    
+						</page>   
+						<page string="Demandes de virement" invisible="type_caisse == 'sn_ref' or state != 'open'">
+							<field name="demande_ids" readonly="1">
+								<tree create="false" string="lignes" editable="bottom" colors="green:type_caisse=='dg';red:type_caisse=='anem';blue:type_caisse=='expl';teal:type_caisse=='sn_ref'">
+									<field name="type_trans" invisible="1"/>                                   
+									<field name="date" readonly="1"/>
+									<field name="type_payment"/>
+									<field name="name" readonly="1"/>
+									<field name="designation" readonly="1"/>
+									<field name="montant" readonly="1"/>
+									<field name="caisse_dem" readonly="1" invisible="1"/>
+									<field name="type_caisse" readonly="1" invisible="1"/>
+									<field name="type_c" readonly="1" invisible="1"/>
+									<field name="caisse_dem_annuelle" readonly="1" invisible="1"/>
+									<field name="state" readonly="1"/>
+									<button name="valider" string="Valider" type="object" class="oe_highlight" invisible="state != 'demande' or type_c == 'annuel'"/>
+									<button name="annuler" string="Refuser" type="object" class="oe_highlight" invisible="state != 'demande' or type_c == 'annuel'"/>
+								</tree>                           
+							</field>    
+						</page> 
+						<page string="Demandes envoyées" invisible="state != 'open'">
+							<field name="demande_env_ids" readonly="1">
+								<tree create="false" string="lignes" editable="bottom">
+									<field name="type_trans" invisible="1"/>                                   
+									<field name="date" readonly="1"/>
+									<field name="type_payment"/>
+									<field name="name" readonly="1"/>
+									<field name="designation_d" readonly="1"/>
+									<field name="montant" readonly="1"/>
+									<field name="caisse_dem" readonly="1" invisible="1"/>
+									<field name="caisse_annuelle" readonly="1" invisible="1"/>
+									<field name="caisse_dem_annuelle" readonly="1" invisible="1"/>
+									<field name="state" readonly="1"/>
+								</tree>                           
+							</field>    
+						</page>                     
+					</notebook>
+					<group>
+						<group class="oe_subtotal_footer oe_left">
+							<label for="solde_ouvr" readonly="state != 'draft'"/>
+							<field name="solde_ouvr" nolabel="1" widget="monetary" options="{'currency_field': 'currency'}" help="Total of opening cash control lines" readonly="state != 'draft'"/>                           
+							<label for="total" string="Total" invisible="state == 'draft'"/>
+							<field name="total" nolabel="1" widget="monetary" options="{'currency_field': 'currency'}" help="Total of opening cash control lines" invisible="state == 'draft'"/>
+						</group> 
+						<group class="oe_subtotal_footer oe_right">
+							<!--button name="button_compt" states="confirm,open" string="Comptabiliser" type="object" class="oe_link"/-->             
+						</group> 
+					</group>                                         
+				</sheet>
+				</form>
+			</field>
+		</record>
+
+		<record id="voucher_account_inherit_view_stat" model="ir.ui.view">
+		<field name="name">voucher</field>
+		<field name="model">account.payment</field>
+		<field name="inherit_id" ref='account.view_account_payment_invoice_form'></field>
+		<field name="arch" type="xml">
+			<data>
+				<xpath expr="//field[@name='journal_id']" position="after">                     
+					<field name="type_methode"/>
+					<field name="ref"/>
+					<field name="caisse" readonly="1"/>
+				</xpath>
+			</data>
+		</field>
+	
+	</record>
+	<record id="caisse_search_view" model="ir.ui.view">
+			<field name="name">caisse.search</field>
+			<field name="model">caisse</field>
+			<field eval="10" name="priority"/>
+			<field name="arch" type="xml" >
+				<search string="Caisse" >
+					<field name="name"/>
+					<field name="date"/>
+					<field name="total"/>                   
+					<group expand='1' string='Regrouper par' >
+					   <filter name="productgroup" string='Caisse' domain="[]" context="{'group_by' : 'name'}"/>
+					   <filter name="dategroup" string='Date' context="{'group_by' : 'date'}"/>
+ 
+				   </group>
+				</search>
+			</field>
+		</record>
+
+   
+
+
+		<record model="ir.actions.act_window" id="caisse_annuel_action">
+			<field name="name">Caisse</field>
+			<field name="type">ir.actions.act_window</field>
+			<field name="res_model">caisse</field>
+			<field name="view_mode">tree,form</field>
+			<field name="view_id" ref="view_caisse_tree"></field>
+			<field name="domain">[("type_c", "=", 'annuel')]</field>
+			<field name="context">{'default_type_c':'annuel'}</field>
+
+		</record>
+
+
+		<menuitem id="menu_caisse_annuelle"	name="Caisses annuelles" parent="menu_caisses" sequence="2" action="caisse_annuel_action" />
+		<delete  id="account.journal_cash_move_lines"
+			model="ir.ui.menu"/>
+		
+
+	</data>
+</odoo>

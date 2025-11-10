@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Groupe de sécurité pour le contrôle serveur -->
+    <record id="group_server_control" model="res.groups">
+        <field name="name">Contrôle Serveur</field>
+        <field name="comment">Permet d'arrêter/redémarrer le serveur et le service Odoo</field>
+        <field name="category_id" ref="base.module_category_administration"/>
+    </record>
+
+    <!-- Pas de règle d'accès nécessaire pour les TransientModel -->
+    <!-- Les permissions sont gérées par le groupe uniquement -->
+</odoo>

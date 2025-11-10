@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Extension des paramètres de configuration -->
+    <record id="res_config_settings_view_form_backup" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.backup</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority">30</field>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <!-- Ajouter une nouvelle section dans l'onglet Technique -->
+            <xpath expr="//div[@id='companies']" position="after">
+                <h2 id="backup_settings">Gestionnaire de Backups</h2>
+                <div class="row mt16 o_settings_container" id="backup_management">
+                    <div class="col-12 col-lg-6 o_setting_box">
+                        <div class="o_setting_left_pane">
+                            <field name="module_adi_backup_manager"/>
+                        </div>
+                        <div class="o_setting_right_pane">
+                            <label for="module_adi_backup_manager"/>
+                            <div class="text-muted">
+                                Activer le gestionnaire de sauvegardes automatiques
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-lg-6 o_setting_box"
+                         invisible="not module_adi_backup_manager">
+                        <div class="o_setting_left_pane">
+                            <field name="backup_auto_scan"/>
+                        </div>
+                        <div class="o_setting_right_pane">
+                            <label for="backup_auto_scan"/>
+                            <div class="text-muted">
+                                Scanner automatiquement les répertoires de backup
+                            </div>
+                            <div invisible="not backup_auto_scan" class="mt8">
+                                <label for="backup_scan_interval" class="o_light_label"/>
+                                <field name="backup_scan_interval" class="oe_inline"/> heures
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-lg-6 o_setting_box"
+                         invisible="not module_adi_backup_manager">
+                        <div class="o_setting_left_pane">
+                            <field name="backup_retention_days"/>
+                        </div>
+                        <div class="o_setting_right_pane">
+                            <label for="backup_retention_days"/>
+                            <span class="fa fa-lg fa-building-o" title="Valeur suggérée pour cette option"/>
+                            <div class="text-muted">
+                                Durée de rétention des backups (0 = illimité)
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-lg-6 o_setting_box"
+                         invisible="not module_adi_backup_manager">
+                        <div class="o_setting_left_pane">
+                            <field name="backup_notification_email"/>
+                        </div>
+                        <div class="o_setting_right_pane">
+                            <label for="backup_notification_email"/>
+                            <div class="text-muted">
+                                Envoyer des notifications par email pour les opérations de backup
+                            </div>
+                            <div invisible="not backup_notification_email" class="mt8">
+                                <label for="backup_notification_recipients"/>
+                                <field name="backup_notification_recipients"
+                                       widget="many2many_tags"
+                                       options="{'no_create': True}"
+                                       placeholder="Destinataires..."/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-lg-6 o_setting_box"
+                         invisible="not module_adi_backup_manager">
+                        <div class="o_setting_right_pane">
+                            <button name="%(adi_backup_manager.action_backup_directories)d"
+                                    icon="fa-folder-open"
+                                    type="action"
+                                    string="Gérer les Répertoires"
+                                    class="btn-link"/>
+                            <br/>
+                            <button name="%(adi_backup_manager.action_backup_recovery_wizard)d"
+                                    icon="fa-download"
+                                    type="action"
+                                    string="Récupérer des Backups"
+                                    class="btn-link"/>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Action pour les paramètres -->
+    <record id="action_backup_config_settings" model="ir.actions.act_window">
+        <field name="name">⚙️ Paramètres Backup</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+        <field name="context">{'module' : 'adi_backup_manager'}</field>
+    </record>
+</odoo>

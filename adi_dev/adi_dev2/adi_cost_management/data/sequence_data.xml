@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Séquence pour Production Journalière -->
+        <record id="seq_adi_daily_production" model="ir.sequence">
+            <field name="name">Production Journalière</field>
+            <field name="code">adi.daily.production</field>
+            <field name="prefix">PROD/%(year)s/</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+            <field name="number_increment">1</field>
+            <field name="number_next">1</field>
+        </record>
+
+        <!-- Séquence pour Gestion des Rebuts -->
+        <record id="seq_adi_scrap_management" model="ir.sequence">
+            <field name="name">Rebut Production</field>
+            <field name="code">adi.scrap.management</field>
+            <field name="prefix">REBUT/%(year)s/%(month)s/</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+            <field name="number_increment">1</field>
+            <field name="number_next">1</field>
+        </record>
+    </data>
+</odoo>

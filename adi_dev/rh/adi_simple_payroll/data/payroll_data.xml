@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Séquences -->
+        <record id="sequence_payroll_batch" model="ir.sequence">
+            <field name="name">Lot de paie</field>
+            <field name="code">payroll.batch</field>
+            <field name="prefix">LOT/%(year)s/</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="sequence_payroll_slip" model="ir.sequence">
+            <field name="name">Bulletin de paie</field>
+            <field name="code">payroll.slip</field>
+            <field name="prefix">PAIE/%(year)s/%(month)s/</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+    </data>
+</odoo>

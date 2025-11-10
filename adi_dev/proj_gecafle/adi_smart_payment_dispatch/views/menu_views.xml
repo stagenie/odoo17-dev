@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ========== ACTIONS POUR LES LISTES FILTRÉES ========== -->
+
+    <!-- Action pour la liste des paiements clients -->
+    <record id="action_customer_payments_direct" model="ir.actions.act_window">
+        <field name="name">Paiements Clients</field>
+        <field name="res_model">account.payment</field>
+        <field name="view_mode">tree,form,kanban,graph</field>
+        <field name="domain">[
+            ('partner_type', '=', 'customer'),
+            ('payment_type', '=', 'inbound')
+            ]
+        </field>
+        <field name="context">{
+            'default_partner_type': 'customer',
+            'default_payment_type': 'inbound',
+            'default_auto_allocate': True,
+            'search_default_state_posted': 1
+            }
+        </field>
+        <field name="search_view_id" ref="account.view_account_payment_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créer un nouveau paiement client
+            </p>
+            <p>
+                Gérez tous les paiements de vos clients avec répartition automatique sur les factures.
+            </p>
+        </field>
+    </record>
+
+    <!-- Action pour la liste des paiements producteurs/fournisseurs -->
+    <record id="action_vendor_payments_direct" model="ir.actions.act_window">
+        <field name="name">Paiements Producteurs</field>
+        <field name="res_model">account.payment</field>
+        <field name="view_mode">tree,form,kanban,graph</field>
+        <field name="domain">[
+            ('partner_type', '=', 'supplier'),
+            ('payment_type', '=', 'outbound')
+            ]
+        </field>
+        <field name="context">{
+            'default_partner_type': 'supplier',
+            'default_payment_type': 'outbound',
+            'default_auto_allocate': True,
+            'search_default_state_posted': 1
+            }
+        </field>
+        <field name="search_view_id" ref="account.view_account_payment_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créer un nouveau paiement producteur
+            </p>
+            <p>
+                Gérez tous les paiements de vos producteurs avec répartition automatique sur les factures.
+            </p>
+        </field>
+    </record>
+
+    <!-- ========== MENUS PRINCIPAUX À LA RACINE ========== -->
+
+    <!-- Menu racine pour Paiements Clients -->
+    <menuitem id="menu_root_customer_payments"
+              name="Paiements Clients"
+              action="action_customer_payments_direct"
+              web_icon="adi_smart_payment_dispatch,static/description/pcli.png"
+              sequence="10"
+          />
+
+    <!-- Menu racine pour Paiements Producteurs -->
+    <menuitem id="menu_root_vendor_payments"
+              name="Paiements Producteurs"
+              action="action_vendor_payments_direct"
+               web_icon="adi_smart_payment_dispatch,static/description/pfour.png"
+              sequence="20"
+          />
+
+
+
+
+    <!-- ========== MENUS CONFIGURATION ========== -->
+
+    <!-- Menu principal sous Facturation -->
+    <menuitem id="menu_smart_payment_root"
+              name="Répartition intelligente"
+              parent="account.menu_finance"
+              sequence="15"
+              groups="account.group_account_user"/>
+
+    <!-- Sous-menu Paiements avec allocation -->
+    <menuitem id="menu_payments_with_allocation"
+              name="Paiements avec répartition"
+              parent="menu_smart_payment_root"
+              action="account.action_account_payments"
+              sequence="10"/>
+
+    <!-- Sous-menu Historique des allocations -->
+    <menuitem id="menu_allocation_history"
+              name="Historique des répartitions"
+              parent="menu_smart_payment_root"
+              action="action_payment_allocation_lines"
+              sequence="20"/>
+
+    <!-- Configuration (si nécessaire dans le futur) -->
+    <menuitem id="menu_allocation_config"
+              name="Configuration"
+              parent="menu_smart_payment_root"
+              sequence="100"
+              groups="account.group_account_manager"/>
+
+    <!-- Ajout dans le menu Clients -->
+    <menuitem id="menu_customer_payment_allocation"
+              name="Répartitions clients"
+              parent="account.menu_finance_receivables"
+              action="action_payment_allocation_lines"
+              sequence="25"/>
+
+    <!-- Ajout dans le menu Fournisseurs -->
+    <menuitem id="menu_vendor_payment_allocation"
+              name="Répartitions fournisseurs"
+              parent="account.menu_finance_payables"
+              action="action_payment_allocation_lines"
+              sequence="25"/>
+</odoo>

@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Rapport Bon de prêt - Format Odoo 17 -->
+    <record id="action_report_loan_agreement" model="ir.actions.report">
+        <field name="name">Bon de prêt</field>
+        <field name="model">employee.loan</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_employee_loans.report_loan_agreement</field>
+        <field name="report_file">adi_employee_loans.report_loan_agreement</field>
+        <field name="print_report_name">'Bon de prêt - %s' % object.name</field>
+        <field name="binding_model_id" ref="model_employee_loan"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_loan_agreement">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <div class="text-center mb-4">
+                            <h2>BON DE PRÊT EMPLOYÉ</h2>
+                            <h3>N° <span t-field="doc.name"/></h3>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <table class="table table-borderless">
+                                    <tr>
+                                        <td width="30%"><strong>Employé :</strong></td>
+                                        <td><span t-field="doc.employee_name"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Fonction :</strong></td>
+                                        <td><span t-field="doc.job_id.name"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Département :</strong></td>
+                                        <td><span t-field="doc.department_id.name"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Date de demande :</strong></td>
+                                        <td><span t-field="doc.date"/></td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <h4>Détails du prêt</h4>
+                                <table class="table table-bordered">
+                                    <tr>
+                                        <td width="40%"><strong>Montant du prêt :</strong></td>
+                                        <td class="text-right"><strong><span t-field="doc.loan_amount" widget="monetary"/></strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Objet du prêt :</strong></td>
+                                        <td><span t-field="doc.purpose"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Nombre de mensualités :</strong></td>
+                                        <td><span t-field="doc.installment_count"/> mois</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Montant par mensualité :</strong></td>
+                                        <td class="text-right"><span t-field="doc.installment_amount" widget="monetary"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Fréquence de remboursement :</strong></td>
+                                        <td><span t-field="doc.payment_frequency"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Date première échéance :</strong></td>
+                                        <td><span t-field="doc.start_date"/></td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <h5>Échéancier de remboursement</h5>
+                                <table class="table table-sm table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>N°</th>
+                                            <th>Date d'échéance</th>
+                                            <th class="text-right">Montant</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="doc.installment_ids" t-as="inst">
+                                            <tr>
+                                                <td><span t-esc="inst.sequence"/></td>
+                                                <td><span t-field="inst.date"/></td>
+                                                <td class="text-right"><span t-field="inst.amount" widget="monetary"/></td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="row mt-5">
+                            <div class="col-12">
+                                <p>
+                                    Je soussigné(e) <strong><span t-field="doc.employee_name"/></strong>,
+                                    reconnais avoir reçu la somme de <strong><span t-field="doc.loan_amount" widget="monetary"/></strong>
+                                    à titre de prêt remboursable selon l'échéancier ci-dessus.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="row mt-5">
+                            <div class="col-6">
+                                <p><strong>Signature de l'employé :</strong></p>
+                                <div style="height: 80px; border-bottom: 1px solid black; width: 250px;"></div>
+                                <p class="mt-2">Date : ____________________</p>
+                            </div>
+                            <div class="col-6">
+                                <p><strong>Signature de la direction :</strong></p>
+                                <div style="height: 80px; border-bottom: 1px solid black; width: 250px;"></div>
+                                <p class="mt-2">Date : ____________________</p>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

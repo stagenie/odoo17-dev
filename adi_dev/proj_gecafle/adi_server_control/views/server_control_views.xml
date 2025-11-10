@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue formulaire du panneau de contrôle -->
+    <!-- Vue formulaire du panneau de contrôle -->
+    <record id="view_server_control_panel_form" model="ir.ui.view">
+        <field name="name">server.control.panel.form</field>
+        <field name="model">server.control.panel</field>
+        <field name="arch" type="xml">
+            <form string="Panneau de Contrôle du Serveur" create="false" edit="false">
+                <sheet>
+                    <field name="info_message" nolabel="1"/>
+
+                    <!-- RETIRER style et utiliser une div wrapper -->
+                    <div class="text-center">
+                        <div class="oe_button_box" name="button_box">
+                            <div class="row">
+                                <!-- Arrêt du serveur -->
+                                <div class="col-md-4">
+                                    <button name="action_shutdown_server"
+                                            type="object"
+                                            class="btn btn-danger btn-lg btn-block"
+                                            icon="fa-power-off">
+                                        <span class="o_button_icon"/>
+                                        Arrêter le Serveur
+                                    </button>
+                                </div>
+
+                                <!-- Redémarrage du serveur -->
+                                <div class="col-md-4">
+                                    <button name="action_reboot_server"
+                                            type="object"
+                                            class="btn btn-warning btn-lg btn-block"
+                                            icon="fa-sync">
+                                        <span class="o_button_icon"/>
+                                        Redémarrer le Serveur
+                                    </button>
+                                </div>
+
+                                <!-- Redémarrage service Odoo -->
+                                <div class="col-md-4">
+                                    <button name="action_restart_odoo_service"
+                                            type="object"
+                                            class="btn btn-info btn-lg btn-block"
+                                            icon="fa-refresh">
+                                        <span class="o_button_icon"/>
+                                        Redémarrer Odoo
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="row mt-3">
+                                <!-- Annuler action -->
+                                <div class="col-md-12">
+                                    <button name="action_cancel_shutdown"
+                                            type="object"
+                                            class="btn btn-secondary btn-block"
+                                            icon="fa-ban">
+                                        <span class="o_button_icon"/>
+                                        Annuler Action Programmée
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-warning mt-4" role="alert">
+                        <h4 class="alert-heading">⚠️ Attention</h4>
+                        <ul>
+                            <li>Les actions d'arrêt et redémarrage affectent le serveur complet</li>
+                            <li>Tous les utilisateurs seront déconnectés</li>
+                            <li>Assurez-vous qu'aucun traitement critique n'est en cours</li>
+                        </ul>
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action pour ouvrir le panneau -->
+    <record id="action_server_control_panel" model="ir.actions.act_window">
+        <field name="name">Panneau de Contrôle</field>
+        <field name="res_model">server.control.panel</field>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+    </record>
+</odoo>

@@ -1,0 +1,313 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue Formulaire -->
+    <record id="view_adi_daily_production_form" model="ir.ui.view">
+        <field name="name">adi.daily.production.form</field>
+        <field name="model">adi.daily.production</field>
+        <field name="arch" type="xml">
+            <form string="Production Journalière">
+                <header>
+                    <!-- ODOO 17 : invisible au lieu de attrs -->
+                    <button name="action_calculate_cost"
+                            type="object"
+                            string="Calculer les Coûts"
+                            class="btn-primary"
+                            invisible="state != 'draft'"/>
+
+                    <button name="action_confirm"
+                            type="object"
+                            string="Confirmer"
+                            class="btn-secondary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_validate"
+                            type="object"
+                            string="Valider et MAJ Prix"
+                            class="btn-success"
+                            confirm="Êtes-vous sûr de vouloir valider et mettre à jour le prix de revient du produit?"
+                            invisible="state != 'confirmed'"/>
+                    <!-- AJOUT DU BOUTON IMPRIMER -->
+                    <button name="action_print_report"
+                            type="object"
+                            string="Imprimer"
+                            class="btn-secondary"/>
+
+
+                    class="btn-secondary"/>
+                    <button name="action_create_cost_analysis"
+                            type="object"
+                            string="Créer Analyse"
+                            class="btn-info"
+                            invisible="state != 'validated'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,validated"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Validé" bg_color="bg-success" invisible="state != 'validated'"/>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="production_date" readonly="state != 'draft'"/>
+                            <field name="product_id"
+                                   options="{'no_create': True, 'no_open': True}"
+                                   readonly="state != 'draft'"/>
+                            <field name="bom_id" readonly="1" force_save="1"/>
+                        </group>
+                        <group>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="qty_produced" widget="float_time"/>
+                            <field name="qty_good" widget="float_time"/>
+                            <label for="unit_cost_real" class="oe_inline"/>
+                            <div class="o_row">
+                                <field name="unit_cost_real" widget="monetary" class="oe_inline oe_highlight"/>
+                                <span class="oe_inline">/ unité</span>
+                            </div>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Ordres de Fabrication" name="production_orders">
+                            <field name="production_ids"
+                                   readonly="state != 'draft'"
+                                   domain="[('state', '=', 'done'), ('product_id', '=', product_id)]">
+                                <tree>
+                                    <field name="name"/>
+                                    <field name="date_finished"/>
+                                    <field name="product_id"/>
+                                    <field name="product_qty"/>
+                                    <field name="qty_produced" sum="Total Produit"/>
+                                    <field name="state" widget="badge" decoration-success="state=='done'"/>
+                                </tree>
+                            </field>
+                            <group class="oe_subtotal_footer oe_right">
+                                <field name="total_production_cost" widget="monetary"/>
+                            </group>
+                        </page>
+
+                        <page string="Rebuts" name="scraps">
+                            <field name="scrap_ids"
+                                   context="{'default_daily_production_id': id, 'default_scrap_date': production_date}"
+                                   readonly="state == 'validated'">
+                                <tree editable="bottom" create="1" delete="1">
+                                    <field name="name" invisible="1"/>
+                                    <field name="scrap_date"/>
+                                    <field name="scrap_type"/>
+                                    <field name="product_id"
+                                           options="{'no_create': True}"
+                                           domain="[('type', '=', 'product')]"/>
+                                    <field name="product_weight"
+                                           invisible="scrap_type != 'finished'"
+                                           required="scrap_type == 'finished'"/>
+                                    <field name="qty_kg"/>
+                                    <field name="cost_per_kg"/>
+                                    <field name="qty_units"
+                                           invisible="scrap_type != 'finished'"/>
+                                    <field name="total_cost" sum="Total Rebuts"/>
+                                    <field name="reason" optional="show"/>
+                                    <field name="currency_id" invisible="1"/>
+                                </tree>
+                            </field>
+                            <group class="oe_subtotal_footer oe_right">
+                                <field name="total_scrap_cost" widget="monetary"/>
+                            </group>
+                        </page>
+
+                        <page string="Analyse des Coûts" name="cost_analysis">
+                            <group col="4">
+                                <group string="Coûts de Production" colspan="2">
+                                    <field name="raw_material_cost" widget="monetary"/>
+                                    <field name="total_production_cost" widget="monetary"/>
+                                </group>
+                                <group string="Impact des Rebuts" colspan="2">
+                                    <field name="total_scrap_cost" widget="monetary"/>
+                                    <field name="total_cost_with_scrap" widget="monetary"/>
+                                </group>
+                            </group>
+                            <separator string="Comparaison Prix de Revient"/>
+                            <group col="4">
+                                <group string="Sans Rebuts" colspan="2">
+                                    <label for="unit_cost_theoretical"/>
+                                    <div>
+                                        <field name="unit_cost_theoretical" widget="monetary" class="oe_inline"/>
+                                        <span>/ unité</span>
+                                    </div>
+                                </group>
+                                <group string="Avec Rebuts (Réel)" colspan="2">
+                                    <label for="unit_cost_real"/>
+                                    <div>
+                                        <field name="unit_cost_real" widget="monetary" class="oe_inline text-danger"/>
+                                        <span>/ unité</span>
+                                    </div>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vue Tree -->
+    <record id="view_adi_daily_production_tree" model="ir.ui.view">
+        <field name="name">adi.daily.production.tree</field>
+        <field name="model">adi.daily.production</field>
+        <field name="arch" type="xml">
+            <tree string="Productions Journalières"
+                  decoration-success="state == 'validated'"
+                  decoration-warning="state == 'confirmed'"
+                  decoration-info="state == 'draft'">
+                <field name="name"/>
+                <field name="production_date"/>
+                <field name="product_id"/>
+                <field name="qty_produced" sum="Total Produit"/>
+                <field name="qty_good" sum="Total Bon"/>
+                <field name="total_scrap_cost" widget="monetary" sum="Total Rebuts"/>
+                <field name="unit_cost_theoretical" widget="monetary" optional="show"/>
+                <field name="unit_cost_real" widget="monetary"/>
+                <field name="currency_id" invisible="1"/>
+                <field name="state" widget="badge"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vue Search -->
+    <!-- Vue Search CORRIGÉE -->
+    <record id="view_adi_daily_production_search" model="ir.ui.view">
+        <field name="name">adi.daily.production.search</field>
+        <field name="model">adi.daily.production</field>
+        <field name="arch" type="xml">
+            <search string="Recherche Production">
+                <field name="name"/>
+                <field name="product_id"/>
+                <field name="production_date"/>
+
+                <!-- CORRECTION : Utiliser des domaines simples -->
+                <filter string="Aujourd'hui"
+                        name="today"
+                        domain="[('production_date','=', context_today())]"/>
+
+                <filter string="Cette Semaine"
+                        name="week"
+                        domain="[]"
+                        context="{'search_default_production_date': 'week'}"/>
+
+                <filter string="Ce Mois"
+                        name="month"
+                        domain="[]"
+                        context="{'search_default_production_date': 'month'}"/>
+
+                <separator/>
+
+                <filter string="Brouillon"
+                        name="draft"
+                        domain="[('state','=','draft')]"/>
+                <filter string="Confirmé"
+                        name="confirmed"
+                        domain="[('state','=','confirmed')]"/>
+                <filter string="Validé"
+                        name="validated"
+                        domain="[('state','=','validated')]"/>
+
+                <separator/>
+
+                <filter string="Avec Rebuts"
+                        name="with_scrap"
+                        domain="[('total_scrap_cost', '>', 0)]"/>
+
+                <group expand="0" string="Grouper par">
+                    <filter string="Produit"
+                            name="group_product"
+                            context="{'group_by':'product_id'}"/>
+                    <filter string="Date"
+                            name="group_date"
+                            context="{'group_by':'production_date:month'}"/>
+                    <filter string="État"
+                            name="group_state"
+                            context="{'group_by':'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <!-- Vue Kanban -->
+    <record id="view_adi_daily_production_kanban" model="ir.ui.view">
+        <field name="name">adi.daily.production.kanban</field>
+        <field name="model">adi.daily.production</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_mobile">
+                <field name="name"/>
+                <field name="production_date"/>
+                <field name="product_id"/>
+                <field name="qty_good"/>
+                <field name="unit_cost_real"/>
+                <field name="state"/>
+                <field name="currency_id"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="oe_kanban_card oe_kanban_global_click">
+                            <div class="oe_kanban_content">
+                                <div class="o_kanban_record_top mb-2">
+                                    <div class="o_kanban_record_headings">
+                                        <strong class="o_kanban_record_title">
+                                            <field name="name"/>
+                                        </strong>
+                                    </div>
+                                    <field name="state" widget="label_selection"
+                                           options="{'classes': {'draft': 'info', 'confirmed': 'warning', 'validated': 'success'}}"/>
+                                </div>
+                                <div class="o_kanban_record_body">
+                                    <div>
+                                        <field name="product_id"/>
+                                    </div>
+                                    <div class="text-muted">
+                                        <i class="fa fa-calendar"/>
+                                        <field name="production_date"/>
+                                    </div>
+                                </div>
+                                <div class="o_kanban_record_bottom mt-2">
+                                    <div class="oe_kanban_bottom_left">
+                                        <span>Qté:
+                                            <field name="qty_good"/>
+                                            unités
+                                        </span>
+                                    </div>
+                                    <div class="oe_kanban_bottom_right">
+                                        <strong>
+                                            <field name="unit_cost_real" widget="monetary"/>
+                                        </strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <!-- Action CORRIGÉE -->
+    <record id="action_adi_daily_production" model="ir.actions.act_window">
+        <field name="name">Productions Journalières</field>
+        <field name="res_model">adi.daily.production</field>
+        <field name="view_mode">tree,kanban,form,pivot,graph</field>
+        <!-- CORRECTION : Retirer search_default_month -->
+        <field name="context">{}</field>
+        <field name="domain">[]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créer une nouvelle production journalière
+            </p>
+            <p>
+                Gérez vos productions quotidiennes et calculez le prix de revient réel
+                en tenant compte des rebuts et pertes de production.
+            </p>
+        </field>
+    </record>
+</odoo>

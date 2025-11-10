@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Héritage de la vue formulaire de réception - AVEC BOUTON TRANSPORT -->
+    <record id="view_gecafle_reception_form_inherit_extended" model="ir.ui.view">
+        <field name="name">gecafle.reception.form.inherit.extended</field>
+        <field name="model">gecafle.reception</field>
+        <field name="inherit_id" ref="adi_gecafle_receptions.view_gecafle_reception_form"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//field[@name='transport']" position="after">
+                <field name="avance_transport"
+                       readonly="1"
+                       widget="monetary"
+                       invisible="not avance_transport"/>
+                <field name="paiement_emballage"
+                       readonly="1"
+                       widget="monetary"
+                       invisible="not paiement_emballage"/>
+            </xpath>
+
+            <!-- Ajouter le bouton "Enregistrer Transport" après le bouton "Enregistrer Avance" -->
+            <xpath expr="//button[@name='action_create_advance_payment']" position="after">
+                <button name="action_create_advance_transport_payment"
+                        string="Enregistrer Transport"
+                        type="object"
+                        class="btn-info"
+                        icon="fa-truck"
+                        invisible="not id"
+                        help="Ouvrir le formulaire de paiement pour enregistrer les frais de transport. Disponible une fois la réception créée."/>
+                <!-- Bouton Paiement Emballage -->
+                <button name="action_create_emballage_payment"
+                        string="Paiement Emballage"
+                        type="object"
+                        class="btn-success"
+                        icon="fa-cube"
+                        invisible="state != 'confirmee' or montant_total_emballage_achete == 0"
+                        help="Enregistrer le paiement des emballages achetés"/>
+                <field name="paiement_emballage"
+                       readonly="1"
+                       widget="monetary"
+                       invisible="paiement_emballage == 0"/>
+
+                <!-- Bouton Bon Emballage FR -->
+                <button name="action_print_emballages_fr"
+                        string="Bon Emballage (FR)"
+                        type="object"
+                        class="btn-info"
+                        icon="fa-box"
+                        invisible="not details_emballage_reception_ids or state != 'confirmee'"
+                        help="Imprimer le bon d'emballages en français"/>
+
+
+                <!-- Bouton Bon Emballage AR -->
+                <button name="action_print_emballages_ar"
+                        string="وصل التغليف"
+                        type="object"
+                        class="btn-info"
+                        icon="fa-box"
+                        invisible="not details_emballage_reception_ids or state != 'confirmee'"
+                        help="طباعة وصل التغليف بالعربية"/>
+            </xpath>
+
+            <!-- Ajouter le champ transport après avance_producteur -->
+            <xpath expr="//field[@name='avance_producteur']" position="after">
+                <field name="transport"
+                       widget="monetary"
+                       help="Frais de transport à déduire de la facture"/>
+                <field name="montant_total_emballage_achete" invisible="1"/>
+            </xpath>
+
+            <!-- Extension de la vue tree des détails emballage -->
+            <xpath expr="//field[@name='details_emballage_reception_ids']/tree" position="replace">
+                <tree editable="bottom">
+                    <field name="emballage_id"/>
+                    <field name="qte_entrantes"/>
+                    <field name="qte_sortantes"/>
+                    <field name="is_achete" widget="boolean_toggle"/>
+                    <field name="qte_achetee" invisible="not is_achete"/>
+                    <field name="prix_unitaire_achat" invisible="not is_achete"/>
+                    <field name="montant_achat"
+                           invisible="not is_achete"
+                           sum="Total Achat"
+                           widget="monetary"/>
+                    <field name="currency_id" invisible="1"/>
+                </tree>
+            </xpath>
+
+        </field>
+    </record>
+
+    <!-- Vue tree pour afficher les nouveaux totaux -->
+    <record id="view_gecafle_reception_tree_inherit_extended" model="ir.ui.view">
+        <field name="name">gecafle.reception.tree.inherit.extended</field>
+        <field name="model">gecafle.reception</field>
+        <field name="inherit_id" ref="adi_gecafle_receptions.view_gecafle_reception_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='avance_producteur']" position="after">
+                <field name="transport"
+                       sum="Total Transport"
+                       widget="monetary"
+                       optional="show"/>
+                <field name="montant_total_emballage_achete"
+                       sum="Total Emballages Achetés"
+                       widget="monetary"
+                       optional="show"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

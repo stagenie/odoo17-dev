@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+   <!-- fund.motif.family tree view -->
+   <record id="fund_motif_family_view_tree" model="ir.ui.view">
+    <field name="name">Familles motifs</field>
+    <field name="model">fund.motif.family</field>
+    <field name="arch" type="xml">
+        <tree string="Familles motif" editable="top" create="1" delete="1" multi_edit="1">
+            <!-- Add your fields here -->
+            <field name="name"/>
+        </tree>
+    </field>
+   </record> 
+
+   <!-- fund.motif.family action window -->
+   <record id="refund_motif_family_action" model="ir.actions.act_window">
+    <field name="name">Familles motif</field>
+    <field name="type">ir.actions.act_window</field>
+    <field name="res_model">fund.motif.family</field>
+    <field name="view_mode">tree</field>
+    <field name="help" type="html">
+        <p class="oe_view_nocontent_create">
+            <!-- Add Text Here -->
+        </p><p>
+            <!-- More details about what a user can do with this object will be OK --> 
+        </p>
+    </field>
+   </record>
+
+   <menuitem id="menu_refund_management"
+            name="Caisse et trésorie"
+            sequence="3"
+            parent="account.menu_finance"/>
+
+   
+
+</odoo>

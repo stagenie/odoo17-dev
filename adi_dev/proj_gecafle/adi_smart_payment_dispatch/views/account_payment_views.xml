@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ========== ACCOUNT PAYMENT VIEWS ========== -->
+
+    <!-- Form View Extension -->
+    <record id="view_account_payment_form_inherit" model="ir.ui.view">
+        <field name="name">account.payment.form.inherit.allocation</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Ajout du champ auto_allocate après partner_id -->
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="auto_allocate" widget="boolean_toggle"/>
+            </xpath>
+
+            <!-- Ajout des champs cachés nécessaires -->
+            <xpath expr="//sheet" position="inside">
+                <field name="has_invoices" invisible="1"/>
+                <field name="currency_id" invisible="1"/>
+            </xpath>
+
+            <!-- Boutons dans la button box -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_allocated_invoices"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-file-text-o"
+                        invisible="has_invoices == False">
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_value">
+                            <field name="total_allocated" widget="monetary"/>
+                        </span>
+                        <span class="o_stat_text">Montant alloué</span>
+                    </div>
+                </button>
+            </xpath>
+
+            <!-- Remplacer complètement la structure après les groupes principaux -->
+            <xpath expr="//sheet//group[last()]" position="after">
+                <!-- Notebook pour organiser les sections -->
+                <notebook invisible="partner_id == False">
+                    <page string="Répartition des Paiements" name="payment_allocation">
+                        <!-- Message si pas de factures -->
+                        <div class="alert alert-info" invisible="has_invoices == True">
+                            <p class="mb-0">
+                                <i class="fa fa-info-circle"/>
+                                Aucune facture impayée trouvée pour ce partenaire.
+                            </p>
+                        </div>
+
+                        <!-- Tableau des factures en pleine largeur -->
+                        <field name="allocation_line_ids"
+                               invisible="has_invoices == False"
+                               widget="section_and_note_one2many"
+                               mode="tree">
+                            <tree editable="bottom"
+                                  create="false"
+                                  delete="false"
+                                  decoration-success="is_fully_paid == True"
+                                  decoration-warning="invoice_payment_state == 'partial'"
+                                  class="o_payment_allocation_tree">
+
+                                <!-- Champs invisibles nécessaires -->
+                                <field name="is_overdue" column_invisible="1"/>
+                                <field name="is_fully_paid" column_invisible="1"/>
+                                <field name="currency_id" column_invisible="1"/>
+                                <field name="state" column_invisible="1"/>
+
+                                <!-- Case à cocher Payée -->
+                                <field name="is_fully_paid"
+                                       string="✓"
+                                       widget="boolean_toggle"
+                                       readonly="1"
+                                       decoration-success="is_fully_paid == True"/>
+
+                                <field name="invoice_id"
+                                       readonly="1"
+                                       decoration-danger="is_overdue == True"/>
+
+                                <field name="invoice_date"
+                                       readonly="1"
+                                       optional="show"/>
+
+                                <field name="invoice_date_due"
+                                       readonly="1"
+                                       decoration-danger="is_overdue == True"
+                                       optional="show"/>
+
+                                <field name="invoice_amount_total"
+                                       readonly="1"
+                                       sum="Total Factures"
+                                       widget="monetary"/>
+
+                                <field name="amount_already_paid"
+                                       readonly="1"
+                                       widget="monetary"
+                                       decoration-success="amount_already_paid > 0"
+                                       sum="Déjà Payé"
+                                       optional="show"/>
+
+                                <field name="invoice_amount_residual_before"
+                                       readonly="1"
+                                       decoration-danger="invoice_amount_residual_before > 0"
+                                       sum="Total Dû"
+                                       widget="monetary"/>
+
+                                <field name="allocated_amount"
+                                       readonly="state != 'draft' or parent.auto_allocate == False"
+                                       decoration-info="allocated_amount > 0"
+                                       sum="Total Alloué"
+                                       widget="monetary"/>
+
+                                <field name="invoice_amount_residual_after"
+                                       readonly="1"
+                                       decoration-danger="invoice_amount_residual_after > 0"
+                                       decoration-success="invoice_amount_residual_after == 0"
+                                       sum="Restera Dû"
+                                       widget="monetary"/>
+
+                                <field name="invoice_payment_state"
+                                       widget="badge"
+                                       optional="hide"/>
+                            </tree>
+                        </field>
+
+                        <!-- Section des totaux en bas -->
+                        <group class="oe_subtotal_footer oe_right"
+                               invisible="has_invoices == False">
+                            <div class="oe_inline">
+                                <table class="table table-sm table-borderless">
+                                    <tr>
+                                        <td class="text-right"><b>Montant du paiement:</b></td>
+                                        <td class="text-right monetary">
+                                            <field name="amount" widget="monetary" nolabel="1"/>
+                                        </td>
+                                    </tr>
+                                    <tr class="border-top">
+                                        <td class="text-right"><b>Total alloué:</b></td>
+                                        <td class="text-right monetary">
+                                            <field name="total_allocated" widget="monetary" nolabel="1" class="oe_subtotal_footer_separator"/>
+                                        </td>
+                                    </tr>
+                                    <tr invisible="remaining_amount == 0">
+                                        <td class="text-right"><b>Montant restant:</b></td>
+                                        <td class="text-right monetary text-warning">
+                                            <field name="remaining_amount" widget="monetary" nolabel="1"/>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </group>
+
+                        <!-- Avertissement pour le surplus -->
+                        <div class="alert alert-warning mt16"
+                             role="alert"
+                             invisible="remaining_amount &lt;= 0">
+                            <p class="mb-0">
+                                <i class="fa fa-info-circle"/>
+                                Un montant de
+                                <strong>
+                                    <field name="remaining_amount" widget="monetary" nolabel="1" class="d-inline"/>
+                                </strong>
+                                sera enregistré comme solde créditeur sur le compte du partenaire.
+                            </p>
+                        </div>
+
+                        <!-- Bouton de recalcul manuel -->
+                        <div class="text-center mt16"
+                             invisible="auto_allocate == True or has_invoices == False">
+                            <button name="action_compute_allocation"
+                                    type="object"
+                                    string="Calculer la répartition"
+                                    class="btn-primary"
+                                    icon="fa-calculator"/>
+                        </div>
+                    </page>
+                </notebook>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Tree View Extension (reste inchangé) -->
+    <record id="view_account_payment_tree_inherit" model="ir.ui.view">
+        <field name="name">account.payment.tree.inherit.allocation</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='state']" position="before">
+                <field name="total_allocated" optional="hide" widget="monetary"/>
+                <field name="remaining_amount" optional="hide" widget="monetary"/>
+                <field name="auto_allocate" optional="hide" widget="boolean_toggle"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Search View Extension (reste inchangé) -->
+    <record id="view_account_payment_search_inherit" model="ir.ui.view">
+        <field name="name">account.payment.search.inherit.allocation</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <separator/>
+                <filter string="Avec répartition auto"
+                        name="with_auto_allocate"
+                        domain="[('auto_allocate', '=', True)]"/>
+                <filter string="Avec surplus"
+                        name="with_remaining"
+                        domain="[('remaining_amount', '&gt;', 0)]"/>
+                <separator/>
+                <group expand="0" string="Grouper par">
+                    <filter string="Répartition auto"
+                            name="group_auto_allocate"
+                            context="{'group_by':'auto_allocate'}"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Template Rapport Producteur CORRIGÉ -->
+    <template id="report_emballage_producteur_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="wizard">
+                <!-- Récupérer les données préparées -->
+                <t t-set="report_data" t-value="wizard._prepare_report_data()"/>
+
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <!-- En-tête du rapport -->
+                        <div class="text-center mb-4">
+                            <h2>Récap Emballage Producteur</h2>
+                        </div>
+
+                        <!-- Informations générales -->
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <strong>Producteur:</strong>
+                                <span t-esc="report_data.get('producteur', 'Tous les producteurs')"/>
+                            </div>
+                            <div class="col-6 text-right">
+                                <strong>Période:</strong>
+                                Du <span t-field="wizard.date_debut"/>
+                                au <span t-field="wizard.date_fin"/>
+                            </div>
+                        </div>
+
+                        <!-- Tableau des réceptions -->
+                        <h4 class="mt-3" style="color: purple;">Emballage Entrés/Sortie Réceptions</h4>
+                        <table class="table table-sm table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>N° Réception</th>
+                                    <th>Emballage</th>
+                                    <th class="text-right">Qté Sortante</th>
+                                    <th class="text-right">Qté Entrante</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="report_data.get('sections', {}).values()" t-as="section">
+                                    <t t-foreach="section.get('receptions', [])" t-as="line">
+                                        <tr>
+                                            <!-- CORRECTION : La date est déjà formatée en string -->
+                                            <td><t t-esc="line.get('date', '')"/></td>
+                                            <td><t t-esc="line.get('reference', '')"/></td>
+                                            <td><t t-esc="line.get('emballage', '')"/></td>
+                                            <td class="text-right"><t t-esc="line.get('qte_sortante', 0)"/></td>
+                                            <td class="text-right"><t t-esc="line.get('qte_entrante', 0)"/></td>
+                                        </tr>
+                                    </t>
+                                </t>
+                            </tbody>
+                        </table>
+
+                        <!-- Récapitulatif -->
+                        <h4 class="mt-4">Récapitulatif par Emballage</h4>
+                        <table class="table table-sm table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Emballage</th>
+                                    <th class="text-right">Qté Sortante</th>
+                                    <th class="text-right">Qté Entrante</th>
+                                    <th class="text-right">Différence</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="report_data.get('sections', {}).values()" t-as="section">
+                                    <t t-foreach="section.get('resume', [])" t-as="resume">
+                                        <tr>
+                                            <!-- CORRECTION : emballage est maintenant un string -->
+                                            <td><t t-esc="resume.get('emballage', '')"/></td>
+                                            <td class="text-right"><t t-esc="resume.get('qte_sortante', 0)"/></td>
+                                            <td class="text-right"><t t-esc="resume.get('qte_entrante', 0)"/></td>
+                                            <td class="text-right">
+                                                <strong t-attf-class="#{resume.get('difference', 0) != 0 and 'text-warning' or 'text-success'}">
+                                                    <t t-esc="resume.get('difference', 0)"/>
+                                                </strong>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

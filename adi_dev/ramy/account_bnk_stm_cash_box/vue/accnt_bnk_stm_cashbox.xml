@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_account_bnk_stmt_cashbox" model="ir.ui.view">
+            <field name="name">account.bnk_stmt_cashbox.form</field>
+            <field name="model">account.bank.statement.cashbox</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <field name="start_bank_stmt_ids" invisible="1"/>
+                        <field name="end_bank_stmt_ids" invisible="1"/>
+                        <field name="currency_id" invisible="1"/>
+                        <field name="cashbox_lines_ids" nolabel="1" context="{'default_currency_id': currency_id}">
+                            <tree editable="bottom">
+                                <field name="currency_id" invisible="1"/>
+                                <field name="number"/>
+                                <field name="coin_value" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                <field name="subtotal" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            </tree>
+                        </field>
+                        <div>
+                            <group>
+                                <group class="oe_subtotal_footer oe_right" cols="6">
+                                    <field name="currency_id" invisible="1" />
+                                    <div class="o_td_label"></div>
+                                    <field name="total" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                </group>
+                            </group>
+                        </div>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_account_bnk_stmt_cashbox_footer" model="ir.ui.view">
+            <field name="name">account.bnk_stmt_cashbox.form</field>
+            <field name="model">account.bank.statement.cashbox</field>
+            <field name="priority">1000</field>
+            <field name="mode">primary</field>
+            <field name="inherit_id" ref="view_account_bnk_stmt_cashbox"/>
+            <field name="arch" type="xml">
+                <xpath expr="//sheet" position="after">
+                    <footer>
+                        <button string="Confirm" class="btn-primary" special="save"/>
+                        <button string="Cancel" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </xpath>
+            </field>
+        </record>
+
+</odoo>

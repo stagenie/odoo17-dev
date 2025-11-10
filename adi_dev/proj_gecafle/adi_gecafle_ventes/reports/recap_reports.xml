@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Définition du rapport standard -->
+    <record id="action_report_reception_recap" model="ir.actions.report">
+        <field name="name">Bordereau Récapitulatif</field>
+        <field name="model">gecafle.reception.recap</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_gecafle_ventes.report_reception_recap</field>
+        <field name="report_file">adi_gecafle_ventes.report_reception_recap</field>
+        <field name="print_report_name">'Bordereau - %s' % object.name</field>
+        <field name="paperformat_id" ref="base.paperformat_euro"/>
+        <field name="binding_model_id" ref="model_gecafle_reception_recap"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <!-- Définition du rapport avec commissions -->
+    <record id="action_report_reception_recap_with_commission" model="ir.actions.report">
+        <field name="name">Bordereau Avec Commissions</field>
+        <field name="model">gecafle.reception.recap</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_gecafle_ventes.report_reception_recap_with_commission</field>
+        <field name="report_file">adi_gecafle_ventes.report_reception_recap_with_commission</field>
+        <field name="print_report_name">'Bordereau avec Commissions - %s' % object.name</field>
+        <field name="paperformat_id" ref="base.paperformat_euro"/>
+        <field name="binding_model_id" ref="model_gecafle_reception_recap"/>
+        <field name="binding_type">report</field>
+    </record>
+
+
+    <!-- Rapport détails des ventes sans marge -->
+<record id="action_report_reception_sale_details" model="ir.actions.report">
+    <field name="name">Détails des Ventes</field>
+    <field name="model">gecafle.reception.recap</field>
+    <field name="report_type">qweb-pdf</field>
+    <field name="report_name">adi_gecafle_ventes.report_reception_sale_details</field>
+    <field name="report_file">adi_gecafle_ventes.report_reception_sale_details</field>
+    <field name="print_report_name">'Détails des Ventes - %s' % object.name</field>
+    <field name="paperformat_id" ref="base.paperformat_euro"/>
+    <field name="binding_model_id" ref="model_gecafle_reception_recap"/>
+    <field name="binding_type">report</field>
+</record>
+
+<!-- Rapport détails des ventes avec marge -->
+<record id="action_report_reception_sale_details_with_commission" model="ir.actions.report">
+    <field name="name">Détails des Ventes (avec marges)</field>
+    <field name="model">gecafle.reception.recap</field>
+    <field name="report_type">qweb-pdf</field>
+    <field name="report_name">adi_gecafle_ventes.report_reception_sale_details_with_commission</field>
+    <field name="report_file">adi_gecafle_ventes.report_reception_sale_details_with_commission</field>
+    <field name="print_report_name">'Détails des Ventes avec Marges - %s' % object.name</field>
+    <field name="paperformat_id" ref="base.paperformat_euro"/>
+    <field name="binding_model_id" ref="model_gecafle_reception_recap"/>
+    <field name="binding_type">report</field>
+</record>
+
+</odoo>

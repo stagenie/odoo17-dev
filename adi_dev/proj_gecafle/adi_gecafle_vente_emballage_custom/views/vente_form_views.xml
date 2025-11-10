@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue formulaire héritée pour ajouter les nouveaux champs -->
+    <record id="view_gecafle_vente_form_inherit_emballage_custom" model="ir.ui.view">
+        <field name="name">gecafle.vente.form.inherit.emballage.custom</field>
+        <field name="model">gecafle.vente</field>
+        <field name="inherit_id" ref="adi_gecafle_ventes.view_gecafle_vente_form"/>
+<!--        <field name="priority">99</field>-->
+        <field name="arch" type="xml">
+
+
+<!--            <xpath expr="//field[@name='total_poids_net']" position="after">-->
+<!--                <field name="poids_unitaire_moyen_global"-->
+<!--                       string="Poids unitaire moyen/colis"-->
+<!--                       optional="show"-->
+<!--                       readonly="1"/>-->
+<!--            </xpath>-->
+
+            <!-- CORRECTION : Utiliser le bon nom de champ
+<xpath expr="//field[@name='total_poids_net']" position="after">
+                <field name="poids_unitaire_moyen_global"
+                       string="Poids unitaire moyen/colis"
+                       optional="show"
+                       readonly="1"/>
+            </xpath>
+             -->
+
+
+            <!-- Modifier les colonnes du tree des detail_vente_ids -->
+            <xpath expr="//field[@name='detail_vente_ids']//tree//field[@name='nombre_colis']" position="after">
+                <field name="force_comportement_emballage"
+                       string="R/NR"
+                       optional="show"/>
+
+            </xpath>
+
+            <xpath expr="//field[@name='detail_vente_ids']//tree//field[@name='poids_brut_un_colis']"
+                   position="replace">
+                <field name="poids_brut_un_colis" optional="show"/>
+                <field name="poids_unitaire_moyen" optional="show"/>
+            </xpath>
+
+
+            <!-- Ajouter après type_colis_id -->
+            <xpath expr="//field[@name='detail_vente_ids']//tree//field[@name='type_colis_id']" position="after">
+                <field name="prix_unitaire_colis"
+                       string="Prix unitaire colis"
+                       optional="show"/>
+
+                <field name="montant_colis"
+                       string="Montant colis"
+                       widget="monetary"
+                       optional="hide"
+                       readonly="1"/>
+
+
+                <field name="est_consigne"
+                       string="Consigné"
+                       widget="boolean"
+                       optional="show"
+                       readonly="1"/>
+            </xpath>
+
+            <!-- Modifier l'attribut du champ prix_colis s'il existe -->
+            <xpath expr="//field[@name='detail_vente_ids']//tree//field[@name='prix_colis']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+
+        <!-- Form view -->
+        <record id="view_depense_form" model="ir.ui.view">
+            <field name="name">depense.form</field>
+            <field name="model">depenses.depense</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <field name="date"/>
+                            <field name="montant"/>
+                            <field name="categorie"/>
+                            <field name="description"/>
+                            <field name="region" groups ="adi_expenses.group_view_all_expenses" readonly="1"/>
+                            <field name="user_id" groups ="adi_expenses.group_view_all_expenses" readonly="1"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- List view -->
+        <record id="view_depense_tree" model="ir.ui.view">
+            <field name="name">depense.tree</field>
+            <field name="model">depenses.depense</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="date"/>
+                    <field name="montant"/>
+                    <field name="categorie"/>
+                    <field name="description"/>
+                    <field name="region" groups ="adi_expenses.group_view_all_expenses" readonly="1"/>
+                    <field name="user_id" groups ="adi_expenses.group_view_all_expenses" readonly="1"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Graph view -->
+        <record id="view_depense_graph" model="ir.ui.view">
+            <field name="name">depense.graph</field>
+            <field name="model">depenses.depense</field>
+            <field name="arch" type="xml">
+                <graph>
+                    <field name="date" type="row"/>
+                    <field name="montant" type="measure"/>
+                    <field name="categorie" type="col"/>
+                </graph>
+            </field>
+        </record>
+
+        <!-- Pivot view -->
+        <record id="view_depense_pivot" model="ir.ui.view">
+            <field name="name">depense.pivot</field>
+            <field name="model">depenses.depense</field>
+            <field name="arch" type="xml">
+                <pivot>
+                    <field name="date" type="row"/>
+                    <field name="montant" type="measure"/>
+                    <field name="categorie" type="col"/>
+                    <field name="region" type="col"/>
+                </pivot>
+            </field>
+        </record>
+
+        <!-- Vue de recherche pour Dépenses -->
+        <record id="view_depense_search" model="ir.ui.view">
+            <field name="name">depense.search</field>
+            <field name="model">depenses.depense</field>
+            <field name="arch" type="xml">
+                <search>
+                    <!-- Filtres de recherche -->
+                    <field name="categorie"/>
+                    <field name="region"/>
+                    <field name="description"/>
+                    <field name="user_id"/>
+
+                    <!-- Groupements -->
+                    <filter string="Par Catégorie" name="group_by_categorie" context="{'group_by':'categorie'}"/>
+                    <filter string="Par Région" name="group_by_region" context="{'group_by':'region'}"/>
+                    <filter string="Par Utilisateur" name="group_by_user" context="{'group_by':'user_id'}"/>
+                    <filter string="Par Date" name="group_by_date" context="{'group_by':'date'}"/>
+                    <filter string="Par Description" name="group_by_description" context="{'group_by':'description'}"/>
+
+                </search>
+            </field>
+        </record>
+
+        <!-- Action et vues -->
+        <record id="action_depenses" model="ir.actions.act_window">
+            <field name="name">Dépenses</field>
+            <field name="res_model">depenses.depense</field>
+            <field name="view_mode">tree,form,graph,pivot</field>
+            <field name="search_view_id" ref="view_depense_search"/>
+        </record>
+
+        <!-- Action and Menu Item -->
+        <record id="action_depenses" model="ir.actions.act_window">
+            <field name="name">Dépenses</field>
+            <field name="res_model">depenses.depense</field>
+            <field name="view_mode">tree,form,graph,pivot</field>
+        </record>
+
+
+        <!-- Menu Principal avec icône -->
+        <menuitem id="menu_depenses_root"
+                  name="Gestion des Dépenses"
+                  web_icon="adi_expenses,static/description/expenses.png"
+        /> <!-- ou une icône personnalisée -->
+
+        <menuitem id="menu_depenses"
+                  name="Dépenses"
+                  parent="menu_depenses_root"
+                  action="action_depenses"/>
+
+    </data>
+</odoo>

@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue Graphique par Produit -->
+    <record id="view_statistiques_graph_produit" model="ir.ui.view">
+        <field name="name">gecafle.statistiques.graph.produit</field>
+        <field name="model">gecafle.statistiques.ventes</field>
+        <field name="arch" type="xml">
+            <graph string="Ventes par Produit" type="bar" stacked="False">
+                <field name="produit_id" type="row"/>
+                <field name="montant_total" type="measure"/>
+                <field name="poids_total" type="measure"/>
+                <field name="nombre_colis" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Vue Graphique par Producteur (Pie Chart) -->
+    <record id="view_statistiques_graph_producteur" model="ir.ui.view">
+        <field name="name">gecafle.statistiques.graph.producteur</field>
+        <field name="model">gecafle.statistiques.ventes</field>
+        <field name="arch" type="xml">
+            <graph string="Ventes par Producteur" type="pie">
+                <field name="producteur_id"/>
+                <field name="montant_total" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Vue Graphique Évolution temporelle -->
+    <record id="view_statistiques_graph_timeline" model="ir.ui.view">
+        <field name="name">gecafle.statistiques.graph.timeline</field>
+        <field name="model">gecafle.statistiques.ventes</field>
+        <field name="arch" type="xml">
+            <graph string="Évolution des ventes" type="line">
+                <field name="date_vente" interval="day" type="row"/>
+                <field name="montant_total" type="measure"/>
+                <field name="montant_commission" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Vue Pivot pour analyses multidimensionnelles -->
+    <record id="view_statistiques_pivot" model="ir.ui.view">
+        <field name="name">gecafle.statistiques.pivot</field>
+        <field name="model">gecafle.statistiques.ventes</field>
+        <field name="arch" type="xml">
+            <pivot string="Analyse des Ventes">
+                <field name="date_vente" interval="month" type="col"/>
+                <field name="producteur_id" type="row"/>
+                <field name="produit_id" type="row"/>
+                <field name="montant_total" type="measure"/>
+                <field name="poids_total" type="measure"/>
+                <field name="nombre_colis" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Vue Liste avec agrégations -->
+    <record id="view_statistiques_tree" model="ir.ui.view">
+        <field name="name">gecafle.statistiques.tree</field>
+        <field name="model">gecafle.statistiques.ventes</field>
+        <field name="arch" type="xml">
+            <tree string="Statistiques Ventes">
+                <field name="date_vente"/>
+                <field name="producteur_id"/>
+                <field name="produit_id"/>
+                <field name="qualite_id" optional="show"/>
+                <field name="nombre_colis" sum="Total colis"/>
+                <field name="poids_total" sum="Total poids" avg="Moyenne"/>
+                <field name="montant_total" sum="Total" widget="monetary"/>
+                <field name="montant_commission" sum="Total" widget="monetary"
+                       groups="adi_gecafle_ventes.group_gecafle_direction"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vue Recherche avec filtres CORRIGÉS -->
+    <record id="view_statistiques_search" model="ir.ui.view">
+        <field name="name">gecafle.statistiques.search</field>
+        <field name="model">gecafle.statistiques.ventes</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="producteur_id"/>
+                <field name="produit_id"/>
+                <field name="date_vente"/>
+
+                <!-- Filtres rapides CORRIGÉS pour Odoo 17 -->
+
+                <!-- Filtres par date -->
+                <filter string="Aujourd'hui" name="filter_today"
+                        domain="[('date_vente','&gt;=',context_today().strftime('%Y-%m-%d'))]"/>
+                <filter string="Cette semaine" name="filter_week"
+                        domain="[('date_vente','&gt;=',(context_today() - datetime.timedelta(days=7)).strftime('%Y-%m-%d'))]"/>
+
+                <filter string="Ce mois"
+                        name="this_month"
+                        date="date_vente"
+                        default_period="this_month"/>
+              <!--
+              -->
+
+                <separator/>
+
+                <!-- Groupements -->
+                <group expand="0" string="Grouper par">
+                    <filter string="Producteur" name="group_producteur"
+                            context="{'group_by': 'producteur_id'}"/>
+                    <filter string="Produit" name="group_produit"
+                            context="{'group_by': 'produit_id'}"/>
+                    <filter string="Qualité" name="group_qualite"
+                            context="{'group_by': 'qualite_id'}"/>
+                    <filter string="Date (Mois)" name="group_date"
+                            context="{'group_by': 'date_vente:month'}"/>
+                    <filter string="Date (Semaine)" name="group_date_week"
+                            context="{'group_by': 'date_vente:week'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Actions pour chaque vue -->
+    <record id="action_dashboard" model="ir.actions.act_window">
+        <field name="name">Tableau de bord</field>
+        <field name="res_model">gecafle.statistiques.ventes</field>
+        <field name="view_mode">graph,pivot,tree</field>
+        <field name="context">{'search_default_this_month': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Aucune donnée de vente pour cette période
+            </p>
+        </field>
+    </record>
+
+    <record id="action_stat_produit" model="ir.actions.act_window">
+        <field name="name">Statistiques par Produit</field>
+        <field name="res_model">gecafle.statistiques.ventes</field>
+        <field name="view_mode">graph,pivot,tree</field>
+        <field name="view_id" ref="view_statistiques_graph_produit"/>
+        <field name="context">{'search_default_group_produit': 1}</field>
+    </record>
+
+    <record id="action_stat_producteur" model="ir.actions.act_window">
+        <field name="name">Statistiques par Producteur</field>
+        <field name="res_model">gecafle.statistiques.ventes</field>
+        <field name="view_mode">graph,pivot,tree</field>
+        <field name="view_id" ref="view_statistiques_graph_producteur"/>
+        <field name="context">{'search_default_group_producteur': 1}</field>
+    </record>
+
+    <record id="action_stat_periode" model="ir.actions.act_window">
+        <field name="name">Statistiques par Période</field>
+        <field name="res_model">gecafle.statistiques.ventes</field>
+        <field name="view_mode">graph,pivot,tree</field>
+        <field name="view_id" ref="view_statistiques_graph_timeline"/>
+        <field name="context">{'search_default_group_date': 1}</field>
+    </record>
+</odoo>

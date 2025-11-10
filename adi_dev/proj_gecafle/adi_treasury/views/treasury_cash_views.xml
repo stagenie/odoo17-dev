@@ -1,0 +1,404 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Vue Tree pour les caisses -->
+    <record id="view_treasury_cash_tree" model="ir.ui.view">
+        <field name="name">treasury.cash.tree</field>
+        <field name="model">treasury.cash</field>
+        <field name="arch" type="xml">
+            <tree string="Caisses"
+                  decoration-muted="state == 'locked'"
+                  decoration-warning="state == 'closed'"
+                  decoration-danger="days_since_closing &gt; auto_close_days and auto_close_days &gt; 0 and require_closing == True">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="current_balance"
+                       decoration-danger="current_balance &lt; 0"
+                       decoration-success="current_balance &gt; 0"
+                       sum="Total"/>
+                <field name="currency_id" groups="base.group_multi_currency"/>
+                <field name="responsible_id" widget="many2one_avatar_user"/>
+                <field name="location" optional="show"/>
+                <field name="state"
+                       widget="badge"
+                       decoration-success="state == 'open'"
+                       decoration-warning="state == 'closed'"
+                       decoration-danger="state == 'locked'"/>
+                <field name="days_since_closing"
+                       string="Jours"
+                       decoration-danger="days_since_closing &gt; auto_close_days and auto_close_days &gt; 0 and require_closing == True"/>
+                <field name="last_closing_date" optional="hide"/>
+                <field name="company_id" groups="base.group_multi_company" optional="show"/>
+                <!-- Champs invisibles nécessaires pour les conditions -->
+                <field name="auto_close_days" column_invisible="True"/>
+                <field name="require_closing" column_invisible="True"/>
+                <field name="active" column_invisible="True"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vue Form pour les caisses -->
+    <record id="view_treasury_cash_form" model="ir.ui.view">
+        <field name="name">treasury.cash.form</field>
+        <field name="model">treasury.cash</field>
+        <field name="arch" type="xml">
+            <form string="Caisse">
+                <header>
+                    <button name="action_open"
+                            type="object"
+                            string="Ouvrir"
+                            class="oe_highlight"
+                            invisible="state == 'open'"/>
+                    <button name="action_close_temporary"
+                            type="object"
+                            string="Fermer temporairement"
+                            invisible="state != 'open'"/>
+                    <button name="action_lock"
+                            type="object"
+                            string="Verrouiller"
+                            confirm="Êtes-vous sûr de vouloir verrouiller cette caisse ?"
+                            invisible="state == 'locked'"
+                            groups="base.group_system"/>
+                    <field name="state" widget="statusbar" statusbar_visible="open,closed,locked"/>
+                </header>
+                <sheet>
+                    <field name="last_closing_id" invisible="1"/>
+                    <widget name="web_ribbon" title="Archivé" bg_color="bg-danger" invisible="active == True"/>
+                    <widget name="web_ribbon" title="Verrouillé" bg_color="bg-warning" invisible="state != 'locked'"/>
+                    <div class="oe_button_box" name="button_box">
+                        <!-- Bouton pour accéder au journal -->
+                        <button name="action_view_journal"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-book"
+                                invisible="not journal_id">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_text">Journal</span>
+                            </div>
+                        </button>
+
+                        <!-- Bouton transferts -->
+                        <!-- Ajouter après le bouton "Nouvelle Opération" -->
+                        <button name="action_initialize_balance"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-balance-scale"
+                                invisible="current_balance != 0 or state != 'open'"
+                                help="Initialiser le solde de départ de la caisse">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Initialiser</span>
+                                <span class="o_stat_text">Solde</span>
+                            </div>
+                        </button>
+
+                        <button name="action_view_transfers"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-exchange">
+                            <field name="transfer_count" widget="statinfo" string="Transferts"/>
+                        </button>
+
+                        <!-- Bouton nouvelle opération -->
+                        <button name="action_create_operation"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-plus"
+                                invisible="state != 'open'">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Nouvelle</span>
+                                <span class="o_stat_text">Opération</span>
+                            </div>
+                        </button>
+
+
+                        <!-- Bouton nouvelle clôture -->
+                        <button name="action_create_closing"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-check-square-o"
+                                invisible="state != 'open'">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Nouvelle</span>
+                                <span class="o_stat_text">Clôture</span>
+                            </div>
+                        </button>
+
+                        <!-- Ajouter ce bouton dans la div button_box après le bouton des transferts -->
+                        <button name="action_view_closings"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-check-square-o">
+                            <field name="closing_count" widget="statinfo" string="Clôtures"/>
+                        </button>
+
+
+                    </div>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" placeholder="Nom de la caisse" readonly="state == 'locked'"/>
+                        </h1>
+                        <group>
+                            <field name="code" readonly="state == 'locked'"/>
+                        </group>
+                    </div>
+                    <group>
+                        <group string="Informations générales">
+                            <field name="currency_id" options="{'no_create': True}" readonly="state == 'locked'"/>
+                            <field name="responsible_id" widget="many2one_avatar_user" readonly="state == 'locked'"/>
+                            <field name="location" readonly="state == 'locked'"/>
+                            <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
+                            <field name="journal_id"
+                                   options="{'no_create': False, 'no_open': True}"
+                                   readonly="state == 'locked'"
+                                   required="1"
+                                   context="{'default_type': 'cash', 'default_name': name}"/>
+                        </group>
+                        <group string="Soldes">
+                            <field name="current_balance" class="text-bold"/>
+                            <field name="last_closing_balance" invisible="not last_closing_date"/>
+                            <field name="max_amount" readonly="state == 'locked'"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Configuration de clôture">
+                            <field name="require_closing" readonly="state == 'locked'"/>
+                            <field name="auto_close_days" readonly="state == 'locked'" invisible="not require_closing"/>
+                            <field name="last_closing_date" invisible="not last_closing_date"/>
+                            <field name="days_since_closing" invisible="not require_closing"/>
+                        </group>
+                        <group string="Dates">
+                            <field name="opening_date" readonly="state == 'locked'"/>
+                            <field name="create_date" string="Date de création" readonly="1"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Utilisateurs autorisés" name="users">
+                            <field name="user_ids" widget="many2many_tags" options="{'no_create': True}"
+                                   readonly="state == 'locked'">
+                                <tree>
+                                    <field name="name"/>
+                                    <field name="login"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Opérations" name="operations">
+                            <field name="operation_ids" readonly="1">
+                                <tree decoration-success="operation_type == 'in'"
+                                      decoration-danger="operation_type == 'out'">
+                                    <field name="name"/>
+                                    <field name="date"/>
+                                    <field name="operation_type"/>
+                                    <field name="category_id"/>
+                                    <field name="amount" sum="Total"/>
+                                    <field name="state" widget="badge"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Clôtures" name="closings">
+                            <field name="closing_ids" readonly="1">
+                                <tree>
+                                    <field name="name"/>
+                                    <field name="closing_date"/>
+                                    <field name="closing_number"/>
+                                    <field name="balance_start" widget="monetary"/>
+                                    <field name="balance_end_real" widget="monetary"/>
+                                    <field name="difference" widget="monetary" decoration-danger="difference != 0"/>
+                                    <field name="state" widget="badge"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Notes" name="notes">
+                            <field name="notes" placeholder="Ajoutez des notes internes..."
+                                   readonly="state == 'locked'"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <!--                <chatter/>-->
+            </form>
+        </field>
+    </record>
+
+    <!-- Vue Kanban pour les caisses -->
+    <record id="view_treasury_cash_kanban" model="ir.ui.view">
+        <field name="name">treasury.cash.kanban</field>
+        <field name="model">treasury.cash</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_dashboard">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="current_balance"/>
+                <field name="currency_id"/>
+                <field name="state"/>
+                <field name="responsible_id"/>
+                <field name="days_since_closing"/>
+                <field name="auto_close_days"/>
+                <field name="require_closing"/>
+                <field name="color"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="#{!selection_mode ? kanban_color(record.color.raw_value) : ''} oe_kanban_global_click">
+                            <div class="o_kanban_card_header">
+                                <div class="o_kanban_card_header_title">
+                                    <div class="o_primary">
+                                        <strong>
+                                            <field name="name"/>
+                                        </strong>
+                                    </div>
+                                    <div class="o_secondary">
+                                        <span class="badge badge-pill">
+                                            <t t-if="record.state.raw_value == 'open'" t-set="badge_class"
+                                               t-value="'badge-success'"/>
+                                            <t t-elif="record.state.raw_value == 'closed'" t-set="badge_class"
+                                               t-value="'badge-warning'"/>
+                                            <t t-else="" t-set="badge_class" t-value="'badge-danger'"/>
+                                            <span t-att-class="badge_class">
+                                                <field name="state"/>
+                                            </span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="container o_kanban_card_content">
+                                <div class="row">
+                                    <div class="col-12 text-center">
+                                        <h2 class="mt-0 mb-1">
+                                            <field name="current_balance" widget="monetary"/>
+                                        </h2>
+                                        <p class="text-muted">
+                                            <i class="fa fa-user"/>
+                                            <field name="responsible_id"/>
+                                        </p>
+                                    </div>
+                                </div>
+                                <div t-if="record.days_since_closing.raw_value > record.auto_close_days.raw_value and record.auto_close_days.raw_value > 0 and record.require_closing.raw_value"
+                                     class="row mt-2">
+                                    <div class="col-12">
+                                        <div class="alert alert-warning text-center p-1 mb-1">
+                                            <i class="fa fa-warning"/>
+                                            Clôture en retard (
+                                            <field name="days_since_closing"/>
+                                            jours)
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="o_kanban_card_actions mt-2">
+                                <!-- Bouton existant modifié -->
+                                <a name="action_view_closings"
+                                   type="object" class="btn btn-sm btn-secondary">
+                                    <i class="fa fa-check-square-o"/>
+                                    Toutes les clôtures
+                                </a>
+
+                                <!-- NOUVEAU BOUTON pour clôtures en cours -->
+                                <a name="action_view_pending_closings" type="object" class="btn btn-sm btn-primary">
+                                    <i class="fa fa-clock-o"/>
+                                    Clôtures en cours
+                                </a>
+                            </div>
+                            <div class="container o_kanban_card_manage_pane dropdown-menu" role="menu">
+                                <div class="row">
+                                    <div class="col-12 text-center">
+                                        <strong>Code :</strong>
+                                        <field name="code"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+
+    <!-- Vue Search pour les caisses -->
+    <record id="view_treasury_cash_search" model="ir.ui.view">
+        <field name="name">treasury.cash.search</field>
+        <field name="model">treasury.cash</field>
+        <field name="arch" type="xml">
+            <search string="Rechercher une caisse">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="responsible_id"/>
+                <field name="location"/>
+                <separator/>
+                <filter string="Ouvertes" name="open" domain="[('state', '=', 'open')]"/>
+                <filter string="Fermées" name="closed" domain="[('state', '=', 'closed')]"/>
+                <filter string="Verrouillées" name="locked" domain="[('state', '=', 'locked')]"/>
+                <separator/>
+                <filter string="Clôture en retard" name="closing_late"
+                        domain="[('days_since_closing', '>', 'auto_close_days'), ('auto_close_days', '>', 0), ('require_closing', '=', True)]"/>
+                <separator/>
+                <filter string="Archivées" name="archived" domain="[('active', '=', False)]"/>
+                <group expand="0" string="Grouper par">
+                    <filter string="État" name="group_state" context="{'group_by': 'state'}"/>
+                    <filter string="Responsable" name="group_responsible" context="{'group_by': 'responsible_id'}"/>
+                    <filter string="Devise" name="group_currency" context="{'group_by': 'currency_id'}"
+                            groups="base.group_multi_currency"/>
+                    <filter string="Société" name="group_company" context="{'group_by': 'company_id'}"
+                            groups="base.group_multi_company"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Vue Pivot pour analyse -->
+    <record id="view_treasury_cash_pivot" model="ir.ui.view">
+        <field name="name">treasury.cash.pivot</field>
+        <field name="model">treasury.cash</field>
+        <field name="arch" type="xml">
+            <pivot string="Analyse des caisses">
+                <field name="responsible_id" type="row"/>
+                <field name="state" type="col"/>
+                <field name="current_balance" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Vue Graph pour visualisation -->
+    <record id="view_treasury_cash_graph" model="ir.ui.view">
+        <field name="name">treasury.cash.graph</field>
+        <field name="model">treasury.cash</field>
+        <field name="arch" type="xml">
+            <graph string="Soldes des caisses" type="bar">
+                <field name="name" type="row"/>
+                <field name="current_balance" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Action pour les caisses -->
+    <record id="action_treasury_cash" model="ir.actions.act_window">
+        <field name="name">Caisses</field>
+        <field name="res_model">treasury.cash</field>
+        <field name="view_mode">kanban,tree,form,pivot,graph</field>
+        <field name="search_view_id" ref="view_treasury_cash_search"/>
+        <field name="context">{'search_default_open': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créer votre première caisse
+            </p>
+            <p>
+                Les caisses permettent de gérer votre trésorerie au quotidien.
+                <br/>
+                Vous pourrez ensuite effectuer des transferts entre caisses et enregistrer toutes les opérations.
+            </p>
+        </field>
+    </record>
+
+</odoo>
+
+        <!-- Compteur d'opérations
+                               <button name="%(adi_treasury.action_treasury_cash_operation)d"
+                                       type="action"
+                                       class="oe_stat_button"
+                                       icon="fa-list"
+                                       context="{'search_default_cash_id': id}">
+                                   <field name="operation_count" widget="statinfo" string="Opérations"/>
+                               </button>
+
+
+                               -->

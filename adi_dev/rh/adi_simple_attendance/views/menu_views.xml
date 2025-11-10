@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Menu principal -->
+    <menuitem id="menu_attendance_root"
+              name="Adi Pointage"
+              sequence="50"
+              web_icon="adi_simple_attendance,static/description/icon.png"/>
+
+    <!-- Sous-menu -->
+    <menuitem id="menu_attendance_daily"
+              name="Pointages quotidiens"
+              parent="menu_attendance_root"
+              action="action_attendance_daily"
+              sequence="10"/>
+</odoo>

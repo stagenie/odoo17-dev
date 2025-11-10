@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Form View -->
+    <record id="view_gecafle_emballage_form" model="ir.ui.view">
+        <field name="name">gecafle.emballage.form</field>
+        <field name="model">gecafle.emballage</field>
+        <field name="arch" type="xml">
+            <form string="Emballage">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="weight"/>
+                            <field name="price_unit" widget="monetary"/>
+                        </group>
+                        <group>
+                            <field name="non_returnable" widget="boolean_toggle"/>
+                            <field name="quantity_initial"/>
+                            <field name="creation_date"/>
+                            <field name="quantity_available"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    
+    <!-- Tree View - MODIFIÉ: list → tree -->
+    <record id="view_gecafle_emballage_tree" model="ir.ui.view">
+        <field name="name">gecafle.emballage.tree</field>
+        <field name="model">gecafle.emballage</field>
+        <field name="arch" type="xml">
+            <tree string="Emballages">
+                <field name="name"/>
+                <field name="weight"/>
+                <field name="price_unit"/>
+                <field name="non_returnable"/>
+                <field name="quantity_available"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="view_gecafle_emballage_search" model="ir.ui.view">
+        <field name="name">gecafle.emballage.search</field>
+        <field name="model">gecafle.emballage</field>
+        <field name="arch" type="xml">
+            <search string="Recherche Emballages">
+                <field name="name"/>
+                <filter string="Non rendu" name="non_returnable" domain="[('non_returnable', '=', True)]"/>
+                <filter string="Disponible" name="available" domain="[('quantity_available', '>', 0)]"/>
+                <filter string="Non-Disponible" name="not_available" domain="[('quantity_available', '&lt;=', 0)]"/>
+                <group expand="0" string="Regrouper Par">
+                    <filter string="Non rendu" name="group_by_non_returnable" context="{'group_by': 'non_returnable'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+</odoo>

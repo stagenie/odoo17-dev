@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue Tree pour les catégories -->
+    <record id="view_treasury_operation_category_tree" model="ir.ui.view">
+        <field name="name">treasury.operation.category.tree</field>
+        <field name="model">treasury.operation.category</field>
+        <field name="arch" type="xml">
+            <tree string="Catégories d'opérations">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="operation_type"/>
+                <field name="is_customer_payment" optional="show"/>
+                <field name="is_vendor_payment" optional="show"/>
+                <field name="active" widget="boolean_toggle"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vue Form pour les catégories -->
+    <record id="view_treasury_operation_category_form" model="ir.ui.view">
+        <field name="name">treasury.operation.category.form</field>
+        <field name="model">treasury.operation.category</field>
+        <field name="arch" type="xml">
+            <form string="Catégorie d'opération">
+                <sheet>
+                    <widget name="web_ribbon" title="Archivé" bg_color="bg-danger" invisible="active"/>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="code"/>
+                            <field name="operation_type" widget="radio"/>
+                        </group>
+                        <group>
+                            <field name="sequence"/>
+                            <field name="active" invisible="1"/>
+                            <field name="is_customer_payment"/>
+                            <field name="is_vendor_payment"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action pour les catégories -->
+    <record id="action_treasury_operation_category" model="ir.actions.act_window">
+        <field name="name">Catégories d'opérations</field>
+        <field name="res_model">treasury.operation.category</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créer une catégorie d'opération
+            </p>
+            <p>
+                Les catégories permettent de classifier les entrées et sorties de caisse.
+            </p>
+        </field>
+    </record>
+</odoo>

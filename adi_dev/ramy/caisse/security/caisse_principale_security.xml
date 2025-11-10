@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<data >
+
+	<record id="caisse.group_caisse" model="res.groups">
+		<field name="name">Caisse Group</field>
+		<field name="category_id" ref="base.module_category_hidden"/>
+		
+	</record>
+
+	<record id="caisse.group_caisse_centrale" model="res.groups">
+		<field name="name">Caisse central group</field>
+		<field name="category_id" ref="base.module_category_hidden"/>
+		
+	</record>
+
+	<record id="caisse_centrale_users_rule" model="ir.rule">
+		<field name="name">caisse centrale users rule</field>
+		<field search="[('model','=','caisse')]" model="ir.model" name="model_id"/>
+		<field name="domain_force">[('type_caisse','!=','central')]</field>
+		<field name="groups" eval="[(4, ref('caisse.group_caisse'))]"/>
+	</record>
+
+</data>
+</odoo>

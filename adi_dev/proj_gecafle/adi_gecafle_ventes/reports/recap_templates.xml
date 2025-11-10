@@ -1,0 +1,331 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Template de base sans commissions -->
+    <template id="report_reception_recap">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <t t-set="company" t-value="doc.company_id"/>
+
+                    <!-- Récupération des lignes (avec protection) -->
+                    <t t-set="recap_lines" t-value="doc.recap_line_ids or []"/>
+                    <t t-set="sorted_lines"
+                       t-value="doc.recap_line_ids.sorted(lambda x: x.qualite_id.classification or '')"/>
+
+                    <!-- Tentative de tri sécurisée
+                    <t t-set="sorted_lines" t-value="recap_lines"/>
+
+                    -->
+
+
+                    <div class="page">
+                        <!-- Titre et en-tête -->
+                        <h2 class="text-center mb-4">BORDEREAU RÉCAPITULATIF DES VENTES</h2>
+
+                        <div class="row mb-4">
+                            <div class="col-6">
+                                <strong>Producteur:</strong>
+                                <t t-if="doc.producteur_id">
+                                    <span t-field="doc.producteur_id.name"/>
+                                </t>
+                                <t t-else="">
+                                    <span>Non défini</span>
+                                </t>
+                            </div>
+                            <div class="col-6 text-right">
+                                <strong>Folio (N° de Réception):</strong>
+                                <t t-if="doc.reception_id">
+                                    <span t-field="doc.reception_id.name"/>
+                                </t>
+                                <t t-else="">
+                                    <span>Non défini</span>
+                                </t>
+                            </div>
+                        </div>
+
+                        <!-- Tableau des lignes récapitulatives -->
+                        <table class="table table-sm table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Produit</th>
+                                    <th>Qualité</th>
+                                    <th>Type Colis</th>
+                                    <th>Nombre Colis</th>
+                                    <th>Poids Net</th>
+                                    <th>Prix/Unitaire</th>
+                                    <th class="text-right">Montant Vente</th>
+                                    <th class="text-right">Commission</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="sorted_lines" t-as="line">
+                                    <td>
+                                        <t t-if="line.produit_id">
+                                            <span t-field="line.produit_id.name"/>
+                                        </t>
+                                    </td>
+                                    <td>
+                                        <t t-if="line.qualite_id">
+                                            <span t-field="line.qualite_id.name"/>
+                                        </t>
+                                    </td>
+                                    <td>
+                                        <t t-if="line.type_colis_id">
+                                            <span t-field="line.type_colis_id.name"/>
+                                        </t>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-field="line.nombre_colis"/>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-field="line.poids_net"/>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-field="line.prix_unitaire"/>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-field="line.montant_vente"/>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-field="line.montant_commission"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- Tableau des totaux -->
+                        <div class="row">
+                            <div class="col-7">
+                                <!-- Espace vide à gauche -->
+                            </div>
+                            <div class="col-5">
+                                <table class="table table-sm">
+                                    <tr>
+                                        <td class="text-right">
+                                            <strong>Total Ventes:</strong>
+                                        </td>
+                                        <td class="text-right">
+                                            <span t-field="doc.total_ventes"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-right">
+                                            <strong>Total Commission:</strong>
+                                        </td>
+                                        <td class="text-right">
+                                            <span t-field="doc.total_commission"/>
+                                        </td>
+                                    </tr>
+                                    <tr class="border-top">
+                                        <td class="text-right">
+                                            <strong>Net à Payer:</strong>
+                                        </td>
+                                        <td class="text-right">
+                                            <strong>
+                                                <span t-field="doc.net_a_payer"/>
+                                            </strong>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Date et signature -->
+                        <div class="row mt-5">
+                            <div class="col-6">
+                                <p>Date:
+                                    <span t-field="doc.date_creation"/>
+                                </p>
+                            </div>
+                            <div class="col-6 text-right">
+                                <p>Signature: _______________________</p>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <!-- Template avec commissions -->
+    <template id="report_reception_recap_with_commission">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <t t-set="company" t-value="doc.company_id"/>
+
+                    <!-- Récupération des lignes (avec protection) -->
+                    <t t-set="recap_lines" t-value="doc.recap_line_ids or []"/>
+
+                    <t t-set="sorted_lines"
+                       t-value="doc.recap_line_ids.sorted(lambda x: x.qualite_id.classification or '')"/>
+                    <!-- Tentative de tri sécurisée
+                      <t t-set="sorted_lines" t-value="recap_lines"/>
+                     -->
+
+
+                    <!-- Valeurs par défaut pour les marges -->
+                    <t t-set="fruit_margin" t-value="doc.producteur_id.fruit_margin if doc.producteur_id else 0"/>
+                    <t t-set="vegetable_margin"
+                       t-value="doc.producteur_id.vegetable_margin if doc.producteur_id else 0"/>
+
+                    <div class="page">
+                        <!-- Titre et en-tête -->
+                        <h2 class="text-center mb-4">BORDEREAU RÉCAPITULATIF DES VENTES</h2>
+
+                        <div class="row mb-4">
+                            <div class="col-6">
+                                <strong>Producteur:</strong>
+                                <t t-if="doc.producteur_id">
+                                    <span t-field="doc.producteur_id.name"/>
+                                </t>
+                                <t t-else="">
+                                    <span>Non défini</span>
+                                </t>
+                            </div>
+                            <div class="col-6 text-right">
+                                <strong>Folio (N° de Réception):</strong>
+                                <t t-if="doc.reception_id">
+                                    <span t-field="doc.reception_id.name"/>
+                                </t>
+                                <t t-else="">
+                                    <span>Non défini</span>
+                                </t>
+                            </div>
+                        </div>
+
+                        <!-- Tableau des lignes récapitulatives -->
+                        <table class="table table-sm table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Produit</th>
+                                    <th>Qualité</th>
+                                    <th>Type Colis</th>
+                                    <th>Nombre Colis</th>
+                                    <th>Poids Net</th>
+                                    <th>Prix/Unitaire</th>
+                                    <th class="text-right">Montant Vente</th>
+                                    <th class="text-right">Taux (%)</th>
+                                    <th class="text-right">Commission</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="sorted_lines" t-as="line">
+                                    <td>
+                                        <t t-if="line.produit_id">
+                                            <span t-field="line.produit_id.name"/>
+                                        </t>
+                                    </td>
+                                    <td>
+                                        <t t-if="line.qualite_id">
+                                            <span t-field="line.qualite_id.name"/>
+                                        </t>
+                                    </td>
+                                    <td>
+                                        <t t-if="line.type_colis_id">
+                                            <span t-field="line.type_colis_id.name"/>
+                                        </t>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-field="line.nombre_colis"/>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-field="line.poids_net"/>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-field="line.prix_unitaire"/>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-field="line.montant_vente"/>
+                                    </td>
+                                    <td class="text-right"><span t-field="line.taux_commission"/>%
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-field="line.montant_commission"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- Tableau des totaux et informations sur les marges -->
+                        <div class="row">
+                            <div class="col-7">
+                                <!-- Informations sur les marges -->
+                                <div class="mt-4">
+                                    <table class="table table-sm table-borderless">
+                                        <tr>
+                                            <td colspan="2">
+                                                <strong>Marges appliquées:</strong>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Fruits:</td>
+                                            <td>
+                                                <t t-esc="fruit_margin"/>
+                                                %
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Légumes:</td>
+                                            <td>
+                                                <t t-esc="vegetable_margin"/>
+                                                %
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="col-5">
+                                <table class="table table-sm">
+                                    <tr>
+                                        <td class="text-right">
+                                            <strong>Total Ventes:</strong>
+                                        </td>
+                                        <td class="text-right">
+                                            <span t-field="doc.total_ventes"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-right">
+                                            <strong>Total Commission:</strong>
+                                        </td>
+                                        <td class="text-right">
+                                            <span t-field="doc.total_commission"/>
+                                        </td>
+                                    </tr>
+                                    <tr class="border-top">
+                                        <td class="text-right">
+                                            <strong>Net à Payer:</strong>
+                                        </td>
+                                        <td class="text-right">
+                                            <strong>
+                                                <span t-field="doc.net_a_payer"/>
+                                            </strong>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Date et signature -->
+                        <div class="row mt-5">
+                            <div class="col-6">
+                                <p>Date:
+                                    <span t-field="doc.date_creation"/>
+                                </p>
+                            </div>
+                            <div class="col-6 text-right">
+                                <p>Signature: _______________________</p>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+
+
+
+
+</odoo>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <!-- Configuration par défaut -->
+    <record id="default_server_config" model="server.control.config">
+        <field name="service_name">odoo17</field>
+        <field name="shutdown_delay">1</field>
+        <field name="reboot_delay">1</field>
+        <field name="enable_logging">True</field>
+    </record>
+</odoo>

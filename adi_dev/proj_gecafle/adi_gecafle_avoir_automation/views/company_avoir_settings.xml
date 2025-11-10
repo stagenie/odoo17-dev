@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_company_form_inherit_avoir_automation" model="ir.ui.view">
+        <field name="name">res.company.form.avoir.automation</field>
+        <field name="model">res.company</field>
+        <field name="inherit_id" ref="base.view_company_form"/>
+        <field name="priority" eval="20"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Automatisation Avoirs" name="avoir_automation">
+                    <group>
+                        <group string="Avoirs Clients">
+                            <field name="avoir_auto_validate"/>
+                            <field name="avoir_auto_create_credit_note"
+                                   invisible="not avoir_auto_validate"/>
+                            <field name="avoir_auto_post_credit_note"
+                                   invisible="not avoir_auto_create_credit_note"/>
+                            <field name="avoir_generer_producteurs_defaut"/>
+                        </group>
+                        <group string="Avoirs Producteurs">
+                            <field name="avoir_auto_validate_producteur"/>
+                            <field name="avoir_default_type"/>
+                            <field name="avoir_types_sans_producteur"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

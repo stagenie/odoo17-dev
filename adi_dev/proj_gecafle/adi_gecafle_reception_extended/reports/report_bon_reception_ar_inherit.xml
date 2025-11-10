@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Version avec tableau pour une meilleure présentation -->
+    <template id="report_bon_reception_content_ar_inherit_table"
+              inherit_id="adi_arabic_reports.report_bon_reception_content_ar">
+
+        <!-- Remplacer toute la section finale par un tableau structuré -->
+        <xpath expr="//div[@class='row mt-5']" position="replace">
+            <div class="row mt-5">
+                <div class="col-12">
+                    <table class="table table-sm" dir="rtl">
+                        <tbody>
+                            <tr>
+                                <td class="text-right border-0" width="25%">
+                                    <strong>المستخدم:</strong>
+                                </td>
+                                <td class="border-0" width="25%">
+                                    <span t-field="o.user_id.name"/>
+                                </td>
+                                <td class="text-right border-0" width="25%">
+                                    <strong>المبلغ المدفوع:</strong>
+                                </td>
+                                <td class="border-0" width="25%">
+                                    <span dir="ltr" style="display: inline-block;">
+                                        <span t-field="o.avance_producteur"
+                                              t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                    </span>
+                                </td>
+                            </tr>
+
+                            <!-- Transport et Emballages sur une nouvelle ligne si existent -->
+                            <tr t-if="(o.transport and o.transport > 0) or (o.montant_total_emballage_achete and o.montant_total_emballage_achete > 0)">
+                                <td class="text-right border-0">
+                                    <strong t-if="o.transport and o.transport > 0">مبلغ النقل:</strong>
+                                </td>
+                                <td class="border-0">
+                                    <t t-if="o.transport and o.transport > 0">
+                                        <span dir="ltr" style="display: inline-block;">
+                                            <span t-field="o.transport"
+                                                  t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                        </span>
+                                    </t>
+                                </td>
+                                <td class="text-right border-0">
+                                    <strong t-if="o.montant_total_emballage_achete and o.montant_total_emballage_achete > 0">العبوات المشتراة:</strong>
+                                </td>
+                                <td class="border-0">
+                                    <t t-if="o.montant_total_emballage_achete and o.montant_total_emballage_achete > 0">
+                                        <span dir="ltr" style="display: inline-block;">
+                                            <span t-field="o.montant_total_emballage_achete"
+                                                  t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                        </span>
+                                    </t>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </xpath>
+    </template>
+</odoo>

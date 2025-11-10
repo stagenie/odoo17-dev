@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<data>
+		<record id="view_caisse" model="ir.ui.view">
+			<field name="name">Transaction</field>
+			<field name="model">wizard.transaction</field>
+			<field name="arch" type="xml">
+				<form string="Transaction" >
+					
+					<group>
+						<group>
+							<field name="type_trans"  style="width:auto;" />
+							<field name="date" required="1"/>
+							<field name="effective_date" invisible="1"/>
+							<field name="montant" class="oe_inline" required="1"/>
+							<field name="amount_word_num" class="oe_inline"/>
+
+							
+							<field name="currency_id" invisible="1"/>
+						</group> 
+						
+						<group>
+							<field name="motif_dep_id" widget="selection" 
+								domain="[('type','=','out'),('avnc','=',False),('payment','=',False)]" 
+								invisible="type_trans != 'depense'" 
+								required="type_trans == 'depense'"/>
+							
+							<field name="motif_id" widget="selection" 
+								domain="[('type','=','in'),('avnc','=',False),('payment','=',False)]" 
+								invisible="type_trans != 'recette'" 
+								required="type_trans == 'recette'"/>
+							
+							<field name="motif_family_id" readonly="1" 
+								invisible="type_trans not in ('recette','depense')"/>
+							
+							<field name="motif_family_id" invisible="1"/>
+							<field name="type_payment" force_save="1" readonly="1" invisible="1"/>
+							<field name="user_id" readonly="1" required="1" 
+								domain="[('share', '=', False)]" widget="many2one_avatar_user"/>
+							<field name="company_id" groups="base.group_multi_company" 
+								options="{'no_create': True}" invisible="1"/>
+						</group>
+
+					 </group>
+					 <group>
+						<group>
+							<field name="res_partner_id" required="1"/>
+							<field name="demandeur_id" invisible="1"/>
+							<field name="collaborator_id" invisible="1"/>
+							
+						</group>
+						<group> 
+							<field name="ordonator_id" invisible="1"/>
+							<field name="beneficiary_id" invisible="1"/>
+							<field name="collaborator_ext_id" invisible="1"/>
+							<field name="structure_id" invisible="1"/>
+						</group>
+					 </group>
+					<group>
+						<!-- destination -->
+						<group invisible="type_trans != 'demande'">
+							<field name="destination" string="Depuis" class="oe_inline" style="width:auto;" 
+								domain="[('type_caisse.is_from','=',True),('state','=','open')]" 
+								required="type_trans == 'demande'"/> 
+							<label for="compte_destination" string="Compte" class="oe_inline" style="width:auto;"/> 
+							<div class="oe_inline">                                
+								<field name="compte_destination" class="oe_inline" style="width:auto;"/>
+							</div>
+						</group>
+						<group invisible="type_trans != 'recette'">
+							<field name="caisse_recette" domain="[('state','=','open')]" 
+								required="type_trans == 'recette'"/>
+							<field name="compte_caisse_recette"/>
+						</group>
+						<group invisible="type_trans != 'depense'">
+							<field name="caisse_depense" domain="[('state','=','open')]" 
+								force_save="1" invisible="1"/>
+							<field name="compte_caisse_depense" invisible="1"/>
+						</group>
+						<!-- source -->
+						<group invisible="type_trans != 'demande'">
+							<field name="source" string="Vers" class="oe_inline" style="width:auto;" 
+								domain="[('type_caisse.is_to','=',True),('state','=','open')]" 
+								required="type_trans == 'demande'"/> 
+							<field name="compte_source" class="oe_inline" style="width:auto;"/>
+						</group>
+					</group>
+					<group>
+						<field name="memo" invisible="type_trans == 'demande'"/>
+					</group>
+
+						<footer>
+								<button name="enregistrer" string="Enregistrer" type="object" class="oe_highlight"/>
+								or
+								<button string="Annuler" class="oe_link" special="cancel" />
+						</footer>
+
+				</form>
+			</field>
+		</record>
+
+			<record id="transaction_actions" model="ir.actions.act_window">
+				<field name="name">Transactions</field>
+				<field name="type">ir.actions.act_window</field>
+				<field name="res_model">wizard.transaction</field>
+				<field name="view_mode">form</field>
+				<field name="target">new</field>
+			</record>
+			 
+
+
+
+		 
+	</data>
+</odoo>

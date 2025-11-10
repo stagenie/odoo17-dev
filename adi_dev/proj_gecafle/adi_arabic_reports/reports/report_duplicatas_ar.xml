@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- ============ ACTIONS DUPLICATA POUR BON DE VENTE ============ -->
+
+    <!-- Action pour Duplicata Bon de Vente en Arabe -->
+    <record id="action_report_bon_vente_duplicata_ar" model="ir.actions.report">
+        <field name="name">وصل البيع - نسخة مكررة</field>
+        <field name="model">gecafle.vente</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_arabic_reports.report_bon_vente_document_ar</field>
+        <field name="report_file">adi_arabic_reports.report_bon_vente_duplicata_ar</field>
+        <field name="binding_model_id" ref="adi_gecafle_ventes.model_gecafle_vente"/>
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="base.paperformat_euro"/>
+        <field name="print_report_name">'نسخة مكررة - وصل البيع - %s' % (object.name)</field>
+    </record>
+
+    <!-- Action serveur pour imprimer le duplicata avec contexte -->
+    <record id="action_server_print_bon_vente_duplicata_ar" model="ir.actions.server">
+        <field name="name">طباعة نسخة مكررة</field>
+        <field name="model_id" ref="adi_gecafle_ventes.model_gecafle_vente"/>
+        <field name="binding_model_id" ref="adi_gecafle_ventes.model_gecafle_vente"/>
+        <field name="state">code</field>
+        <field name="code">
+if records:
+    action = env.ref('adi_arabic_reports.action_report_bon_vente_duplicata_ar').with_context(
+        is_duplicata=True
+    ).report_action(records)
+        </field>
+    </record>
+
+    <!-- ============ ACTIONS DUPLICATA POUR BON DE RÉCEPTION ============ -->
+
+    <!-- Action pour Duplicata Bon de Réception en Arabe -->
+    <record id="action_report_bon_reception_duplicata_ar" model="ir.actions.report">
+        <field name="name">وصل الاستلام - نسخة مكررة</field>
+        <field name="model">gecafle.reception</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_arabic_reports.report_bon_reception_template_ar</field>
+        <field name="report_file">adi_arabic_reports.report_bon_reception_duplicata_ar</field>
+        <field name="binding_model_id" ref="adi_gecafle_receptions.model_gecafle_reception"/>
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="adi_gecafle_receptions.paperformat_bon_reception_a5"/>
+        <field name="print_report_name">'نسخة مكررة - وصل الاستلام - %s' % (object.name or '').replace('/','-')</field>
+    </record>
+
+    <!-- Action serveur pour imprimer le duplicata de réception -->
+    <record id="action_server_print_bon_reception_duplicata_ar" model="ir.actions.server">
+        <field name="name">طباعة نسخة مكررة</field>
+        <field name="model_id" ref="adi_gecafle_receptions.model_gecafle_reception"/>
+        <field name="binding_model_id" ref="adi_gecafle_receptions.model_gecafle_reception"/>
+        <field name="state">code</field>
+        <field name="code">
+if records:
+    action = env.ref('adi_arabic_reports.action_report_bon_reception_duplicata_ar').with_context(
+        is_duplicata=True
+    ).report_action(records)
+        </field>
+    </record>
+</odoo>

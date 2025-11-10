@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="sarl" model="company.social.reason">
+        <field name="name">SARL</field>
+    </record>
+    <record id="eurl" model="company.social.reason">
+        <field name="name">EURL</field>
+    </record>
+
+    <record id="spa" model="company.social.reason">
+        <field name="name">SPA</field>
+    </record>
+
+    <record id="ets" model="company.social.reason">
+        <field name="name">ETS</field>
+    </record>
+
+    <record id="sa" model="company.social.reason">
+        <field name="name">SA</field>
+    </record>
+</odoo>

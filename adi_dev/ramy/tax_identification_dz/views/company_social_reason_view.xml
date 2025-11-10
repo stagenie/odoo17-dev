@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<data>
+		<record id="view_company_social_reason_tree" model="ir.ui.view">
+			<field name="name">View company social_reason tree</field>
+			<field name="model">company.social.reason</field>
+			<field name="arch" type="xml">
+				<tree string="Civilités et Formes juridiques">
+					<field name="name" required="1"/>
+				</tree>
+			</field>
+		</record>
+
+		<record id="action_company_social_reason" model="ir.actions.act_window">
+			<field name="name">Civilités et Formes juridiques</field>
+			<field name="res_model">company.social.reason</field>
+			<field name="view_mode">tree,form</field>
+			<field name="domain">[]</field>
+			<field name="context">{}</field>
+		</record>
+
+		<menuitem id="company_social_reason_menu" name="Civilités et Formes juridiques" parent="contacts.res_partner_menu_config" action="action_company_social_reason" sequence="1"
+        />
+	</data>
+</odoo>

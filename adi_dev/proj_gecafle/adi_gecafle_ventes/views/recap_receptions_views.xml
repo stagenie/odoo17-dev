@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_gecafle_reception_recap_form" model="ir.ui.view">
+        <field name="name">gecafle.reception.recap.form</field>
+        <field name="model">gecafle.reception.recap</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <!-- Ajout du badge de paiement dans le header -->
+                    <field name="payment_state"
+                           widget="badge"
+                           decoration-success="payment_state == 'paid'"
+                           decoration-warning="payment_state == 'partial'"
+                           decoration-danger="payment_state == 'not_paid'"
+                           invisible="state == 'brouillon'"/>
+
+                    <button name="action_validate" string="Valider" type="object"
+                            class="btn-primary" invisible="state != 'brouillon'"/>
+
+                    <!-- Boutons d'impression -->
+                    <button name="%(adi_gecafle_ventes.action_report_reception_recap)d"
+                            string="Imprimer Bordereau"
+                            type="action"
+                            class="btn-info"
+                            invisible="state == 'draft'"/>
+
+                    <button name="%(adi_gecafle_ventes.action_report_reception_recap_with_commission)d"
+                            string="Imprimer avec Marges"
+                            type="action"
+                            class="btn-secondary"
+                            invisible="state == 'draft'"/>
+
+                    <button name="%(adi_gecafle_ventes.action_report_reception_sale_details)d"
+                            string="Détails des Ventes"
+                            type="action"
+                            class="btn-info"
+                            invisible="state == 'draft'"/>
+
+                    <button name="%(adi_gecafle_ventes.action_report_reception_sale_details_with_commission)d"
+                            string="Détails avec Marges"
+                            type="action"
+                            class="btn-secondary"
+                            invisible="state == 'draft'"
+                            groups="adi_gecafle_ventes.group_gecafle_direction"/>
+
+                    <!-- Bouton pour créer une facture fournisseur -->
+                    <button name="action_create_vendor_invoice"
+                            string="Créer Facture Fournisseur"
+                            type="object"
+                            class="btn-success"
+                            invisible="state != 'valide' or invoice_count > 0"
+                            icon="fa-file-invoice"/>
+
+                    <field name="bon_achat_count" invisible="1"/>
+                    <field name="bon_achat_id" invisible="1"/>
+                    <field name="invoice_count" invisible="1"/>
+                    <field name="invoice_id" invisible="1"/>
+                    <field name="payment_state" invisible="1"/>
+
+                    <button name="action_view_bon_achat" type="object"
+                            class="oe_stat_button" icon="fa-file-text-o"
+                            invisible="bon_achat_count == 0">
+                        <div class="o_field_widget o_stat_info">
+                            <span class="o_stat_text">Bon d'Achat</span>
+                        </div>
+                    </button>
+
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="brouillon,valide,facture"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_reception" type="object"
+                                class="oe_stat_button" icon="fa-truck"
+                                string="Réception source"/>
+
+                        <!-- SmartButton pour la facture -->
+                        <button name="action_view_invoice" type="object"
+                                class="oe_stat_button"
+                                icon="fa-invoice"
+                                invisible="invoice_count == 0">
+                            <field name="invoice_count"
+                                   widget="statinfo"
+                                   string="Facture"/>
+                        </button>
+                    </div>
+
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                    </div>
+
+                    <!-- AJOUT : Groupe pour les informations de paiement -->
+                    <group string="État de Paiement"
+                           invisible="state == 'brouillon'"
+                           class="alert alert-info">
+                        <group>
+                            <field name="payment_state" string="État"/>
+                            <field name="payment_percentage"/>
+
+                        </group>
+                        <group>
+                            <field name="payment_amount_paid" widget="monetary"/>
+                            <field name="payment_amount_due" widget="monetary"/>
+                        </group>
+                    </group>
+
+                    <group>
+                        <group>
+                            <field name="reception_id"/>
+                            <field name="producteur_id"/>
+                            <field name="date_reception"/>
+                        </group>
+                        <group>
+                            <field name="date_creation"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="currency_id" invisible="True"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Récapitulatif des ventes" name="recap_lines">
+                            <field name="recap_line_ids" readonly="state != 'brouillon'">
+                                <tree editable="bottom">
+                                    <field name="produit_id"/>
+                                    <field name="qualite_id"/>
+                                    <field name="type_colis_id"/>
+                                    <field name="prix_unitaire"/>
+                                    <field name="nombre_colis" sum="Total colis"/>
+                                    <field name="poids_net" sum="Total poids"/>
+                                    <field name="montant_vente" sum="Total ventes"
+                                           widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                    <field name="taux_commission"/>
+                                    <field name="montant_commission" sum="Total commission" widget="monetary"
+                                           options="{'currency_field': 'currency_id'}"/>
+                                    <field name="currency_id" invisible="True"/>
+                                </tree>
+                            </field>
+                        </page>
+
+                        <page string="Détails des ventes" name="sale_lines">
+                            <field name="sale_line_ids" readonly="1">
+                                <tree>
+                                    <field name="vente_id"/>
+                                    <field name="client_id"/>
+                                    <field name="date_vente"/>
+                                    <field name="produit_id"/>
+                                    <field name="qualite_id"/>
+                                    <field name="type_colis_id"/>
+                                    <field name="nombre_colis" sum="Total colis"/>
+                                    <field name="poids_net" sum="Total poids"/>
+                                    <field name="prix_unitaire"/>
+                                    <field name="montant_net" sum="Total ventes" widget="monetary"
+                                           options="{'currency_field': 'currency_id'}"/>
+                                    <field name="montant_commission" sum="Total commission" widget="monetary"
+                                           options="{'currency_field': 'currency_id'}"/>
+                                    <field name="currency_id" invisible="1" optional="hide"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+
+                    <group class="oe_subtotal_footer">
+                        <group class="oe_subtotal_footer_separator">
+                            <field name="total_ventes" widget="monetary"/>
+                            <field name="total_commission" widget="monetary"/>
+                            <field name="net_a_payer" class="oe_subtotal_footer_separator" widget="monetary"/>
+                        </group>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="activity_ids" widget="mail_activity"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vue tree pour les récapitulatifs - MODIFIÉE pour enlever la création -->
+    <record id="view_gecafle_reception_recap_tree" model="ir.ui.view">
+        <field name="name">gecafle.reception.recap.tree</field>
+        <field name="model">gecafle.reception.recap</field>
+        <field name="arch" type="xml">
+            <tree create="false">
+                <field name="name"/>
+                <field name="reception_id"/>
+                <field name="producteur_id"/>
+                <field name="date_creation"/>
+                <field name="total_ventes" sum="Total" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="total_commission" sum="Total" widget="monetary"
+                       options="{'currency_field': 'currency_id'}"/>
+                <field name="net_a_payer" sum="Total"/>
+                <!--
+                <field name="avance_reception"
+                       string="Avance versée"
+                       widget="monetary"
+                       readonly="1"
+                       invisible="avance_reception == 0"/>
+                <field name="net_apres_avance"
+                       string="Net après avance"
+                       widget="monetary"
+                       readonly="1"
+                       invisible="avance_reception == 0"/>
+
+                -->
+
+                <field name="payment_amount_paid" sum="Total" options="{'currency_field': 'currency_id'}"/>
+                <field name="payment_amount_due" sum="Total" options="{'currency_field': 'currency_id'}"/>
+
+                <field name="state" decoration-success="state == 'valide'" decoration-info="state == 'brouillon'"/>
+                <!-- AJOUT : État de paiement dans la liste -->
+
+                <field name="payment_state"
+                       widget="badge"
+                       optional="show"
+                       decoration-success="payment_state == 'paid'"
+                       decoration-warning="payment_state == 'partial'"
+                       decoration-danger="payment_state == 'not_paid'"/>
+                <field name="currency_id" invisible="1" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vue recherche avec filtres de paiement -->
+    <record id="view_gecafle_reception_recap_search" model="ir.ui.view">
+        <field name="name">gecafle.reception.recap.search</field>
+        <field name="model">gecafle.reception.recap</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="reception_id"/>
+                <field name="producteur_id"/>
+                <separator/>
+                <filter string="Brouillon" name="draft" domain="[('state','=','brouillon')]"/>
+                <filter string="Validé" name="validated" domain="[('state','=','valide')]"/>
+                <filter string="Facturé" name="invoiced" domain="[('state','=','facture')]"/>
+                <separator/>
+                <filter string="Payé" name="paid" domain="[('payment_state','=','paid')]"/>
+                <filter string="Non payé" name="unpaid" domain="[('payment_state','=','not_paid')]"/>
+                <filter string="Partiellement payé" name="partial" domain="[('payment_state','=','partial')]"/>
+                <group expand="0" string="Grouper par">
+                    <filter string="État" name="group_by_state" context="{'group_by':'state'}"/>
+                    <filter string="État de paiement" name="group_by_payment_state"
+                            context="{'group_by':'payment_state'}"/>
+                    <filter string="Producteur" name="group_by_producteur" context="{'group_by':'producteur_id'}"/>
+                    <filter string="Date" name="group_by_date" context="{'group_by':'date_creation:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action window modifiée pour désactiver la création -->
+    <record id="action_gecafle_reception_recap" model="ir.actions.act_window">
+        <field name="name">Récapitulatifs des ventes</field>
+        <field name="res_model">gecafle.reception.recap</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'create': False}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Les récapitulatifs sont créés automatiquement depuis les réceptions
+            </p>
+            <p>
+                Pour créer un récapitulatif, allez sur une réception dont le stock est épuisé
+                et cliquez sur le bouton "Créer Récapitulatif".
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu item pour les récapitulatifs -->
+    <menuitem id="menu_gecafle_reception_recap"
+              name="Récapitulatifs des ventes"
+              parent="adi_gecafle_receptions.menu_gecafle_reception_root"
+              action="action_gecafle_reception_recap"
+              sequence="20"/>
+</odoo>

@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Template pour le bon d'emballages en arabe -->
+    <template id="report_emballages_reception_ar">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page" dir="rtl" style="text-align: right; font-family: 'Arial', 'Tahoma', sans-serif;">
+                        <!-- En-tête -->
+                        <h3 class="text-center mb-3">وصل التغليف</h3>
+
+                        <!-- Informations générales (ordre RTL) -->
+                        <div class="row mb-3" style="direction: rtl;">
+                            <div class="col-6" style="text-align: right;">
+                                <p><strong>المنتج:</strong> <span t-field="o.producteur_id.name"/></p>
+                                <p><strong>الهاتف:</strong> <span t-field="o.phone_producteur"/></p>
+                            </div>
+                            <div class="col-6" style="text-align: left;">
+                                <p><strong>رقم الاستلام:</strong> <span t-field="o.name"/></p>
+                                <p><strong>التاريخ:</strong>
+                                   <span t-field="o.reception_date"
+                                         t-options='{"widget": "datetime", "format": "dd/MM/yyyy HH:mm"}'/></p>
+                            </div>
+                        </div>
+
+                        <!-- Tableau des emballages achetés RTL -->
+                        <table class="table table-sm table-bordered" style="direction: rtl; text-align: right;">
+                            <thead class="bg-light">
+                                <tr>
+                                    <!-- Ordre des colonnes INVERSÉ de droite à gauche -->
+                                    <th width="5%" class="text-center">رقم</th>
+                                    <th width="40%" style="text-align: right;">نوع التغليف</th>
+                                    <th width="15%" class="text-center">الكمية</th>
+                                    <th width="20%" class="text-center">السعر/الوحدة</th>
+                                    <th width="20%" class="text-center">المبلغ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-set="counter" t-value="1"/>
+                                <t t-set="total_montant" t-value="0.0"/>
+                                <!-- Parcourir uniquement les emballages achetés -->
+                                <t t-foreach="o.details_emballage_reception_ids.filtered('is_achete')" t-as="line">
+                                    <t t-set="prix_unitaire" t-value="line.prix_unitaire_achat or line.emballage_id.price_unit or 0.0"/>
+                                    <t t-set="montant_ligne" t-value="(line.qte_achetee or 0) * prix_unitaire"/>
+
+                                    <tr>
+                                        <!-- Ordre des colonnes de droite à gauche -->
+                                        <td class="text-center"><t t-esc="counter"/></td>
+                                        <td style="text-align: right;">
+                                            <span t-field="line.emballage_id.name"/>
+                                        </td>
+                                        <td class="text-center">
+                                            <t t-esc="int(line.qte_achetee or 0)"/>
+                                        </td>
+                                        <td class="text-center">
+                                            <t t-esc="'%.2f' % prix_unitaire"/> دج
+                                        </td>
+                                        <td class="text-center">
+                                            <t t-esc="'%.2f' % montant_ligne"/> دج
+                                        </td>
+                                    </tr>
+                                    <t t-set="counter" t-value="counter + 1"/>
+                                    <t t-set="total_montant" t-value="total_montant + montant_ligne"/>
+                                </t>
+                            </tbody>
+                            <tfoot class="bg-light font-weight-bold">
+                                <tr>
+                                    <!-- Total aligné correctement pour RTL -->
+                                    <td colspan="4" style="text-align: right;">المجموع الإجمالي:</td>
+                                    <td class="text-center">
+                                        <t t-esc="'%.2f' % (total_montant or 0.0)"/> دج
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+
+                        <!-- Section signatures (ordre inversé pour RTL) -->
+                        <div class="row" style="margin-top: 40px; direction: rtl;">
+                            <div class="col-6" style="text-align: center;">
+                                <div style="padding-top: 40px;">
+                                    <hr style="width: 80%;"/>
+                                    <p><strong>المنتج</strong></p>
+                                </div>
+                            </div>
+                            <div class="col-6" style="text-align: center;">
+                                <div style="padding-top: 40px;">
+                                    <hr style="width: 80%;"/>
+                                    <p><strong>المسؤول</strong></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <!-- Action pour le rapport AR (inchangée) -->
+    <record id="action_report_emballages_reception_ar" model="ir.actions.report">
+        <field name="name">وصل التغليف</field>
+        <field name="model">gecafle.reception</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_gecafle_reception_extended.report_emballages_reception_ar</field>
+        <field name="report_file">adi_gecafle_reception_extended.report_emballages_reception_ar</field>
+        <field name="print_report_name">'وصل التغليف - %s' % (object.name)</field>
+        <field name="paperformat_id" ref="base.paperformat_euro"/>
+    </record>
+</odoo>

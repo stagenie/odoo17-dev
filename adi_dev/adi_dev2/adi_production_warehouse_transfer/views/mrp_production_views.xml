@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue formulaire de l'ordre de fabrication avec bouton transfert -->
+    <record id="mrp_production_form_view_inherit_transfer" model="ir.ui.view">
+        <field name="name">mrp.production.form.inherit.transfer</field>
+        <field name="model">mrp.production</field>
+        <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
+        <field name="arch" type="xml">
+            <!-- Ajouter le bouton dans la button box -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <!-- Bouton intelligent pour voir les transferts existants -->
+                <button name="action_view_production_transfers"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-truck"
+                        invisible="production_transfer_count == 0">
+                    <field name="production_transfer_count" widget="statinfo" string="Transferts"/>
+                </button>
+
+                <!-- Bouton pour générer un nouveau transfert -->
+                <button name="action_generate_transfer_wizard"
+                        string="Générer Transfert MP"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-exchange"
+                        invisible="state in ['done', 'cancel'] or not bom_id"
+                        help="Générer un transfert des matières premières vers l'entrepôt de production">
+                    <div class="o_stat_info">
+                        <span class="o_stat_text">Nouveau</span>
+                        <span class="o_stat_text">Transfert</span>
+                    </div>
+                </button>
+            </xpath>
+
+            <!-- Optionnel : Ajouter un onglet pour voir les transferts -->
+            <xpath expr="//notebook" position="inside">
+                <page string="Transferts Production"
+                      name="production_transfers"
+                      invisible="production_transfer_count == 0">
+                    <group string="Transferts liés">
+                        <field name="production_transfer_ids" readonly="1" nolabel="1">
+                            <tree create="0" delete="0" edit="0">
+                                <field name="name" widget="badge"/>
+                                <field name="state" widget="badge"
+                                       decoration-success="state == 'done'"
+                                       decoration-info="state == 'draft'"
+                                       decoration-warning="state in ['waiting', 'confirmed', 'assigned']"/>
+                                <field name="scheduled_date" widget="date"/>
+                                <field name="location_id"/>
+                                <field name="location_dest_id"/>
+                                <button name="action_assign"
+                                        string="Vérifier disponibilité"
+                                        type="object"
+                                        invisible="state not in ['confirmed']"
+                                        class="btn-secondary"
+                                        icon="fa-check"/>
+                                <button name="button_validate"
+                                        string="Valider"
+                                        type="object"
+                                        invisible="state != 'assigned'"
+                                        class="btn-primary"
+                                        icon="fa-check"
+                                        confirm="Êtes-vous sûr de vouloir valider ce transfert ?"/>
+                            </tree>
+                        </field>
+                    </group>
+                </page>
+            </xpath>
+
+            <!-- Champs invisibles nécessaires -->
+            <xpath expr="//sheet" position="inside">
+                <field name="production_transfer_count" invisible="1"/>
+                <field name="bom_id" invisible="1" force_save="1"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Vue tree avec action rapide (optionnel) -->
+    <record id="mrp_production_tree_view_inherit_transfer" model="ir.ui.view">
+        <field name="name">mrp.production.tree.inherit.transfer</field>
+        <field name="model">mrp.production</field>
+        <field name="inherit_id" ref="mrp.mrp_production_tree_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='state']" position="before">
+                <field name="production_transfer_count" string="Transferts" optional="show"/>
+                <button name="action_generate_transfer_wizard"
+                        string="Transfert MP"
+                        type="object"
+                        class="btn-sm btn-secondary"
+                        icon="fa-exchange"
+                        invisible="state in ['done', 'cancel']"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

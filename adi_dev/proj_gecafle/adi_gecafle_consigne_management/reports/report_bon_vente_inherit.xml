@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Héritage du template du bon de vente pour ajouter les paiements -->
+    <template id="report_bon_vente_document_inherit"
+              inherit_id="adi_gecafle_ventes.report_bon_vente_document">
+        <!-- Modification de la section des totaux pour inclure les paiements -->
+        <xpath expr="//div[@class='row mt-5']" position="replace">
+            <div class="row mt-5">
+                <!-- Notes et observations (colonne gauche) -->
+                <div class="col-6">
+                    <div t-if="o.notes">
+                        <h5>Conditions Générales</h5>
+                        <p t-field="o.notes"/>
+                    </div>
+                    <div t-if="o.observation" class="mt-3">
+                        <h5>Observations</h5>
+                        <p t-field="o.observation"/>
+                    </div>
+                </div>
+
+                <!-- Totaux consolidés (colonne droite) -->
+                <div class="col-6">
+                    <table class="table table-sm">
+                        <!-- Montant Colis -->
+                        <tr>
+                            <td class="text-right">
+                                <strong>Montant Colis:</strong>
+                            </td>
+                            <td class="text-right">
+                                <span t-field="o.montant_total_emballages"/>
+                            </td>
+                        </tr>
+
+                        <!-- Montant Net -->
+                        <tr>
+                            <td class="text-right">
+                                <strong>Montant Net:</strong>
+                            </td>
+                            <td class="text-right">
+                                <span t-field="o.montant_total_net"/>
+                            </td>
+                        </tr>
+
+                        <!-- Remise (si applicable) -->
+                        <tr t-if="o.montant_remise_globale > 0">
+                            <td class="text-right">
+                                <strong>Remise:</strong>
+                            </td>
+                            <td class="text-right">
+                                <span t-field="o.montant_remise_globale"/>
+                            </td>
+                        </tr>
+
+                        <!-- Net à payer -->
+                        <tr class="border-top">
+                            <td class="text-right">
+                                <strong>Net à payer:</strong>
+                            </td>
+                            <td class="text-right">
+                                <strong>
+                                    <span t-field="o.montant_total_a_payer"/>
+                                </strong>
+                            </td>
+                        </tr>
+
+                        <!-- Informations de paiement (si facture existe) -->
+                        <t t-if="o.invoice_id and o.state == 'valide'">
+                            <!-- Total Payé -->
+                            <tr>
+                                <td class="text-right">
+                                    <strong>Total Payé:</strong>
+                                </td>
+                                <td class="text-right text-success">
+                                    <span t-field="o.amount_paid"/>
+                                </td>
+                            </tr>
+
+                            <!-- Total Reste -->
+                            <tr>
+                                <td class="text-right">
+                                    <strong>Total Reste:</strong>
+                                </td>
+                                <td class="text-right">
+                                    <span t-attf-class="#{o.amount_residual_signed > 0 and 'text-danger' or 'text-success'}"
+                                          t-field="o.amount_residual_signed"/>
+                                </td>
+                            </tr>
+
+                            <!-- Badge état de paiement -->
+                            <tr>
+                                <td colspan="2" class="text-center pt-2">
+                                    <t t-if="o.payment_state == 'paid'">
+                                        <span class="badge badge-success">PAYÉ</span>
+                                    </t>
+                                    <t t-elif="o.payment_state == 'partial'">
+                                        <span class="badge badge-warning">PARTIELLEMENT PAYÉ</span>
+                                    </t>
+                                    <t t-else="">
+                                        <span class="badge badge-danger">NON PAYÉ</span>
+                                    </t>
+                                </td>
+                            </tr>
+                        </t>
+                    </table>
+
+                    <!-- Détails des paiements (si activé et si paiements existent) -->
+                    <div t-if="o.show_payment_details and o.payment_ids and o.payment_count > 0" class="mt-3">
+                        <h6>Détails des paiements:</h6>
+                        <table class="table table-sm table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Référence</th>
+                                    <th>Mode</th>
+                                    <th class="text-right">Montant</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="o.payment_ids" t-as="payment">
+                                    <td>
+                                        <span t-field="payment.date" t-options='{"widget": "date"}'/>
+                                    </td>
+                                    <td>
+                                        <span t-field="payment.name"/>
+                                    </td>
+                                    <td>
+                                        <span t-field="payment.journal_id.name"/>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-field="payment.amount"
+                                              t-options='{"widget": "monetary", "display_currency": payment.currency_id}'/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="3" class="text-right">
+                                        <strong>Total Payé:</strong>
+                                    </td>
+                                    <td class="text-right">
+                                        <strong>
+                                            <span t-field="o.amount_paid"
+                                                  t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                        </strong>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+</odoo>

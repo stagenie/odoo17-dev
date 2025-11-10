@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+    	
+        <record id="update_ecart_view_from" model="ir.ui.view">
+            <field name="name">update.ecart.from</field>
+            <field name="model">update.ecart</field>
+            <field name="arch" type="xml">
+                <form string="Caisse">
+                    <group>
+                        <group>
+                            <!-- <field name='name' required='1'/> -->
+                            <field name='motif' required='1'/>
+                            <field name='montant' required='1' widget="monetary"/>
+                        </group>
+                    	<group>
+                            <field name='currency_id' invisible='1'/>
+                            <field name='date' required='1'/>
+                            <field name='note' required='0'/>
+                            <field name='caisse_id' readonly="1"/>
+                        </group>
+                    </group>
+
+	                <footer>
+	                	<button name='action_confirm' type='object' string='Valider' class="oe_highlight" confirm="Veuillez confirmer SVP"/>
+	                	or
+	                    <button string="Cancel" class="oe_link" special="cancel" />
+	                </footer>
+                </form>
+            </field>
+        </record>
+
+
+
+        <record id="update_ecart_action" model="ir.actions.act_window">
+            <field name="name">Traiter l'écart</field>
+            <field name="res_model">update.ecart</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+
+
+    </data>
+</odoo>

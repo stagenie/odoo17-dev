@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="adi_account_invoices" model="ir.actions.report">
+            <field name="name">ADI Facture</field>
+            <field name="model">account.move</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">adi_dz_reports.adi_report_invoice_with_payments</field>
+            <field name="report_file">adi_dz_reports.adi_report_invoice_with_payments</field>
+            <field name="print_report_name">(object._get_report_base_filename())</field>
+            <field name="binding_model_id" ref="model_account_move"/>
+            <field name="binding_type">report</field>            
+        </record>
+
+
+    </data>
+</odoo>

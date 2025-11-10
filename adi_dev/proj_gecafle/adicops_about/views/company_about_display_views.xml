@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue About spéciale pour l'affichage -->
+    <record id="view_company_about_display_form" model="ir.ui.view">
+        <field name="name">company.about.display.form</field>
+        <field name="model">company.about.display</field>
+        <field name="arch" type="xml">
+            <form string="À Propos" create="false" edit="false" delete="false">
+                <header>
+                    <button name="action_edit_config"
+                            type="object"
+                            string="Modifier la Configuration"
+                            class="btn-primary"
+                            groups="base.group_system"
+                            icon="fa-edit"/>
+                </header>
+
+                <sheet class="o_company_about_sheet">
+                    <!-- En-tête avec logo et titre -->
+                    <div class="row mb-4">
+                        <div class="col-md-3 text-center">
+                            <field name="logo"
+                                   widget="image"
+                                   class="o_avatar o_avatar_xl border border-primary rounded-circle shadow"
+                                   options="{'size': [200, 200], 'preview_image': 'logo'}"/>
+                        </div>
+                        <div class="col-md-9">
+                            <div class="oe_title mb-3">
+                                <h1 class="mb-2 text-primary">
+                                    <field name="company_name" readonly="1"/>
+                                </h1>
+                                <h4 class="text-muted font-italic">
+                                    <field name="slogan" readonly="1"/>
+                                </h4>
+                            </div>
+
+                            <div class="o_about_app_name" invisible="not app_name">
+                                <p class="lead">
+                                    <i class="fa fa-rocket text-success me-2"></i>
+                                    <strong>Application :</strong>
+                                    <field name="app_name" readonly="1"/>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Informations principales -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card border-left-primary shadow mb-4">
+                                <div class="card-body">
+                                    <h5 class="card-title text-primary">
+                                        <i class="fa fa-info-circle me-2"></i>
+                                        Informations Générales
+                                    </h5>
+
+                                    <div class="mb-3" invisible="not domain">
+                                        <strong>
+                                            <i class="fa fa-industry text-info me-2"></i>
+                                            Domaine d'activité :
+                                        </strong>
+                                        <br/>
+                                        <span class="ms-4">
+                                            <field name="domain" readonly="1"/>
+                                        </span>
+                                    </div>
+
+                                    <div class="mb-3" invisible="not experience_years">
+                                        <strong>
+                                            <i class="fa fa-calendar text-warning me-2"></i>
+                                            Expérience :
+                                        </strong>
+                                        <br/>
+                                        <span class="ms-4">
+                                            <field name="experience_years" readonly="1"/>
+                                            <span invisible="experience_years == 1">ans</span>
+                                            <span invisible="experience_years != 1">an</span>
+                                            d'expérience
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="card border-left-success shadow mb-4">
+                                <div class="card-body">
+                                    <h5 class="card-title text-success">
+                                        <i class="fa fa-map-marker me-2"></i>
+                                        Coordonnées
+                                    </h5>
+
+                                    <div class="mb-3" invisible="not address">
+                                        <strong>Adresse :</strong>
+                                        <br/>
+                                        <address class="ms-3 mt-2">
+                                            <field name="address" readonly="1"/>
+                                        </address>
+
+                                    </div>
+                                </div>
+                                <div class="mb-3" invisible="not tel_mob">
+                                    <strong>
+                                        <i class="fa fa-phone text-success me-2"></i>
+                                        Tél / Mob :
+                                    </strong>
+                                    <br/>
+                                    <span class="ms-3">
+                                            <field name="tel_mob" readonly="1"/>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section Expertise Odoo -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card border-left-info shadow">
+                                <div class="card-body text-center">
+                                    <h4 class="text-info mb-4">
+                                        <i class="fa fa-odoo me-2"></i>
+                                        Notre Expertise Odoo
+                                    </h4>
+
+                                    <div class="row">
+                                        <div class="col-md-3 mb-3">
+                                            <div class="p-3 bg-light rounded">
+                                                <i class="fa fa-cogs fa-3x text-primary mb-3"></i>
+                                                <h6 class="font-weight-bold">Développement</h6>
+                                                <p class="text-muted small">
+                                                    Modules personnalisés
+                                                    <br/>
+                                                    Adaptés à vos besoins
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-3 mb-3">
+                                            <div class="p-3 bg-light rounded">
+                                                <i class="fa fa-rocket fa-3x text-success mb-3"></i>
+                                                <h6 class="font-weight-bold">Intégration</h6>
+                                                <p class="text-muted small">
+                                                    Mise en place complète
+                                                    <br/>
+                                                    Formation utilisateurs
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-3 mb-3">
+                                            <div class="p-3 bg-light rounded">
+                                                <i class="fa fa-life-ring fa-3x text-warning mb-3"></i>
+                                                <h6 class="font-weight-bold">Support</h6>
+                                                <p class="text-muted small">
+                                                    Maintenance continue
+                                                    <br/>
+                                                    Évolutions futures
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-3 mb-3">
+                                            <div class="p-3 bg-light rounded">
+                                                <i class="fa fa-graduation-cap fa-3x text-info mb-3"></i>
+                                                <h6 class="font-weight-bold">Formation</h6>
+                                                <p class="text-muted small">
+                                                    Sessions personnalisées
+                                                    <br/>
+                                                    Documentation complète
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Message si pas de config -->
+                    <field name="config_id" invisible="1"/>
+                    <div class="alert alert-warning" invisible="config_id">
+                        <h5><i class="fa fa-exclamation-triangle me-2"></i>Configuration manquante
+                        </h5>
+                        <p class="mb-0">
+                            Les informations About n'ont pas encore été configurées.
+                            <span groups="base.group_system">
+                                Cliquez sur "Modifier la Configuration" pour les définir.
+                            </span>
+                        </p>
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action pour afficher la page About (tous utilisateurs) -->
+    <record id="action_company_about_display" model="ir.actions.act_window">
+        <field name="name">À Propos de Notre Société</field>
+        <field name="res_model">company.about.display</field>
+        <field name="view_mode">form</field>
+        <field name="target">current</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Découvrez notre société !
+            </p>
+            <p>
+                Cette page présente les informations sur la société qui a intégré
+                et développé cette solution Odoo.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu Principal About (accessible à tous) -->
+    <menuitem id="menu_company_about_main"
+              name="About"
+              action="action_company_about_display"
+              groups="base.group_user"
+              sequence="1000"
+              web_icon="adicops_about,static/description/about.png"/>
+</odoo>

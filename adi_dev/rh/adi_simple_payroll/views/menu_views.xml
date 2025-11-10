@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Menus principaux -->
+
+    <menuitem id="menu_payroll_without_action"
+              name="Gestion de Paie"
+              parent="adi_employee_advance.menu_hr_payroll_root"
+              sequence="40"/>
+
+    <menuitem id="menu_payroll_batch"
+              name="Lots de paie"
+              parent="menu_payroll_without_action"
+              action="action_payroll_batch"
+              sequence="10"/>
+
+    <menuitem id="menu_payroll_slip"
+              name="Bulletins de paie"
+              parent="menu_payroll_without_action"
+              action="action_payroll_slip"
+              sequence="20"/>
+
+    <menuitem id="menu_payroll_period"
+              name="Périodes de paie"
+              parent="menu_payroll_without_action"
+              action="action_payroll_period"
+              sequence="30"/>
+
+
+
+</odoo>

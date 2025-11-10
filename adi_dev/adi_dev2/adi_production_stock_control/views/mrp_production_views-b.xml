@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue formulaire héritée -->
+    <record id="mrp_production_form_view_inherit" model="ir.ui.view">
+        <field name="name">mrp.production.form.inherit.stock.check</field>
+        <field name="model">mrp.production</field>
+        <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
+        <field name="arch" type="xml">
+            <!-- Ajouter le statut de disponibilité dans le header -->
+            <xpath expr="//field[@name='state']" position="before">
+                <field name="components_availability" widget="badge" 
+                       decoration-success="components_availability == 'available'"
+                       decoration-warning="components_availability == 'partially'"
+                       decoration-danger="components_availability == 'unavailable'"/>
+            </xpath>
+            
+            <!-- Ajouter l'option pour permettre la production sans stock -->
+            <xpath expr="//group[@name='group_extra_info']" position="inside">
+                <field name="allow_production_without_stock" 
+                       groups="mrp.group_mrp_manager"
+                       attrs="{'invisible': [('state', 'in', ['done', 'cancel'])]}"/>
+            </xpath>
+            
+            <!-- Ajouter un onglet pour la disponibilité -->
+            <xpath expr="//notebook" position="inside">
+                <page string="Disponibilité Stock" name="stock_availability">
+                    <group>
+                        <field name="components_availability_detail" nolabel="1"/>
+                    </group>
+                </page>
+            </xpath>
+            
+            <!-- Modifier le bouton Produire pour ajouter une confirmation -->
+            <xpath expr="//button[@name='button_produce']" position="attributes">
+                <attribute name="confirm">Êtes-vous sûr de vouloir lancer la production ? Le stock sera vérifié.</attribute>
+            </xpath>
+        </field>
+    </record>
+    
+    <!-- Vue liste héritée -->
+    <record id="mrp_production_tree_view_inherit" model="ir.ui.view">
+        <field name="name">mrp.production.tree.inherit.stock.check</field>
+        <field name="model">mrp.production</field>
+        <field name="inherit_id" ref="mrp.mrp_production_tree_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='product_qty']" position="after">
+                <field name="components_availability" widget="badge"
+                       decoration-success="components_availability == 'available'"
+                       decoration-warning="components_availability == 'partially'"
+                       decoration-danger="components_availability == 'unavailable'"
+                       optional="show"/>
+            </xpath>
+        </field>
+    </record>
+    
+    <!-- Vue Kanban héritée -->
+    <record id="mrp_production_kanban_view_inherit" model="ir.ui.view">
+        <field name="name">mrp.production.kanban.inherit.stock.check</field>
+        <field name="model">mrp.production</field>
+        <field name="inherit_id" ref="mrp.view_mrp_production_kanban"/>
+        <field name="arch" type="xml">
+            <xpath expr="//templates" position="before">
+                <field name="components_availability"/>
+            </xpath>
+            <xpath expr="//div[hasclass('o_kanban_record_bottom')]" position="inside">
+                <div class="text-center">
+                    <field name="components_availability" widget="badge"/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Bouton intelligent pour les factures clients/fournisseurs -->
+    <record id="view_move_form_inherit_payment_button" model="ir.ui.view">
+        <field name="name">account.move.form.inherit.payment.button</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <!-- Ajouter les champs invisibles nécessaires -->
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="payment_count" invisible="1"/>
+                <field name="has_payments" invisible="1"/>
+            </xpath>
+
+            <!-- Ajouter le bouton dans le button_box -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <!-- Bouton pour afficher les paiements -->
+                <button name="action_view_payments_smart"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-money"
+                        invisible="payment_state == 'not_paid'"
+                        groups="base.group_user">
+                    <field name="payment_count" widget="statinfo" string="Paiement(s)"/>
+                </button>
+            </xpath>
+        </field>
+    </record>
+</odoo>

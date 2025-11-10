@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_bordereau_grouped_ar">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page" dir="rtl" style="font-family: 'Traditional Arabic', Arial;">
+                        <h2 class="text-center">كشف المنتج (مجمع حسب المنتج)</h2>
+
+                        <!-- Récupération des lignes regroupées et triées -->
+                        <t t-set="lines" t-value="o.get_lines_sorted_by_price_desc(grouped=True)"/>
+
+                        <!-- En-tête en arabe -->
+                        <div class="row mt-4 mb-4">
+                            <div class="col-6">
+                                <strong>رقم الملخص:</strong>
+                                <span t-field="o.name"/>
+                                <br/>
+                                <strong>التاريخ:</strong>
+                                <span t-field="o.reception_id.reception_date" t-options='{"widget": "date"}'/>
+                                <br/>
+                                <strong>رقم الاستلام:</strong>
+                                <span t-field="o.reception_id.name"/>
+                            </div>
+                            <div class="col-6 text-left">
+                                <strong>المنتج:</strong>
+                                <span t-field="o.producteur_id.name"/>
+                                <br/>
+                                <strong>الهاتف:</strong>
+                                <span t-field="o.producteur_id.phone"/>
+                                <br/>
+                                <strong>العنوان:</strong>
+                                <span t-field="o.producteur_id.address"/>
+                            </div>
+                        </div>
+
+                        <!-- Tableau RTL correct -->
+                        <table class="table table-sm table-bordered" style="direction: rtl;">
+                            <thead>
+                                <tr>
+                                    <th class="text-center">المنتج</th>
+                                    <th class="text-center">الجودة</th>
+                                    <th class="text-center">نوع الطرد</th>
+                                    <th class="text-center">عدد الطرود</th>
+                                    <th class="text-center">الوزن الصافي</th>
+                                    <th class="text-center">السعر/كغ</th>
+                                    <th class="text-center">المبلغ</th>
+                                    <th class="text-center">نسبة العمولة</th>
+                                    <th class="text-center">العمولة</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="lines" t-as="line">
+                                    <td>
+                                        <t t-esc="line.get('produit_name', '')"/>
+                                    </td>
+                                    <td class="text-center">
+                                        <t t-esc="line.get('qualite_name', '')"/>
+                                    </td>
+                                    <td class="text-center">
+                                        <t t-esc="line.get('type_colis_name', '')"/>
+                                    </td>
+                                    <td class="text-center">
+                                        <t t-esc="line.get('nombre_colis', 0)"/>
+                                    </td>
+                                    <td class="text-center">
+                                        <t t-esc="'%.2f' % line.get('poids_net', 0)"/>
+                                    </td>
+                                    <td class="text-center">
+                                        <span dir="ltr"><t t-esc="'%.2f' % line.get('prix_unitaire', 0)"/></span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span dir="ltr">
+                                            <t t-esc="'{:,.2f}'.format(line.get('montant_vente', 0))"/>
+                                            <span t-field="o.currency_id.symbol"/>
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span dir="ltr"><t t-esc="'%.1f' % line.get('taux_commission', 0)"/>%</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span dir="ltr">
+                                            <t t-esc="'{:,.2f}'.format(line.get('montant_commission', 0))"/>
+                                            <span t-field="o.currency_id.symbol"/>
+                                        </span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr class="font-weight-bold">
+                                    <td colspan="3" class="text-left">المجاميع</td>
+                                    <td class="text-center">
+                                        <t t-esc="sum([l.get('nombre_colis', 0) for l in lines])"/>
+                                    </td>
+                                    <td class="text-center">
+                                        <t t-esc="'%.2f' % sum([l.get('poids_net', 0) for l in lines])"/>
+                                    </td>
+                                    <td></td>
+                                    <td class="text-center">
+                                        <span dir="ltr"><span t-field="o.total_ventes"/></span>
+                                    </td>
+                                    <td></td>
+                                    <td class="text-center">
+                                        <span dir="ltr"><span t-field="o.total_commission"/></span>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+
+                        <!-- Section destockage -->
+                        <t t-if="o.has_destockage">
+                            <h4 class="mt-4">المنتجات التي تم التخلص منها</h4>
+                            <table class="table table-sm table-bordered" style="direction: rtl;">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>التاريخ</th>
+                                        <th>المنتج</th>
+                                        <th>الجودة</th>
+                                        <th>نوع الطرد</th>
+                                        <th class="text-center">الكمية</th>
+                                        <th>السبب</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="o.destockage_line_ids" t-as="destockage">
+                                        <tr>
+                                            <td>
+                                                <span t-field="destockage.destockage_date"
+                                                      t-options='{"widget": "date"}'/>
+                                            </td>
+                                            <td>
+                                                <span t-field="destockage.detail_reception_id.designation_id.name"/>
+                                            </td>
+                                            <td>
+                                                <span t-field="destockage.detail_reception_id.qualite_id.name"/>
+                                            </td>
+                                            <td>
+                                                <span t-field="destockage.detail_reception_id.type_colis_id.name"/>
+                                            </td>
+                                            <td class="text-center">
+                                                <span t-field="destockage.qte_destockee"/>
+                                            </td>
+                                            <td>
+                                                <span t-field="destockage.observation"/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                                <tfoot>
+                                    <tr class="font-weight-bold">
+                                        <td colspan="4" class="text-left">المجموع المخزون:</td>
+                                        <td class="text-center">
+                                            <t t-esc="sum(o.destockage_line_ids.mapped('qte_destockee'))"/>
+                                        </td>
+                                        <td></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </t>
+
+                        <!-- العبوات المشتراة -->
+                        <t t-if="o.montant_total_emballage_achete and o.montant_total_emballage_achete > 0">
+                            <h4 class="mt-4">العبوات المشتراة من المنتج</h4>
+                            <table class="table table-sm table-bordered" style="direction: rtl;">
+                                <thead>
+                                    <tr>
+                                        <th>نوع العبوة</th>
+                                        <th class="text-center">الكمية</th>
+                                        <th class="text-center">السعر الواحد</th>
+                                        <th class="text-center">المبلغ</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="o.reception_id.details_emballage_reception_ids.filtered('is_achete')"
+                                       t-as="emb">
+                                        <tr>
+                                            <td>
+                                                <span t-field="emb.emballage_id.name"/>
+                                            </td>
+                                            <td class="text-center">
+                                                <span t-field="emb.qte_achetee"/>
+                                            </td>
+                                            <td class="text-center">
+                                                <span dir="ltr"><t t-esc="'%.2f' % emb.prix_unitaire_achat"/></span>
+                                            </td>
+                                            <td class="text-center">
+                                                <span dir="ltr"><span t-field="emb.montant_achat"/></span>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </t>
+                        <div style="page-break-inside: avoid; position: relative; min-height: 450px; padding-top: 35px;" class="keep-together">
+
+                            <!-- الملخص المالي -->
+                        <div class="row mt-5">
+                            <div class="col-6">
+                                <table class="table table-sm table-bordered">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th colspan="2" class="text-center">حساب الصافي للدفع</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><strong>مجموع المبيعات:</strong></td>
+                                            <td class="text-left">
+                                                <span dir="ltr"><span t-field="o.total_ventes"/></span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>مجموع العمولة (-):</strong></td>
+                                            <td class="text-left text-danger">
+                                                <span dir="ltr">- <span t-field="o.total_commission"/></span>
+                                            </td>
+                                        </tr>
+                                        <t t-if="o.reception_id and o.reception_id.avance_producteur">
+                                            <tr>
+                                                <td><strong>دفعة المنتج (-):</strong></td>
+                                                <td class="text-left text-danger">
+                                                    <span dir="ltr">- <span t-field="o.reception_id.avance_producteur"/></span>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                        <tr t-if="o.transport">
+                                            <td><strong>النقل (-):</strong></td>
+                                            <td class="text-left text-danger">
+                                                <span dir="ltr">- <span t-field="o.transport"/></span>
+                                            </td>
+                                        </tr>
+                                        <tr t-if="o.montant_total_emballage_achete">
+                                            <td><strong>العبوات المشتراة (+):</strong></td>
+                                            <td class="text-left text-success">
+                                                <span dir="ltr">+ <span t-field="o.montant_total_emballage_achete"/></span>
+                                            </td>
+                                        </tr>
+                                        <tr class="table-primary">
+                                            <td><strong>الصافي للدفع:</strong></td>
+                                            <td class="text-left">
+                                                <strong style="font-size: 1.2em;">
+                                                 <span t-field="o.net_a_payer"/>
+
+                                                </strong>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="col-6">
+                                <!-- معلومات تكميلية -->
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6>معلومات تكميلية</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <p><strong>تاريخ الإنشاء:</strong> <span t-field="o.date_creation"/></p>
+                                        <p><strong>أنشأه:</strong> <span t-field="o.create_uid.name"/></p>
+                                        <t t-if="o.observation">
+                                            <p><strong>ملاحظات:</strong></p>
+                                            <p class="text-muted"><span t-field="o.observation"/></p>
+                                        </t>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- التوقيعات -->
+                        <div class="row mt-5 pt-3">
+                            <div class="col-4 text-center">
+                                <div class="border-top pt-2">
+                                    <strong>المنتج</strong><br/>
+                                    <small>التوقيع والختم</small>
+                                </div>
+                            </div>
+                            <div class="col-4 text-center">
+                                <div class="border-top pt-2">
+                                    <strong>المسؤول</strong><br/>
+                                    <small>التوقيع والختم</small>
+                                </div>
+                            </div>
+                            <div class="col-4 text-center">
+                                <div class="border-top pt-2">
+                                    <strong>التاريخ:</strong><br/>
+                                    <span t-field="o.date_creation"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        </div>
+
+
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

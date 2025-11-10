@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <template id="adi_report_delivery_document_customer">
+
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <t t-set="o" t-value="o.with_context(lang=o.partner_id.lang)"/>
+                <t t-set="partner" t-value="o.partner_id or (o.move_ids and o.move_ids[0].partner_id) or False"/>
+
+                <t t-if="o.move_ids[0].sale_line_id.order_id">
+                    <t t-set="currency" t-value="o.move_ids[0].sale_line_id.order_id.pricelist_id.currency_id"/>
+                </t>
+
+
+                <div class="page">
+
+                    <table style="font-size:18px" width="100%" class="table table-borderless">
+                        <tr>
+                            <td class="text-left" width="65%">
+                                <strong>
+
+                                    <span>Bon de Livraison N° :</span>
+
+                                    <span t-field="o.name"/>
+                                    <!--
+                                    <span>/</span>
+                                    <span t-field="o.origin"/>
+                                    -->
+
+                                </strong>
+
+                                <div name="customer">
+                                    <div>
+                                        <strong>Client :</strong>
+                                        <span t-field="o.partner_id.name"/>
+                                    </div>
+                                </div>
+
+                            </td>
+
+                            <td class="text-end">
+                                <div id="informations-css" class="text-align: right">
+
+                                    <div t-if="o.state" class="col-auto" name="div_sched_date">
+                                        <strong>Date:</strong>
+                                        <t t-if="o.state == 'done'">
+                                            <span t-field="o.date_done"/>
+                                        </t>
+                                        <t t-if="o.state != 'done'">
+                                            <span t-field="o.scheduled_date"/>
+                                        </t>
+
+                                    </div>
+
+
+                                </div>
+                                <t t-if="o.move_ids[0].sale_line_id.order_id">
+                                    <div class="col-auto" name="div_user_v">
+                                        <strong>Resonsonsable :</strong>
+                                        <span t-field="o.move_ids[0].sale_line_id.order_id.user_id"/>
+
+                                    </div>
+                                </t>
+
+                            </td>
+                        </tr>
+                    </table>
+
+                    <t t-set="number_ligne" t-value="0"/>
+                    <table class="table table-sm o_main_table" style="font-size:13px" name="adi_stock_move_table">
+                        <thead>
+                            <tr>
+                                <!--<th name="th_sm_product"><strong>N°</strong></th>-->
+                                <th name="th_sm_product">
+                                    <strong>Produit</strong>
+                                </th>
+                                <th name="th_sm_quantity">
+                                    <strong>Quantité</strong>
+                                </th>
+
+                                <th name="th_sm_product">
+                                    <strong>Observation</strong>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-set="lines"
+                               t-value="o.move_ids.filtered(lambda x: x.product_uom_qty)"/>
+                            <!-- N° de ligne -->
+
+
+                            <tr t-foreach="lines" t-as="move">
+                                <t t-set="number_ligne" t-value="number_ligne+1"/>
+                                <!--
+                                    <t t-if="o.move_ids[0].sale_line_id.order_id">
+                                         <td>
+                                            <span
+                                             t-field="move.sale_line_id.name"
+                                                 />
+
+                                         </td>
+
+                                     </t>
+                                     -->
+                                <td>
+                                    <span t-field="move.product_id"/>
+                                </td>
+
+                                <td>
+                                    <span t-field="move.product_uom_qty"/>
+                                    <span t-field="move.product_uom"/>
+                                </td>
+                                <td>
+                                    <span t-field="move.obs"/>
+                                </td>
+
+                            </tr>
+                        </tbody>
+
+                    </table>
+
+                    <div class="mt32">
+                        <p  t-field="o.note"/>
+                    </div>
+
+                </div>
+
+            </t>
+        </t>
+
+    </template>
+
+
+    <template id="adi_dz_bl.adi_report_deliveryslip_customer">
+        <t t-foreach="docs" t-as="o">
+            <t t-call="adi_dz_bl.adi_report_delivery_document_customer" t-lang="o.partner_id.lang"/>
+        </t>
+    </template>
+</odoo>

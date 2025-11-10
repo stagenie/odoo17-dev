@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue formulaire -->
+    <!-- Vue formulaire -->
+    <!-- Vue formulaire -->
+    <record id="view_attendance_daily_form" model="ir.ui.view">
+        <field name="name">attendance.daily.form</field>
+        <field name="model">attendance.daily</field>
+        <field name="arch" type="xml">
+            <form string="Pointage Quotidien">
+                <header>
+                    <button name="action_confirm"
+                            string="Confirmer"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_process"
+                            string="Marquer comme traité"
+                            type="object"
+                            invisible="state != 'confirmed'"/>
+                    <button name="action_print_sheet"
+                            string="🖨️ Imprimer feuille de présence"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="state == 'draft'"/>
+
+                    <!-- NOUVEAUX BOUTONS -->
+                    <button name="action_set_to_draft"
+                            string="↩️ Remettre en brouillon"
+                            type="object"
+                            class="btn-warning"
+                            invisible="state not in ('confirmed', 'processed')"
+                            confirm="Êtes-vous sûr de vouloir remettre ce pointage en brouillon ?"/>
+                    <button name="action_cancel_attendance"
+                            string="❌ Annuler toutes les présences"
+                            type="object"
+                            class="btn-danger"
+                            invisible="state not in ('confirmed', 'processed')"
+                            confirm="Cette action va annuler TOUTES les présences. Continuer ?"/>
+
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="date"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group>
+                            <field name="selection_type" widget="radio"/>
+                            <field name="department_ids"
+                                   widget="many2many_tags"
+                                   invisible="selection_type != 'department'"
+                                   required="selection_type == 'department'"
+                                   placeholder="Sélectionner des départements..."/>
+<!--                            <button name="action_generate_lines"-->
+<!--                                    string="Générer les lignes"-->
+<!--                                    type="object"-->
+<!--                                    class="btn-secondary"-->
+<!--                                    invisible="state != 'draft'"/>-->
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Lignes de pointage">
+                            <field name="attendance_line_ids">
+                                <tree editable="bottom"
+                                      decoration-success="presence == True"
+                                      decoration-danger="presence == False">
+                                    <field name="employee_id" options="{'no_create': True}"/>
+                                    <field name="employee_name" optional="hide"/>
+                                    <field name="job_id" optional="show"/>
+                                    <field name="department_id" optional="show"/>
+                                    <!-- UN SEUL CHAMP POUR LA PRÉSENCE -->
+                                    <field name="presence" string="Présence" widget="boolean_toggle"/>
+                                    <!-- standard_hours est maintenant readonly="True" dans le modèle Python -->
+                                    <field name="standard_hours"
+                                           invisible="presence == False"
+                                           force_save="1"/>
+                                    <field name="actual_hours"
+                                           invisible="presence == False"
+                                           placeholder="Heures réelles"/>
+                                    <field name="overtime_hours"
+                                           invisible="presence == False"/>
+                                    <field name="is_processed" readonly="1" optional="hide" widget="boolean_toggle"/>
+                                    <!-- Champs cachés pour compatibilité -->
+                                    <field name="is_present" optional="show" readonly="1" invisible="1"/>
+                                    <field name="is_absent" readonly="1" optional="show"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <!-- Vue arbre -->
+    <record id="view_attendance_daily_tree" model="ir.ui.view">
+        <field name="name">attendance.daily.tree</field>
+        <field name="model">attendance.daily</field>
+        <field name="arch" type="xml">
+            <tree string="Pointages Quotidiens">
+                <field name="date"/>
+                <field name="selection_type"/>
+                <field name="department_ids" widget="many2many_tags"/>
+                <field name="state"
+                   widget="badge"
+                   decoration-info="state == 'draft'"
+                   decoration-warning="state == 'processed'"
+                   decoration-success="state == 'confirmed'"
+                   decoration-muted="state == 'canceled'"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vue recherche -->
+    <record id="view_attendance_daily_search" model="ir.ui.view">
+        <field name="name">attendance.daily.search</field>
+        <field name="model">attendance.daily</field>
+        <field name="arch" type="xml">
+            <search string="Rechercher pointage">
+                <field name="date"/>
+                <field name="department_ids"/>
+                <filter name="draft" string="Brouillon" domain="[('state', '=', 'draft')]"/>
+                <filter name="confirmed" string="Confirmé" domain="[('state', '=', 'confirmed')]"/>
+                <filter name="processed" string="Traité" domain="[('state', '=', 'processed')]"/>
+                <separator/>
+                <filter name="this_month" string="Ce mois"
+                        domain="[('date', '&gt;=', (context_today() - relativedelta(day=1)).strftime('%Y-%m-%d')),
+                                ('date', '&lt;', (context_today() + relativedelta(months=1, day=1)).strftime('%Y-%m-%d'))]"/>
+                <group expand="0" string="Grouper par">
+                    <filter name="group_by_month" string="Mois" context="{'group_by': 'date:month'}"/>
+                    <filter name="group_by_state" string="État" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_attendance_daily" model="ir.actions.act_window">
+        <field name="name">Pointages Quotidiens</field>
+        <field name="res_model">attendance.daily</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créer un nouveau pointage quotidien
+            </p>
+            <p>
+                Gérez les présences quotidiennes de vos employés
+            </p>
+        </field>
+    </record>
+</odoo>

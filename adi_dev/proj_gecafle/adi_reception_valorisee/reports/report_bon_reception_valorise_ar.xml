@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Template du bon de réception valorisé en arabe -->
+    <template id="report_bon_reception_valorise_ar_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <!-- Page complète en RTL -->
+                    <div class="page" dir="rtl" style="font-family: 'Arial', 'Tahoma', sans-serif; text-align: right;">
+
+                        <!-- En-tête du document -->
+                        <div class="text-center mb-4">
+                            <h2>
+                                <strong>وصل استلام مُثمّن</strong>
+                            </h2>
+                        </div>
+
+                        <!-- Informations générales -->
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <table class="table table-sm" style="text-align: right;">
+                                    <tr>
+                                        <td class="text-right"><strong>الحالة:</strong></td>
+                                        <td>
+                                            <span t-if="o.state == 'brouillon'" class="badge badge-warning">مسودة</span>
+                                            <span t-elif="o.state == 'confirmee'" class="badge badge-success">مؤكد</span>
+                                            <span t-elif="o.state == 'annulee'" class="badge badge-danger">ملغي</span>
+                                        </td>
+                                    </tr>
+                                    <tr t-if="o.invoice_id">
+                                        <td class="text-right"><strong>الفاتورة:</strong></td>
+                                        <td><span t-field="o.invoice_id.name"/></td>
+                                    </tr>
+                                    <tr t-if="o.avance_producteur">
+                                        <td class="text-right"><strong>السلفة:</strong></td>
+                                        <td>
+                                            <span t-field="o.avance_producteur"
+                                                  t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="col-6">
+                                <table class="table table-sm" style="text-align: right;">
+                                    <tr>
+                                        <td class="text-right"><strong>رقم الاستلام:</strong></td>
+                                        <td><span t-field="o.name"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-right"><strong>التاريخ:</strong></td>
+                                        <td><span t-field="o.reception_date" t-options='{"widget": "datetime", "format": "dd/MM/yyyy HH:mm"}'/></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-right"><strong>المنتج:</strong></td>
+                                        <td><span t-field="o.producteur_id.name"/></td>
+                                    </tr>
+                                    <tr t-if="o.producteur_id.phone">
+                                        <td class="text-right"><strong>الهاتف:</strong></td>
+                                        <td><span t-field="o.producteur_id.phone"/></td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Tableau des produits - ORDRE RTL DE DROITE À GAUCHE -->
+                        <div class="mt-4">
+                            <h5 style="text-align: right;">تفاصيل المنتجات</h5>
+                            <table class="table table-sm table-bordered" style="direction: rtl;">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <!-- Ordre des colonnes de droite à gauche -->
+                                        <th style="text-align: center;" width="4%">رقم</th>
+                                        <th style="text-align: right;" width="18%">المنتج</th>
+                                        <th style="text-align: right;" width="12%">الجودة</th>
+                                        <th style="text-align: right;" width="12%">نوع الطرد</th>
+                                        <th style="text-align: center;" width="7%">الكمية</th>
+                                        <th style="text-align: center;" width="9%">الوزن الإجمالي</th>
+                                        <th style="text-align: center;" width="9%">وزن الطرود</th>
+                                        <th style="text-align: center;" width="9%">الوزن الصافي</th>
+                                        <th style="text-align: center;" width="8%">السعر/كغ</th>
+                                        <th style="text-align: center;" width="12%">المبلغ</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-set="total_qty" t-value="0"/>
+                                    <t t-foreach="o.details_reception_ids" t-as="line">
+                                        <tr>
+                                            <!-- Ordre des cellules de droite à gauche -->
+                                            <td style="text-align: center;"><span t-field="line.num_seq"/></td>
+                                            <td style="text-align: right;"><span t-field="line.designation_id.name"/></td>
+                                            <td style="text-align: right;"><span t-field="line.qualite_id.name"/></td>
+                                            <td style="text-align: right;"><span t-field="line.type_colis_id.name"/></td>
+                                            <td style="text-align: center;">
+                                                <span t-field="line.qte_colis_recue"/>
+                                                <t t-set="total_qty" t-value="total_qty + line.qte_colis_recue"/>
+                                            </td>
+                                            <td style="text-align: center;">
+                                                <span t-field="line.poids_brut" t-options='{"widget": "float", "precision": 2}'/>
+                                            </td>
+                                            <td style="text-align: center;">
+                                                <span t-field="line.poids_colis" t-options='{"widget": "float", "precision": 2}'/>
+                                            </td>
+                                            <td style="text-align: center;">
+                                                <span t-field="line.poids_net" t-options='{"widget": "float", "precision": 2}'/>
+                                            </td>
+                                            <td style="text-align: center;">
+                                                <span t-field="line.prix_unitaire_achat" t-options='{"widget": "float", "precision": 2}'/>
+                                            </td>
+                                            <td style="text-align: center;">
+                                                <span t-field="line.montant_ligne"
+                                                      t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                                <tfoot class="font-weight-bold bg-light">
+                                    <tr>
+                                        <!-- Total ligne de droite à gauche -->
+                                        <td colspan="4" style="text-align: right;">المجموع:</td>
+                                        <td style="text-align: center;"><t t-esc="total_qty"/></td>
+                                        <td style="text-align: center;">
+                                            <span t-field="o.total_poids_brut" t-options='{"widget": "float", "precision": 2}'/>
+                                        </td>
+                                        <td style="text-align: center;">
+                                            <span t-field="o.total_poids_colis" t-options='{"widget": "float", "precision": 2}'/>
+                                        </td>
+                                        <td style="text-align: center;">
+                                            <span t-field="o.total_poids_net" t-options='{"widget": "float", "precision": 2}'/>
+                                        </td>
+                                        <td></td>
+                                        <td style="text-align: center;">
+                                            <span t-field="o.montant_total_brut"
+                                                  t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+
+                        <!-- العبوات المشتراة - CORRECTION -->
+                        <t t-if="o.montant_total_emballages > 0 and o.details_emballage_reception_ids.filtered('is_achete')">
+                            <div class="mt-4">
+                                <h5 style="text-align: right;">العبوات المشتراة</h5>
+                                <table class="table table-sm table-bordered" style="direction: rtl;">
+                                    <thead class="bg-light">
+                                        <tr>
+                                            <th style="text-align: right;" width="30%">نوع العبوة</th>
+                                            <th style="text-align: center;" width="20%">الكمية الداخلة</th>
+                                            <th style="text-align: center;" width="20%">الكمية المشتراة</th>
+                                            <th style="text-align: center;" width="15%">السعر</th>
+                                            <th style="text-align: center;" width="15%">المبلغ</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="o.details_emballage_reception_ids.filtered('is_achete')" t-as="emb">
+                                            <!-- Afficher seulement si montant > 0 -->
+                                            <tr t-if="emb.montant_achat > 0">
+                                                <td style="text-align: right;"><span t-field="emb.emballage_id.name"/></td>
+                                                <td style="text-align: center;"><span t-field="emb.qte_entrantes"/></td>
+                                                <td style="text-align: center;">
+                                                    <!-- CORRECTION : Uniquement qte_achetee -->
+                                                    <span t-field="emb.qte_achetee"/>
+                                                </td>
+                                                <td style="text-align: center;">
+                                                    <span t-field="emb.prix_unitaire_achat"
+                                                          t-options='{"widget": "float", "precision": 2}'/>
+                                                </td>
+                                                <td style="text-align: center;">
+                                                    <span t-field="emb.montant_achat"
+                                                          t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                    <tfoot class="font-weight-bold bg-light">
+                                        <tr>
+                                            <td colspan="4" style="text-align: right;">مجموع العبوات:</td>
+                                            <td style="text-align: center;">
+                                                <span t-field="o.montant_total_emballages"
+                                                      t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                            </td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </t>
+
+                        <!-- المجاميع المالية -->
+                        <div class="row mt-5">
+                            <div class="col-6">
+                                <!-- ملاحظات -->
+                                <t t-if="o.observations">
+                                    <h6 style="text-align: right;">ملاحظات:</h6>
+                                    <p class="text-muted" style="text-align: right;"><span t-field="o.observations"/></p>
+                                </t>
+                            </div>
+                            <div class="col-6">
+                                <table class="table table-sm" style="direction: rtl; text-align: right;">
+                                    <tr>
+                                        <td style="text-align: right;"><strong>المبلغ الإجمالي:</strong></td>
+                                        <td style="text-align: left;">
+                                            <span t-field="o.montant_total_brut"
+                                                  t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                        </td>
+                                    </tr>
+                                    <tr t-if="o.montant_total_emballages > 0">
+                                        <td style="text-align: right;"><strong>- العبوات المشتراة:</strong></td>
+                                        <td style="text-align: left;">
+                                            <span t-field="o.montant_total_emballages"
+                                                  t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                        </td>
+                                    </tr>
+                                    <tr t-if="o.remise_globale > 0">
+                                        <td style="text-align: right;"><strong>- الخصم:</strong></td>
+                                        <td style="text-align: left;">
+                                            <span t-field="o.remise_globale"
+                                                  t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                        </td>
+                                    </tr>
+                                    <tr class="border-top">
+                                        <td style="text-align: right;"><h5><strong>الصافي للدفع:</strong></h5></td>
+                                        <td style="text-align: left;">
+                                            <h5 class="text-primary">
+                                                <strong>
+                                                    <span t-field="o.montant_net_a_payer"
+                                                          t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                                </strong>
+                                            </h5>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- التوقيعات -->
+                        <div class="row mt-5 pt-4">
+                            <div class="col-6 text-center">
+                                <div class="border-top pt-2">
+                                    <strong>المسؤول</strong><br/>
+                                    <small class="text-muted">التوقيع والختم</small>
+                                </div>
+                            </div>
+                            <div class="col-6 text-center">
+                                <div class="border-top pt-2">
+                                    <strong>المنتج</strong><br/>
+                                    <small class="text-muted">التوقيع والختم</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <!-- Définition du rapport AR -->
+    <record id="action_report_bon_reception_valorise_ar" model="ir.actions.report">
+        <field name="name">وصل استلام مُثمّن</field>
+        <field name="model">gecafle.reception</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_reception_valorisee.report_bon_reception_valorise_ar_document</field>
+        <field name="report_file">adi_reception_valorisee.report_bon_reception_valorise_ar</field>
+        <field name="print_report_name">'وصل استلام مُثمّن - %s' % (object.name)</field>
+        <field name="paperformat_id" ref="base.paperformat_euro"/>
+    </record>
+</odoo>

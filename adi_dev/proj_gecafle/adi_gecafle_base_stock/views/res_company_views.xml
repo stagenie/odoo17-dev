@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_company_form_inherit_gecafle" model="ir.ui.view">
+        <field name="name">res.company.form.inherit.gecafle</field>
+        <field name="model">res.company</field>
+        <field name="inherit_id" ref="base.view_company_form"/>
+        <field name="arch" type="xml">
+            <notebook position="inside">
+                <page string="Paramètres du Carreau" name="gecafle_settings">
+                    <group>
+                        <group string="Informations Carreau">
+                            <field name="carreau_number"/>
+                            <field name="marge_fruits"/>
+                            <field name="marge_legumes"/>
+                        </group>
+                        <group string="Compteurs">
+                            <field name="reception_counter" readonly="1"/>
+                            <field name="vente_counter" readonly="1"/>
+                            <field name="reglement_client_counter" readonly="1"/>
+                            <field name="reglement_producteur_counter" readonly="1"/>
+                            <field name="versement_producteur_counter" readonly="1"/>
+                            <field name="emballage_producteur_counter" readonly="1"/>
+                            <field name="versement_client_counter" readonly="1"/>
+                        </group>
+                        <group string="conditios de vente">
+                            <field name="conditions_ventes"/>
+                        </group>
+                    </group>
+                </page>
+            </notebook>
+        </field>
+    </record>
+</odoo>

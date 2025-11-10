@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Template de la facture fournisseur en arabe -->
+    <template id="report_invoice_with_payments_ar">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page" dir="rtl">
+                        <!-- En-tête -->
+                        <h2 class="text-center">
+                            <span t-if="o.move_type == 'in_invoice'">فاتورة المورد</span>
+                            <span t-elif="o.move_type == 'in_refund'">إشعار دائن</span>
+                        </h2>
+
+                        <div class="row mt-4">
+                            <div class="col-6 text-right">
+                                <strong>المورد:</strong>
+                                <address t-field="o.partner_id"
+                                    t-options='{"widget": "contact", "fields": ["address", "name", "phone"], "no_marker": True}'/>
+                            </div>
+                            <div class="col-6">
+                                <strong>رقم الفاتورة:</strong> <span t-field="o.name"/><br/>
+                                <strong>التاريخ:</strong> <span t-field="o.invoice_date"/><br/>
+                                <strong>تاريخ الاستحقاق:</strong> <span t-field="o.invoice_date_due"/>
+                            </div>
+                        </div>
+
+                        <!-- Lignes de facture -->
+                        <table class="table table-sm table-bordered mt-4">
+                            <thead>
+                                <tr>
+                                    <th class="text-right">المجموع</th>
+                                    <th class="text-center">السعر</th>
+                                    <th class="text-center">الكمية</th>
+                                    <th>الوصف</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="o.invoice_line_ids" t-as="line">
+                                    <tr>
+                                        <td class="text-right">
+                                            <span t-field="line.price_subtotal"/>
+                                        </td>
+                                        <td class="text-center">
+                                            <span t-field="line.price_unit"/>
+                                        </td>
+                                        <td class="text-center">
+                                            <span t-field="line.quantity"/>
+                                        </td>
+                                        <td>
+                                            <span t-field="line.name"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+
+                        <!-- Totaux -->
+                        <div class="clearfix">
+                            <div class="row">
+                                <div class="col-6">
+                                    <!-- Vide -->
+                                </div>
+                                <div class="col-6">
+                                    <table class="table table-sm">
+                                        <tr>
+                                            <td class="text-left">
+                                                <span t-field="o.amount_untaxed"/>
+                                            </td>
+                                            <td class="text-right">
+                                                <strong>المجموع الفرعي:</strong>
+                                            </td>
+                                        </tr>
+                                        <tr t-if="o.amount_tax">
+                                            <td class="text-left">
+                                                <span t-field="o.amount_tax"/>
+                                            </td>
+                                            <td class="text-right">
+                                                <strong>الضريبة:</strong>
+                                            </td>
+                                        </tr>
+                                        <tr class="border-top">
+                                            <td class="text-left">
+                                                <strong><span t-field="o.amount_total"/></strong>
+                                            </td>
+                                            <td class="text-right">
+                                                <strong>المجموع:</strong>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Informations de paiement -->
+                        <div t-if="o.payment_state != 'not_paid'" class="mt-4">
+                            <h5>معلومات الدفع</h5>
+                            <table class="table table-sm">
+                                <tr>
+                                    <td class="text-left">
+                                        <span t-if="o.payment_state == 'paid'" class="text-success">مدفوعة</span>
+                                        <span t-elif="o.payment_state == 'partial'" class="text-warning">مدفوعة جزئياً</span>
+                                        <span t-else="" class="text-danger">غير مدفوعة</span>
+                                    </td>
+                                    <td class="text-right">
+                                        <strong>حالة الدفع:</strong>
+                                    </td>
+                                </tr>
+                                <tr t-if="o.payment_state == 'partial'">
+                                    <td class="text-left">
+                                        <span t-field="o.amount_residual"/>
+                                    </td>
+                                    <td class="text-right">
+                                        <strong>المبلغ المتبقي:</strong>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Liste des paiements -->
+                            <t t-set="payments" t-value="o._get_reconciled_payments()"/>
+                            <div t-if="payments">
+                                <h6>تفاصيل المدفوعات:</h6>
+                                <table class="table table-sm table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-right">المبلغ</th>
+                                            <th class="text-center">طريقة الدفع</th>
+                                            <th>التاريخ</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr t-foreach="payments" t-as="payment">
+                                            <td class="text-right">
+                                                <span t-field="payment.amount"/>
+                                            </td>
+                                            <td class="text-center">
+                                                <span t-field="payment.journal_id.name"/>
+                                            </td>
+                                            <td>
+                                                <span t-field="payment.date"/>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <!-- Définition du rapport -->
+    <record id="action_report_invoice_with_payments_ar" model="ir.actions.report">
+        <field name="name">فاتورة المورد</field>
+        <field name="model">account.move</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_arabic_reports.report_invoice_with_payments_ar</field>
+        <field name="report_file">adi_arabic_reports.report_invoice_supplier_ar</field>
+        <field name="print_report_name">'فاتورة المورد - %s' % (object.name)</field>
+        <field name="paperformat_id" ref="base.paperformat_euro"/>
+        <field name="binding_model_id" ref="account.model_account_move"/>
+        <field name="binding_type">report</field>
+    </record>
+</odoo>

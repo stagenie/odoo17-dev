@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Définition d'un rapport personnalisé pour les factures avec récap -->
+    <record id="action_report_vendor_invoice_gecafle" model="ir.actions.report">
+        <field name="name">Facture Fournisseur GECAFLE</field>
+        <field name="model">account.move</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_gecafle_ventes.report_vendor_invoice_gecafle</field>
+        <field name="report_file">adi_gecafle_ventes.report_vendor_invoice_gecafle</field>
+        <field name="print_report_name">'Facture - %s' % (object.name or '')</field>
+        <field name="paperformat_id" ref="base.paperformat_euro"/>
+    </record>
+
+    <!-- Template du rapport -->
+    <template id="report_vendor_invoice_gecafle">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <!-- En-tête avec référence au récap -->
+                        <h2>FACTURE FOURNISSEUR GECAFLE</h2>
+
+                        <div class="row mt-4">
+                            <div class="col-6">
+                                <strong>Fournisseur:</strong> <span t-field="o.partner_id"/>
+                                <br/>
+                                <strong>Date:</strong> <span t-field="o.invoice_date"/>
+                            </div>
+                            <div class="col-6 text-right">
+                                <strong>N° Facture:</strong> <span t-field="o.name"/>
+                                <br/>
+                                <t t-if="o.recap_id">
+                                    <strong>Bordereau:</strong> <span t-field="o.recap_id.name"/>
+                                    <br/>
+                                    <strong>Folio:</strong> <span t-field="o.recap_id.reception_id.name"/>
+                                </t>
+                            </div>
+                        </div>
+
+                        <!-- Corps de la facture -->
+                        <t t-call="account.report_invoice_document"/>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

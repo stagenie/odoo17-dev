@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue formulaire héritée des clients GECAFLE -->
+    <record id="view_gecafle_client_form_inherit_sync" model="ir.ui.view">
+        <field name="name">gecafle.client.form.inherit.sync</field>
+        <field name="model">gecafle.client</field>
+        <field name="inherit_id" ref="adi_gecafle_ventes.view_gecafle_client_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Ajout du champ res_partner_id invisible -->
+            <xpath expr="//field[@name='name']" position="before">
+                <field name="res_partner_id" invisible="1"/>
+                <field name="active" invisible="1"/>
+            </xpath>
+
+            <!-- Smart button pour le partner Odoo -->
+            <xpath expr="//sheet" position="before">
+                <div class="oe_button_box" name="button_box">
+                    <button name="action_open_res_partner"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-building"
+                            invisible="not res_partner_id"
+                            groups="base.group_user">
+                        <div class="o_stat_info">
+                            <span class="o_stat_text">Contact</span>
+                            <span class="o_stat_text">Odoo</span>
+                        </div>
+                    </button>
+                </div>
+            </xpath>
+
+            <!-- Groupe pour les informations de synchronisation -->
+            <xpath expr="//group[last()]" position="after">
+                <group string="Synchronisation Odoo"
+                       invisible="not res_partner_id"
+                       groups="base.group_user">
+                    <group>
+                        <field name="res_partner_id"
+                               string="Contact Odoo lié"
+                               readonly="1"
+                               options="{'no_create': True}"/>
+                    </group>
+                    <group>
+                        <!-- CORRECTION : Suppression du label incorrect -->
+                        <div>
+                            <span class="badge badge-success">
+                                <i class="fa fa-check"/> Synchronisé avec Odoo
+                            </span>
+                        </div>
+                    </group>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Vue liste héritée -->
+    <record id="view_gecafle_client_tree_inherit_sync" model="ir.ui.view">
+        <field name="name">gecafle.client.tree.inherit.sync</field>
+        <field name="model">gecafle.client</field>
+        <field name="inherit_id" ref="adi_gecafle_ventes.view_gecafle_client_list"/>
+        <field name="arch" type="xml">
+            <!-- Indicateur de synchronisation -->
+            <xpath expr="//field[@name='tel_mob']" position="after">
+                <field name="res_partner_id"
+                       string="Contact Odoo"
+                       optional="show"
+                       readonly="1"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Vue de recherche héritée -->
+    <record id="view_gecafle_client_search_inherit_sync" model="ir.ui.view">
+        <field name="name">gecafle.client.search.inherit.sync</field>
+        <field name="model">gecafle.client</field>
+        <field name="inherit_id" ref="adi_gecafle_ventes.view_gecafle_client_search"/>
+        <field name="arch" type="xml">
+            <!-- Filtre pour les clients synchronisés -->
+            <xpath expr="//search" position="inside">
+                <separator/>
+                <filter string="Synchronisé Odoo"
+                        name="odoo_synced"
+                        domain="[('res_partner_id', '!=', False)]"/>
+                <filter string="Non synchronisé"
+                        name="not_synced"
+                        domain="[('res_partner_id', '=', False)]"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

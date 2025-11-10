@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Form View - MODIFIÉ: Utilisation des attrs -->
+    <record id="view_gecafle_producteur_form" model="ir.ui.view">
+        <field name="name">gecafle.producteur.form</field>
+        <field name="model">gecafle.producteur</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name" placeholder="Nom et prénom du producteur"/>
+                            <field name="phone" widget="phone"/>
+                            <field name="language"/>
+                        </group>
+                        <group>
+<!--                            <field name="initial_balance"/>-->
+                            <field name="currency_id" invisible="1"/>
+                            <field name="creation_date"/>
+                            <field name="use_custom_margin"/>
+                            <field name="fruit_margin" invisible="use_custom_margin == False"
+                                   required="use_custom_margin == True"/>
+                            <field name="vegetable_margin" invisible="use_custom_margin == False"
+                                   required="use_custom_margin == True"/>
+
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Adresse" name="address_page">
+                            <field name="address" placeholder="Adresse complète..."/>
+                        </page>
+                        <page string="Produits" name="products_page">
+                            <field name="product_ids">
+                                <tree>
+                                    <field name="name"/>
+                                    <field name="type"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Tree View - MODIFIÉ: list → tree -->
+    <record id="view_gecafle_producteur_tree" model="ir.ui.view">
+        <field name="name">gecafle.producteur.tree</field>
+        <field name="model">gecafle.producteur</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="phone"/>
+<!--                <field name="initial_balance"/>-->
+                <field name="creation_date"/>
+                <field name="product_count"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="view_gecafle_producteur_search" model="ir.ui.view">
+        <field name="name">gecafle.producteur.search</field>
+        <field name="model">gecafle.producteur</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="phone"/>
+                <field name="address"/>
+                <filter string="Marge Personnalisée" name="custom_margin" domain="[('use_custom_margin', '=', True)]"/>
+                <filter string="Langue Française" name="french" domain="[('language', '=', 'fr_FR')]"/>
+                <filter string="Langue Arabe" name="arabic" domain="[('language', '=', 'ar_DZ')]"/>
+                <group>
+                    <filter string="Langue" name="group_by_language" context="{'group_by': 'language'}"/>
+                    <filter string="Date de création" name="group_by_date"
+                            context="{'group_by': 'creation_date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+</odoo>

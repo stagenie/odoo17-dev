@@ -1,0 +1,394 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue Formulaire Complète -->
+    <record id="view_adi_scrap_management_form" model="ir.ui.view">
+        <field name="name">adi.scrap.management.form</field>
+        <field name="model">adi.scrap.management</field>
+        <field name="arch" type="xml">
+            <form string="Gestion des Rebuts">
+                <header>
+                    <button name="action_confirm"
+                            type="object"
+                            string="Confirmer"
+                            class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_validate"
+                            type="object"
+                            string="Valider"
+                            class="btn-success"
+                            confirm="Êtes-vous sûr de vouloir valider ce rebut?"
+                            invisible="state != 'confirmed'"/>
+                    <button name="action_reset_draft"
+                            type="object"
+                            string="Remettre en brouillon"
+                            invisible="state == 'validated'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,validated"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Validé" bg_color="bg-success" invisible="state != 'validated'"/>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Informations Générales">
+                            <field name="scrap_date"/>
+                            <field name="scrap_time" widget="datetime" optional="hide"/>
+                            <field name="daily_production_id"
+                                   options="{'no_create': True, 'no_open': False}"/>
+                            <field name="production_id"
+                                   options="{'no_create': True}"
+                                   optional="show"/>
+                        </group>
+                        <group string="Type et Produit">
+                            <field name="scrap_type"/>
+                            <field name="product_id"
+                                   options="{'no_create': True}"
+                                   domain="[('type', '=', 'product')]"
+                                   required="1"/>
+                            <field name="product_category_id" readonly="1" optional="show"/>
+                            <field name="lot_id"
+                                   domain="[('product_id', '=', product_id)]"
+                                   context="{'default_product_id': product_id}"
+                                   invisible="not product_id"
+                                   optional="show"/>
+                        </group>
+                    </group>
+
+                    <group>
+                        <group string="Calcul des Coûts">
+                            <field name="currency_id" invisible="1"/>
+                            <field name="product_unit_cost"
+                                   widget="monetary"
+                                   help="Coût d'une unité du produit (récupéré automatiquement)"/>
+                            <field name="product_weight"
+                                   invisible="scrap_type != 'finished'"
+                                   required="scrap_type == 'finished'"
+                                   help="Poids d'une unité en kg (ex: 3 kg/unité) - récupéré automatiquement du produit"/>
+                            <field name="cost_per_kg"
+                                   widget="monetary"
+                                   readonly="1"
+                                   force_save="1"
+                                   help="Calculé automatiquement : Coût unitaire ÷ Poids unitaire"/>
+                        </group>
+                        <group string="Quantités">
+                            <field name="qty_kg"
+                                   required="1"
+                                   help="Quantité totale de rebut en kilogrammes"/>
+                            <field name="qty_units"
+                                   invisible="scrap_type != 'finished'"
+                                   readonly="1"
+                                   help="Équivalent en unités de produit fini"/>
+                            <field name="qty_percentage"
+                                   widget="percentage"
+                                   invisible="not daily_production_id"
+                                   readonly="1"
+                                   help="Pourcentage par rapport à la production totale"/>
+                            <separator/>
+                            <label for="total_cost" class="oe_inline"/>
+                            <div class="o_row">
+                                <field name="total_cost" widget="monetary" class="oe_inline oe_highlight" readonly="1"/>
+                                <span class="oe_inline"> (Coût total du rebut)</span>
+                            </div>
+                        </group>
+                    </group>
+
+                    <group>
+                        <group string="Classification">
+                            <field name="reason_category"/>
+                            <field name="workcenter_id"
+                                   optional="show"
+                                   options="{'no_create': True}"/>
+                            <field name="operator_id"
+                                   optional="show"
+                                   options="{'no_create': True}"/>
+                            <field name="shift" optional="show"/>
+                        </group>
+                        <group string="Validation" invisible="state == 'draft'">
+                            <field name="validated_by" readonly="1" invisible="not validated_by"/>
+                            <field name="validated_date" readonly="1" invisible="not validated_date"/>
+                            <field name="company_id" readonly="1" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Détails" name="details">
+                            <group>
+                                <field name="reason"
+                                       placeholder="Décrivez la raison détaillée du rebut..."
+                                       nolabel="1"/>
+                            </group>
+                        </page>
+                        <page string="Actions Correctives" name="corrective">
+                            <group>
+                                <field name="corrective_action"
+                                       placeholder="Décrivez les actions mises en place pour éviter la récurrence..."
+                                       nolabel="1"/>
+                            </group>
+                        </page>
+                        <page string="Notes Internes" name="notes">
+                            <group>
+                                <field name="notes"
+                                       placeholder="Notes supplémentaires pour usage interne..."
+                                       nolabel="1"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vue Tree Complète -->
+    <record id="view_adi_scrap_management_tree" model="ir.ui.view">
+        <field name="name">adi.scrap.management.tree</field>
+        <field name="model">adi.scrap.management</field>
+        <field name="arch" type="xml">
+            <tree string="Rebuts de Production"
+                  decoration-success="state == 'validated'"
+                  decoration-warning="state == 'confirmed'"
+                  decoration-info="state == 'draft'"
+                  default_order="scrap_date desc">
+                <field name="name"/>
+                <field name="scrap_date"/>
+                <field name="daily_production_id" optional="show"/>
+                <field name="scrap_type"/>
+                <field name="product_id"/>
+                <field name="product_weight" optional="hide"/>
+                <field name="qty_kg" sum="Total Kg"/>
+                <field name="qty_units" optional="show" sum="Total Unités"/>
+                <field name="product_unit_cost" widget="monetary" optional="hide"/>
+                <field name="cost_per_kg" widget="monetary"/>
+                <field name="total_cost" widget="monetary" sum="Coût Total"/>
+                <field name="reason_category" optional="show"/>
+                <field name="state" widget="badge"/>
+                <field name="currency_id" invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vue Search Complète -->
+    <record id="view_adi_scrap_management_search" model="ir.ui.view">
+        <field name="name">adi.scrap.management.search</field>
+        <field name="model">adi.scrap.management</field>
+        <field name="arch" type="xml">
+            <search string="Recherche Rebuts">
+                <field name="name"/>
+                <field name="product_id"/>
+                <field name="daily_production_id"/>
+                <field name="scrap_date"/>
+                <field name="reason"/>
+
+                <separator/>
+
+                <!-- Filtres par Type -->
+                <filter string="Produits Finis"
+                        name="finished"
+                        domain="[('scrap_type','=','finished')]"/>
+                <filter string="Emballages"
+                        name="packaging"
+                        domain="[('scrap_type','=','packaging')]"/>
+                <filter string="Matières Premières"
+                        name="raw"
+                        domain="[('scrap_type','=','raw')]"/>
+
+                <separator/>
+
+                <!-- Filtres par Date -->
+                <filter string="Aujourd'hui"
+                        name="today"
+                        domain="[('scrap_date', '=', context_today())]"/>
+                <filter string="7 Derniers Jours"
+                        name="week"
+                        domain="[]"/>
+                <filter string="Ce Mois"
+                        name="month"
+                        domain="[]"/>
+                <filter string="Cette Année"
+                        name="year"
+                        domain="[]"/>
+
+                <separator/>
+
+                <!-- Filtres par État -->
+                <filter string="Brouillon"
+                        name="draft"
+                        domain="[('state','=','draft')]"/>
+                <filter string="Confirmé"
+                        name="confirmed"
+                        domain="[('state','=','confirmed')]"/>
+                <filter string="Validé"
+                        name="validated"
+                        domain="[('state','=','validated')]"/>
+
+                <separator/>
+
+                <!-- Filtres par Cause -->
+                <filter string="Défaut Qualité"
+                        name="quality"
+                        domain="[('reason_category','=','quality')]"/>
+                <filter string="Problème Machine"
+                        name="machine"
+                        domain="[('reason_category','=','machine')]"/>
+                <filter string="Erreur Humaine"
+                        name="human"
+                        domain="[('reason_category','=','human')]"/>
+
+                <separator/>
+
+                <!-- Filtres Spéciaux -->
+                <filter string="Coût Élevé"
+                        name="high_cost"
+                        domain="[('total_cost', '>', 1000)]"/>
+
+                <group expand="0" string="Grouper par">
+                    <filter string="Type"
+                            name="group_type"
+                            context="{'group_by':'scrap_type'}"/>
+                    <filter string="Produit"
+                            name="group_product"
+                            context="{'group_by':'product_id'}"/>
+                    <filter string="Date"
+                            name="group_date"
+                            context="{'group_by':'scrap_date:month'}"/>
+                    <filter string="Production"
+                            name="group_production"
+                            context="{'group_by':'daily_production_id'}"/>
+                    <filter string="Catégorie de Cause"
+                            name="group_reason"
+                            context="{'group_by':'reason_category'}"/>
+                    <filter string="Poste de Travail"
+                            name="group_workcenter"
+                            context="{'group_by':'workcenter_id'}"/>
+                    <filter string="État"
+                            name="group_state"
+                            context="{'group_by':'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Vue Pivot -->
+    <record id="view_adi_scrap_management_pivot" model="ir.ui.view">
+        <field name="name">adi.scrap.management.pivot</field>
+        <field name="model">adi.scrap.management</field>
+        <field name="arch" type="xml">
+            <pivot string="Analyse des Rebuts">
+                <field name="scrap_type" type="row"/>
+                <field name="scrap_date" interval="month" type="col"/>
+                <field name="qty_kg" type="measure"/>
+                <field name="total_cost" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Vue Graph -->
+    <record id="view_adi_scrap_management_graph" model="ir.ui.view">
+        <field name="name">adi.scrap.management.graph</field>
+        <field name="model">adi.scrap.management</field>
+        <field name="arch" type="xml">
+            <graph string="Évolution des Rebuts" type="bar">
+                <field name="scrap_date" interval="month"/>
+                <field name="total_cost" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Vue Kanban -->
+    <record id="view_adi_scrap_management_kanban" model="ir.ui.view">
+        <field name="name">adi.scrap.management.kanban</field>
+        <field name="model">adi.scrap.management</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_mobile" default_group_by="scrap_type">
+                <field name="name"/>
+                <field name="scrap_date"/>
+                <field name="product_id"/>
+                <field name="qty_kg"/>
+                <field name="total_cost"/>
+                <field name="state"/>
+                <field name="currency_id"/>
+                <field name="scrap_type"/>
+                <field name="color"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="oe_kanban_card oe_kanban_global_click">
+                            <div class="oe_kanban_content">
+                                <div class="o_kanban_record_top mb-2">
+                                    <div class="o_kanban_record_headings">
+                                        <strong class="o_kanban_record_title">
+                                            <field name="name"/>
+                                        </strong>
+                                    </div>
+                                    <field name="state" widget="label_selection"
+                                           options="{'classes': {'draft': 'info', 'confirmed': 'warning', 'validated': 'success'}}"/>
+                                </div>
+                                <div class="o_kanban_record_body">
+                                    <div><field name="product_id"/></div>
+                                    <div class="text-muted">
+                                        <i class="fa fa-calendar"/> <field name="scrap_date"/>
+                                    </div>
+                                    <div class="mt-1">
+                                        <span class="badge badge-pill">
+                                            <field name="qty_kg"/> kg
+                                        </span>
+                                        <t t-if="record.scrap_type.raw_value == 'finished'">
+                                            <span class="badge badge-primary">Produit Fini</span>
+                                        </t>
+                                        <t t-elif="record.scrap_type.raw_value == 'packaging'">
+                                            <span class="badge badge-info">Emballage</span>
+                                        </t>
+                                        <t t-else="">
+                                            <span class="badge badge-secondary">Matière Première</span>
+                                        </t>
+                                    </div>
+                                </div>
+                                <div class="o_kanban_record_bottom mt-2">
+                                    <div class="oe_kanban_bottom_left">
+                                        <span class="text-muted">Coût/kg: </span>
+                                        <field name="cost_per_kg" widget="monetary"/>
+                                    </div>
+                                    <div class="oe_kanban_bottom_right">
+                                        <strong class="text-danger">
+                                            <field name="total_cost" widget="monetary"/>
+                                        </strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Action Window -->
+    <record id="action_adi_scrap_management" model="ir.actions.act_window">
+        <field name="name">Gestion des Rebuts</field>
+        <field name="res_model">adi.scrap.management</field>
+        <field name="view_mode">tree,kanban,form,pivot,graph</field>
+        <field name="context">{}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Enregistrer un nouveau rebut
+            </p>
+            <p>
+                Gérez les rebuts de production (produits finis, emballages et matières premières)
+                pour calculer leur impact sur le prix de revient.
+            </p>
+            <p>
+                Le système calcule automatiquement :
+                <ul>
+                    <li>Le coût par kg basé sur le prix et le poids unitaire</li>
+                    <li>L'équivalent en unités pour les produits finis</li>
+                    <li>L'impact sur le prix de revient</li>
+                </ul>
+            </p>
+        </field>
+    </record>
+</odoo>

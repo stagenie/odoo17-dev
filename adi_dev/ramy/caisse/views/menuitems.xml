@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Action pour l'analyse  des transactions -->
+        <record model="ir.actions.act_window" id="account_analytic_line_action_inherit_caisse">
+            <field name="context"></field>
+            <field name="domain"></field>
+            <field name="name">Analyse des transactions</field>
+            <field name="res_model">account.analytic.line</field>
+            <field name="view_mode">tree,form,graph,pivot</field>
+            <field name="view_id" ref="analytic.view_account_analytic_line_tree"/>
+            <field name="help" type="html">
+              <p class="o_view_nocontent_empty_folder">
+                No activity yet on this account
+              </p>
+            </field>
+        </record>
+
+        <!--$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ -->
+
+        <menuitem id="menu_caisses"	name="Caisses " parent="account.menu_finance" sequence="7"  />
+		<menuitem id="menu_caisse_mensuelle" name="Caisses " 
+            parent="menu_caisses" 
+            sequence="1" 
+            action="caisse_mensuel_action" 
+            />
+            <menuitem id="menu_caisse_info" name="Listes des ecarts" 
+            parent="menu_caisses" 
+            sequence="2" 
+            action="caisse_info_action" 
+            />
+
+        <!-- Configuration -->
+        <menuitem id="config_caisse_menu" name="Configuration" parent="menu_caisses" sequence="5"/>
+        <menuitem id="menu_caisse_general_settings" name="Configuration" 
+            parent="config_caisse_menu"
+            sequence="0" 
+            action="action_caisse_configuration" 
+            groups="base.group_system"/>
+        <menuitem id="type_caisse_menu" name="Type de caisse" 
+            parent="config_caisse_menu" 
+            action="type_caisse_action" 
+            sequence="5"
+            />
+        <menuitem id="menu_refund_motif_family" name="Familles motifs" 
+            action="refund_motif_family_action" 
+            parent="config_caisse_menu"
+            sequence="10"
+            />
+        <menuitem id="menu_refund_motif" name="Motifs" 
+            action="fund_motif_action" 
+            parent="config_caisse_menu"
+            sequence="15"
+            />
+
+        <!-- Opérations -->
+        <menuitem id="operation_caisse_menu" name="Opérations" parent="menu_caisses" sequence="10"/>
+        <menuitem name="Mouvement de caisse" 
+            id="menu_transaction_form" 
+            action="transaction_actions"
+            parent="operation_caisse_menu"
+            sequence="1"
+            />
+        <menuitem id="menu_refund_advance"
+            name="Avances"
+            sequence="2"
+            action="fund_advance_action"
+            parent="operation_caisse_menu"
+            />
+        <menuitem id="menu_caisse_lignes" name="Lignes des transaction" 
+            parent="operation_caisse_menu" 
+            sequence="3" 
+            action="caisse_ligne_action"
+            />
+
+        <!-- Rapports -->
+        <menuitem id="report_caisse_menu" name="Rapports" parent="menu_caisses" sequence="15"/>
+            <menuitem name="Rapport de caisse" 
+                id="menu_print_caisse" 
+                action="actions_wizard_selection_periode_id"
+                parent="report_caisse_menu"
+                sequence="5"
+                />
+
+                <menuitem id="menu_report_and_depense"
+                name="Analyse et dépenses"
+                sequence="7"
+                action="analytic.action_account_analytic_account_form"
+                parent="report_caisse_menu"
+                />
+
+                <menuitem name="Analyse des transactions" 
+                id="menu_account_analytic_lines_caisse" 
+                action="account_analytic_line_action_inherit_caisse"
+                parent="report_caisse_menu"
+                sequence="10"
+                />
+
+		<!-- <delete  id="account.journal_cash_move_lines" model="ir.ui.menu"/> -->
+	</data>
+</odoo>

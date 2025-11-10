@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue formulaire -->
+    <record id="view_gecafle_consigne_retour_form" model="ir.ui.view">
+        <field name="name">gecafle.consigne.retour.form</field>
+        <field name="model">gecafle.consigne.retour</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_validate"
+                            string="Valider"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'brouillon'"/>
+<!--                                      confirm="Voulez-vous créer l'avoir de remboursement?"-->
+                    <button name="action_create_avoir"
+                            string="Créer Avoir"
+                            type="object"
+                            class="btn-success"
+                            invisible="state != 'valide'"
+                           />
+<!--                    confirm="Voulez-vous créer la note de crédit comptable ?"-->
+
+
+                    <button name="action_cancel"
+                            string="Annuler"
+                            type="object"
+                            class="btn-danger"
+                            invisible="state not in ('brouillon', 'valide')"/>
+
+                    <button name="action_draft"
+                            string="Remettre en brouillon"
+                            type="object"
+                            invisible="state != 'annule'"/>
+
+                    <field name="state" widget="statusbar"/>
+
+                    <!-- Ajoutez un groupe pour afficher l'état de paiement -->
+                    <group string="État du remboursement"
+                           invisible="not credit_note_id">
+                        <group>
+                            <field name="credit_note_state"
+                                   string="État note de crédit"
+                                   widget="badge"/>
+                            <field name="credit_note_payment_state"
+                                   string="État paiement"
+                                   widget="badge"
+                                   decoration-success="credit_note_payment_state == 'paid'"
+                                   decoration-warning="credit_note_payment_state == 'partial'"
+                                   decoration-danger="credit_note_payment_state in ['not_paid', False]"/>
+                        </group>
+                    </group>
+                </header>
+                <sheet>
+                    <!-- Champs invisibles -->
+                    <field name="avoir_client_id" invisible="1"/>
+                    <field name="credit_note_id" invisible="1"/>
+
+
+                    <div class="oe_button_box" name="button_box">
+                        <!-- Bouton existant pour l'avoir client -->
+                        <button name="action_view_avoir"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-file-invoice-dollar"
+                                invisible="not avoir_client_id">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_text">Avoir Client</span>
+                            </div>
+                        </button>
+                        <!-- NOUVEAU : Bouton pour la note de crédit -->
+                        <button name="action_view_credit_note"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-file-invoice"
+                                invisible="not credit_note_id">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_text">Note de Crédit</span>
+                            </div>
+                        </button>
+
+                        <!-- NOUVEAU : Bouton pour enregistrer le paiement -->
+                        <button name="action_register_payment"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-money"
+                                invisible="not credit_note_id or credit_note_payment_state == 'paid'">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_text">Paiement</span>
+                            </div>
+                        </button>
+                    </div>
+
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group>
+                            <field name="vente_id"
+                                   options="{'no_create': True}"
+                                   readonly="state != 'brouillon'"/>
+                            <field name="client_id"
+                                   required="1"
+                                   readonly="state != 'brouillon' or vente_id != False"
+                                   options="{'no_create': True}"/>
+                            <field name="date" readonly="state != 'brouillon'"/>
+                        </group>
+                        <group>
+                            <field name="montant_total_consigne" widget="monetary"/>
+                            <field name="montant_a_rembourser"
+                                   widget="monetary"
+                                   class="text-success font-weight-bold"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                    </group>
+
+                    <!-- Message d'aide -->
+                    <div class="alert alert-info"
+                         invisible="vente_id or state != 'brouillon'">
+                        <p>
+                            <i class="fa fa-info-circle"/>
+                            <strong>Mode d'emploi :</strong>
+                            Sélectionnez d'abord une vente pour charger automatiquement les emballages consignés.
+                        </p>
+                    </div>
+
+                    <notebook>
+                        <!-- Dans la section du tree des lignes de retour -->
+                        <page string="Emballages à retourner">
+                            <field name="retour_line_ids"
+                                   context="{'default_retour_id': id}">
+                                <tree editable="bottom"
+                                      decoration-muted="qte_retournee == 0"
+                                      create="false"
+                                      delete="state == 'brouillon'">
+                                    <field name="emballage_id"
+                                           options="{'no_create': True}"
+                                           required="1"
+                                           readonly="1"
+                                           force_save="1"/>
+                                    <field name="qte_consignee"
+                                           readonly="1"
+                                           force_save="1"/>
+                                    <field name="qte_retournee"/>
+                                    <field name="prix_unitaire"
+                                           widget="monetary"
+                                           readonly="1"
+                                           force_save="1"/>
+                                    <field name="montant_total"
+                                           widget="monetary"
+                                           sum="Total"
+                                           readonly="1"/>
+                                    <field name="currency_id" invisible="1"/>
+                                </tree>
+                            </field>
+
+                            <!-- Message si pas de lignes -->
+                            <p class="text-muted" invisible="retour_line_ids">
+                                <i class="fa fa-info-circle"/>
+                                Sélectionnez une vente pour voir les emballages à retourner.
+                            </p>
+                        </page>
+
+
+                        <page string="Notes">
+                            <field name="notes" placeholder="Notes internes..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vue liste -->
+    <record id="view_gecafle_consigne_retour_tree" model="ir.ui.view">
+        <field name="name">gecafle.consigne.retour.tree</field>
+        <field name="model">gecafle.consigne.retour</field>
+        <field name="arch" type="xml">
+            <tree decoration-info="state == 'brouillon'"
+                  decoration-success="state == 'avoir_cree'"
+                  decoration-muted="state == 'annule'">
+                <field name="name"/>
+                <field name="date"/>
+                <field name="vente_id"/>
+                <field name="client_id"/>
+                <field name="montant_a_rembourser" widget="monetary" sum="Total"/>
+                <field name="state" widget="badge"/>
+                <field name="avoir_client_id" optional="show"/>
+                <field name="credit_note_payment_state"
+                       string="Paiement"
+                       widget="badge"
+                       optional="show"
+                       decoration-success="credit_note_payment_state == 'paid'"
+                       decoration-warning="credit_note_payment_state == 'partial'"
+                       decoration-danger="credit_note_payment_state in ['not_paid', False]"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vue recherche -->
+    <record id="view_gecafle_consigne_retour_search" model="ir.ui.view">
+        <field name="name">gecafle.consigne.retour.search</field>
+        <field name="model">gecafle.consigne.retour</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="vente_id"/>
+                <field name="client_id"/>
+                <filter string="Brouillon" name="draft" domain="[('state','=','brouillon')]"/>
+                <filter string="Validé" name="validated" domain="[('state','=','valide')]"/>
+                <filter string="Avoir créé" name="avoir_cree" domain="[('state','=','avoir_cree')]"/>
+                <separator/>
+                <filter string="Aujourd'hui" name="today"
+                        domain="[('date', '=', context_today())]"/>
+                <filter string="Cette semaine" name="this_week"
+                        domain="[('date', '>=', (context_today() - relativedelta(weeks=1)).strftime('%%Y-%%m-%%d'))]"/>
+                <separator/>
+                <filter string="Payé"
+                        name="paid"
+                        domain="[('credit_note_payment_state', '=', 'paid')]"/>
+                <filter string="Non payé"
+                        name="not_paid"
+                        domain="[('credit_note_payment_state', 'in', ['not_paid', False])]"/>
+                <filter string="Partiellement payé"
+                        name="partial"
+                        domain="[('credit_note_payment_state', '=', 'partial')]"/>
+                <group expand="0" string="Grouper par">
+                    <filter string="Client" name="group_by_client" context="{'group_by':'client_id'}"/>
+                    <filter string="État" name="group_by_state" context="{'group_by':'state'}"/>
+                    <filter string="Date" name="group_by_date" context="{'group_by':'date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_gecafle_consigne_retour" model="ir.actions.act_window">
+        <field name="name">Retours de Consigne</field>
+        <field name="res_model">gecafle.consigne.retour</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créez votre premier retour de consigne
+            </p>
+            <p>
+                Gérez les retours d'emballages consignés et créez automatiquement
+                les avoirs de remboursement pour vos clients.
+            </p>
+        </field>
+    </record>
+</odoo>

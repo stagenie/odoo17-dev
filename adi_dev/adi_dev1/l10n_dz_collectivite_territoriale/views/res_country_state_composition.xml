@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_country_state_composition_view_form" model="ir.ui.view">
+        <field name="name">view.res.country.state.composition.form</field>
+        <field name="model">res.country.state.composition</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="code"/>
+                        </group>
+                        <group>
+                            <field name="address"/>
+                            <field name="commune"/>
+                            <field name="daira"/>
+                            <field name="state_id"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="res_country_state_composition_view_tree" model="ir.ui.view">
+        <field name="name">view.res.country.state.composition.tree</field>
+        <field name="model">res.country.state.composition</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="code"/>
+                <field name="name"/>
+                <field name="commune"/>
+                <field name="daira"/>
+                <field name="state_id"/>
+            </tree>
+        </field>
+    </record>
+</odoo>

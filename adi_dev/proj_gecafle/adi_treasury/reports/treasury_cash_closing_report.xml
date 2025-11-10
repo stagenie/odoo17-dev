@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Template du rapport de clôture -->
+    <template id="report_treasury_cash_closing_document">
+        <t t-call="web.external_layout">
+            <div class="page">
+                <div class="text-center mb-4">
+                    <h2>RAPPORT DE CLÔTURE DE CAISSE</h2>
+                    <h4>
+                        <span t-field="doc.name"/>
+                    </h4>
+                </div>
+
+                <!-- Informations générales -->
+                <div class="row mb-4">
+                    <div class="col-4">
+                        <strong>Caisse :</strong>
+                        <span t-field="doc.cash_id.name"/>
+                        <br/>
+                        <strong>Date de clôture :</strong>
+                        <span t-field="doc.closing_date"/>
+                        <br/>
+                        <strong>Clôture N° :</strong>
+                        <span t-field="doc.closing_number"/>
+                        du jour
+                        <br/>
+                        <strong>Période :</strong>
+                        <span t-field="doc.period_start"
+                              t-options='{"widget": "datetime", "format": "dd/MM/yyyy HH:mm"}'/>
+                        -
+                        <span t-field="doc.period_end"
+                              t-options='{"widget": "datetime", "format": "dd/MM/yyyy HH:mm"}'/>
+                    </div>
+                    <div class="col-4">
+                        <strong>Responsable :</strong>
+                        <span t-field="doc.user_id.name"/>
+                        <br/>
+                        <strong>État :</strong>
+                        <span t-field="doc.state"/>
+                    </div>
+                    <div class="col-4 text-right">
+                        <h4>Solde initial :
+                            <span t-field="doc.balance_start"
+                                  t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                        </h4>
+                    </div>
+                </div>
+
+                <!-- Remplacer le tableau des opérations par une version consolidée CORRIGÉE -->
+                <h4 class="mt-4">Détail de toutes les opérations</h4>
+                <table class="table table-sm table-striped">
+                    <thead class="bg-light">
+                        <tr>
+                            <th width="15%">Date/Heure</th>
+                         <!--   <th width="10%">Type</th>-->
+                            <th width="15%">Tiers</th>
+                            <th width="15%">Catégorie</th>
+                            <th width="25%">Description</th>
+                            <th width="10%" class="text-right">Entrées</th>
+                            <th width="10%" class="text-right">Sorties</th>
+                            <th width="10%" class="text-right">Solde</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="doc.line_ids.sorted('sequence')" t-as="line">
+                            <tr t-att-class="'table-primary' if line.operation_type == 'initial' else ''">
+                                <td>
+                                    <span t-field="line.date"
+                                          t-options='{"widget": "datetime", "format": "dd/MM HH:mm"}'/>
+                                </td>
+                                <!--
+                                <td>
+                                    <t t-if="line.operation_id and line.operation_id.payment_id">
+                                        <span class="badge badge-info">Auto</span>
+                                    </t>
+                                    <t t-elif="line.operation_id and not line.operation_id.payment_id">
+                                        <span class="badge badge-warning">Manuel</span>
+                                    </t>
+                                    <t t-elif="line.operation_type == 'initial'">
+                                        <span class="badge badge-primary">Initial</span>
+                                    </t>
+                                </td>
+
+                                -->
+
+                                <td>
+                                    <span t-field="line.partner_id.name" t-if="line.partner_id"/>
+                                    <span t-else="" class="text-muted">-</span>
+                                </td>
+                                <td>
+                                    <span t-field="line.category_id.name" t-if="line.category_id"/>
+                                </td>
+                                <td>
+                                    <span t-field="line.description"/>
+                                    <t t-if="line.reference">
+                                        <br/>
+                                        <small class="text-muted">Réf:
+                                            <span t-field="line.reference"/>
+                                        </small>
+                                    </t>
+                                </td>
+                                <td class="text-right">
+                                    <span t-if="line.amount_in &gt; 0"
+                                          t-field="line.amount_in"
+                                          t-options='{"widget": "monetary", "display_currency": doc.currency_id}'
+                                          class="text-success font-weight-bold"/>
+                                </td>
+                                <td class="text-right">
+                                    <span t-if="line.amount_out &gt; 0"
+                                          t-field="line.amount_out"
+                                          t-options='{"widget": "monetary", "display_currency": doc.currency_id}'
+                                          class="text-danger font-weight-bold"/>
+                                </td>
+                                <td class="text-right font-weight-bold">
+                                    <span t-field="line.cumulative_balance"
+                                          t-options='{"widget": "monetary", "display_currency": doc.currency_id}'
+                                          t-att-class="'text-success' if line.cumulative_balance &gt; 0 else 'text-danger'"/>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                    <tfoot class="bg-light font-weight-bold">
+                        <tr>
+                            <td colspan="4" class="text-right">TOTAUX</td>
+                            <td class="text-right text-success">
+                                <span t-field="doc.total_in"
+                                      t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                            </td>
+                            <td class="text-right text-danger">
+                                <span t-field="doc.total_out"
+                                      t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                            </td>
+                            <td class="text-right">
+                                <span t-field="doc.balance_end_theoretical"
+                                      t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+
+
+                <!-- Tableau récapitulatif par catégorie -->
+                <h5 class="mt-4">Récapitulatif par catégorie</h5>
+                <table class="table table-sm table-bordered">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>Catégorie</th>
+                            <th class="text-center">Nombre</th>
+                            <th class="text-right">Entrées</th>
+                            <th class="text-right">Sorties</th>
+                            <th class="text-right">Net</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Ce sera géré par un computed field ou un widget -->
+                        <tr t-foreach="doc.operation_ids.filtered(lambda o: o.state == 'posted').mapped('category_id')"
+                            t-as="cat">
+                            <td>
+                                <t t-esc="cat.name"/>
+                            </td>
+                            <td class="text-center">
+                                <t t-esc="len(doc.operation_ids.filtered(lambda o: o.state == 'posted' and o.category_id == cat))"/>
+                            </td>
+                            <td class="text-right text-success">
+                                <t t-esc="sum(doc.operation_ids.filtered(lambda o: o.state == 'posted' and o.category_id == cat and o.operation_type == 'in').mapped('amount'))"
+                                   t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                            </td>
+                            <td class="text-right text-danger">
+                                <t t-esc="sum(doc.operation_ids.filtered(lambda o: o.state == 'posted' and o.category_id == cat and o.operation_type == 'out').mapped('amount'))"
+                                   t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                            </td>
+                            <td class="text-right font-weight-bold">
+                                <t t-set="net_amount"
+                                   t-value="sum(doc.operation_ids.filtered(lambda o: o.state == 'posted' and o.category_id == cat and o.operation_type == 'in').mapped('amount')) - sum(doc.operation_ids.filtered(lambda o: o.state == 'posted' and o.category_id == cat and o.operation_type == 'out').mapped('amount'))"/>
+                                <t t-esc="net_amount"
+                                   t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+
+                <!-- Récapitulatif -->
+                <div class="row mt-4">
+                    <div class="col-6 offset-6">
+                        <table class="table table-sm">
+                            <tr>
+                                <td>
+                                    <strong>Solde théorique :</strong>
+                                </td>
+                                <td class="text-right">
+                                    <span t-field="doc.balance_end_theoretical"
+                                          t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>Solde réel (compté) :</strong>
+                                </td>
+                                <td class="text-right">
+                                    <span t-field="doc.balance_end_real"
+                                          t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                                </td>
+                            </tr>
+                            <tr t-if="doc.difference != 0" class="table-warning">
+                                <td>
+                                    <strong>Écart :</strong>
+                                </td>
+                                <td class="text-right text-danger">
+                                    <span t-field="doc.difference"
+                                          t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Signatures -->
+                <div class="row mt-5">
+                    <div class="col-6 text-center">
+                        <div class="border-top pt-2 mt-5">
+                            <strong>Le caissier</strong>
+                            <br/>
+                            <small>
+                                <span t-field="doc.user_id.name"/>
+                            </small>
+                        </div>
+                    </div>
+                    <div class="col-6 text-center">
+                        <div class="border-top pt-2 mt-5">
+                            <strong>Le responsable</strong>
+                            <br/>
+                            <small>
+                                <span t-field="doc.validated_by.name" t-if="doc.validated_by"/>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!-- Template principal -->
+    <template id="report_treasury_cash_closing">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="adi_treasury.report_treasury_cash_closing_document"/>
+            </t>
+        </t>
+    </template>
+
+    <!-- Définition du rapport -->
+    <record id="action_report_treasury_cash_closing" model="ir.actions.report">
+        <field name="name">Rapport de clôture</field>
+        <field name="model">treasury.cash.closing</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_treasury.report_treasury_cash_closing</field>
+        <field name="report_file">adi_treasury.report_treasury_cash_closing</field>
+        <field name="print_report_name">'Clôture - %s' % (object.name)</field>
+        <field name="binding_model_id" ref="model_treasury_cash_closing"/>
+        <field name="binding_type">report</field>
+    </record>
+</odoo>

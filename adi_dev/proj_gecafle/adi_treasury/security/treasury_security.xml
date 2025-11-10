@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Catégorie de module -->
+    <record id="module_category_treasury" model="ir.module.category">
+        <field name="name">Trésorerie</field>
+        <field name="description">Gestion de la trésorerie</field>
+        <field name="sequence">45</field>
+    </record>
+
+    <!-- Groupe Utilisateur -->
+    <record id="group_treasury_user" model="res.groups">
+        <field name="name">Utilisateur</field>
+        <field name="category_id" ref="module_category_treasury"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+        <field name="comment">Peut consulter et utiliser les caisses</field>
+    </record>
+
+    <!-- Groupe Manager -->
+    <record id="group_treasury_manager" model="res.groups">
+        <field name="name">Manager</field>
+        <field name="category_id" ref="module_category_treasury"/>
+        <field name="implied_ids" eval="[(4, ref('group_treasury_user'))]"/>
+        <field name="comment">Peut gérer toutes les caisses et configurations</field>
+    </record>
+
+    <!-- Règles d'accès par enregistrement -->
+    <record id="treasury_cash_rule_user" model="ir.rule">
+        <field name="name">Caisses : utilisateurs autorisés uniquement</field>
+        <field name="model_id" ref="model_treasury_cash"/>
+        <field name="domain_force">['|', '|',
+            ('user_ids', 'in', [user.id]),
+            ('responsible_id', '=', user.id),
+            ('create_uid', '=', user.id)
+        ]</field>
+        <field name="groups" eval="[(4, ref('group_treasury_user'))]"/>
+    </record>
+
+    <record id="treasury_cash_rule_manager" model="ir.rule">
+        <field name="name">Caisses : accès total pour managers</field>
+        <field name="model_id" ref="model_treasury_cash"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('group_treasury_manager'))]"/>
+    </record>
+</odoo>

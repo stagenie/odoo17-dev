@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Rapport bulletin de paie avec colonnes séparées - Format Odoo 17 -->
+    <record id="action_report_payroll_slip" model="ir.actions.report">
+        <field name="name">Bulletin de paie</field>
+        <field name="model">payroll.slip</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_simple_payroll.report_payroll_slip</field>
+        <field name="report_file">adi_simple_payroll.report_payroll_slip</field>
+        <field name="print_report_name">'Bulletin - %s' % object.number</field>
+        <field name="binding_model_id" ref="model_payroll_slip"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_payroll_slip">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2 class="text-center">BULLETIN DE PAIE</h2>
+
+                        <div class="row mt-4">
+                            <div class="col-6">
+                                <strong>Nom &amp; Prénom:</strong>
+                                <span t-field="doc.employee_name"/>
+                                <br/>
+                                <strong>Poste:</strong>
+                                <span t-field="doc.job_id.name"/>
+                                <br/>
+                                <strong>Situation familiale:</strong>
+                                <span t-field="doc.marital"/>
+                            </div>
+                            <div class="col-6 text-right">
+                                <strong>N° Bulletin:</strong>
+                                <span t-field="doc.number"/>
+                                <br/>
+                                <strong>Période:</strong>
+                                Du
+                                <span t-field="doc.date_from"/>
+                                au
+                                <span t-field="doc.date_to"/>
+                            </div>
+                        </div>
+
+                        <table class="table table-sm mt-4">
+                            <thead>
+                                <tr style="border-bottom: 2px solid black;">
+                                    <th width="5%">N°</th>
+                                    <th width="35%">Rubrique</th>
+                                    <th width="15%" class="text-right">Nbre/Taux</th>
+                                    <th width="15%" class="text-right">Montant Unitaire</th>
+                                    <th width="15%" class="text-right">Gain</th>
+                                    <th width="15%" class="text-right">Retenue</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="doc.line_ids.sorted('sequence')" t-as="line">
+                                    <tr>
+                                        <td>
+                                            <span t-esc="line_index + 1"/>
+                                        </td>
+                                        <td>
+                                            <span t-field="line.name"/>
+                                        </td>
+                                        <td class="text-right">
+                                            <span t-field="line.quantity"/>
+                                        </td>
+                                        <td class="text-right">
+                                            <span t-field="line.rate" widget="monetary"/>
+                                        </td>
+                                        <td class="text-right">
+                                            <span t-if="line.amount_earning > 0" t-field="line.amount_earning"
+                                                  widget="monetary"/>
+                                        </td>
+                                        <td class="text-right">
+                                            <span t-if="line.amount_deduction > 0" t-field="line.amount_deduction"
+                                                  widget="monetary"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                            <tfoot>
+                                <tr style="border-top: 2px solid black;">
+                                    <td colspan="4" class="text-right">
+                                        <strong>Totaux:</strong>
+                                    </td>
+                                    <td class="text-right">
+                                        <strong>
+                                            <span t-field="doc.total_earnings" widget="monetary"/>
+                                        </strong>
+                                    </td>
+                                    <td class="text-right">
+                                        <strong>
+                                            <span t-field="doc.total_deductions" widget="monetary"/>
+                                        </strong>
+                                    </td>
+                                </tr>
+                                <tr style="border-top: 1px solid black;">
+                                    <td colspan="5" class="text-right">
+                                        <h5>Salaire Net:</h5>
+                                    </td>
+                                    <td class="text-right">
+                                        <h5>
+                                            <span t-field="doc.total_net" widget="monetary"/>
+                                        </h5>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+
+                        <div class="row mt-5">
+                            <div class="col-6">
+                                <p>
+                                    <strong>Signature Employé:</strong>
+                                </p>
+                                <div style="height: 60px; border-bottom: 1px solid black; width: 200px;"></div>
+                            </div>
+                            <div class="col-6 text-right">
+                                <p>
+                                    <strong>Signature Direction:</strong>
+                                </p>
+                                <div style="height: 60px; border-bottom: 1px solid black; width: 200px; float: right;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

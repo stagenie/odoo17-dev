@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Template du rapport Avoir Producteur en Arabe -->
+    <template id="report_avoir_producteur_document_ar">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page" dir="rtl">
+                        <h2 class="text-center">إشعار دائن للمنتج</h2>
+
+                        <div class="row mt-4">
+                            <div class="col-6 text-right">
+                                <strong>المنتج:</strong> <span t-field="o.producteur_id.name"/><br/>
+                                <strong>الهاتف:</strong> <span t-field="o.producteur_id.phone"/><br/>
+                            </div>
+                            <div class="col-6">
+                                <strong>رقم الإشعار:</strong> <span t-field="o.name"/><br/>
+                                <strong>التاريخ:</strong> <span t-field="o.date"/><br/>
+                                <strong>النوع:</strong>
+                                <span t-if="o.type_avoir == 'non_vendu'">بضاعة غير مباعة</span>
+                                <span t-elif="o.type_avoir == 'qualite'">مشكلة في الجودة</span>
+                                <span t-elif="o.type_avoir == 'perte'">خسارة/تلف</span>
+                                <span t-elif="o.type_avoir == 'accord_commercial'">اتفاق تجاري</span>
+                                <span t-elif="o.type_avoir == 'consigne'">إرجاع الأمانة</span>
+                            </div>
+                        </div>
+
+                        <div t-if="o.reception_id" class="mt-3">
+                            <strong>مرجع الاستلام:</strong> <span t-field="o.reception_id.name"/>
+                        </div>
+
+                        <div t-if="o.vente_id" class="mt-3">
+                            <strong>مرجع البيع:</strong> <span t-field="o.vente_id.name"/>
+                        </div>
+
+                        <!-- État -->
+                        <div t-if="o.state == 'annule'" class="alert alert-danger text-center mt-3">
+                            <strong>إشعار ملغى</strong>
+                        </div>
+
+                        <!-- Détails AVEC ORDRE INVERSÉ -->
+                        <div class="mt-4">
+                            <table class="table table-bordered">
+                                <tr>
+                                    <td class="text-right"><strong>الوصف:</strong></td>
+                                    <td><span t-field="o.description"/></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-right"><strong>المبلغ:</strong></td>
+                                    <td>
+                                        <strong><span t-field="o.montant_total"/></strong>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <!-- État de paiement -->
+                        <div t-if="o.credit_note_id" class="mt-4">
+                            <h5>حالة الدفع</h5>
+                            <table class="table table-sm table-bordered">
+                                <tr>
+                                    <td class="text-right">إشعار الدائن:</td>
+                                    <td><span t-field="o.credit_note_id.name"/></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-right">الحالة:</td>
+                                    <td>
+                                        <span t-if="o.credit_note_payment_state == 'paid'" class="badge badge-success">مدفوع</span>
+                                        <span t-elif="o.credit_note_payment_state == 'partial'" class="badge badge-warning">مدفوع جزئياً</span>
+                                        <span t-else="" class="badge badge-danger">غير مدفوع</span>
+                                    </td>
+                                </tr>
+                                <tr t-if="o.credit_note_payment_state != 'paid'">
+                                    <td class="text-right">المبلغ المتبقي:</td>
+                                    <td><span t-field="o.credit_note_amount_residual"/></td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <!-- Notes -->
+                        <div t-if="o.notes" class="mt-4">
+                            <strong>ملاحظات:</strong>
+                            <p t-field="o.notes"/>
+                        </div>
+
+                        <!-- Signatures -->
+                        <div class="row mt-5">
+                            <div class="col-6 text-right">
+                                <p>المنتج:<br/><br/>_____________________</p>
+                            </div>
+                            <div class="col-6">
+                                <p>المسؤول:<br/><br/>_____________________</p>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <!-- Définition du rapport -->
+    <record id="action_report_avoir_producteur_ar" model="ir.actions.report">
+        <field name="name">إشعار دائن للمنتج</field>
+        <field name="model">gecafle.avoir.producteur</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_arabic_reports.report_avoir_producteur_document_ar</field>
+        <field name="report_file">adi_arabic_reports.report_avoir_producteur_ar</field>
+        <field name="print_report_name">'إشعار دائن للمنتج - %s' % (object.name)</field>
+        <field name="paperformat_id" ref="base.paperformat_euro"/>
+        <field name="binding_model_id" ref="adi_gecafle_ventes.model_gecafle_avoir_producteur"/>
+        <field name="binding_type">report</field>
+    </record>
+</odoo>

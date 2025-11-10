@@ -1,0 +1,276 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* adi_gecafle_base_stock
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 18.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-04-03 10:00+0000\n"
+"PO-Revision-Date: 2025-04-03 10:00+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: adi_gecafle_base_stock
+#: model:ir.model.fields,field_description:adi_gecafle_base_stock.field_gecafle_producteur__address
+msgid "Adresse"
+msgstr "Adresse"
+
+#. module: adi_gecafle_base_stock
+#: model:ir.model.fields.selection,name:adi_gecafle_base_stock.selection__gecafle_producteur__language__ar_dz
+msgid "العربية (Arabe)"
+msgstr "العربية (Arabe)"
+
+#. module: adi_gecafle_base_stock
+#: model:ir.model.fields,field_description:adi_gecafle_base_stock.field_gecafle_qualite__code
+msgid "Code de qualité"
+msgstr "Code de qualité"
+
+#. module: adi_gecafle_base_stock
+#: model:ir.model.fields,field_description:adi_gecafle_base_stock.field_gecafle_emballage__code
+msgid "Code de l'emballage"
+msgstr "Code de l'emballage"
+
+#. module: adi_gecafle_base_stock
+#: model:ir.model.fields,field_description:adi_gecafle_base_stock.field_gecafle_qualite__classification
+msgid "Classification"
+msgstr "Classification"
+
+#. module: adi_gecafle_base_stock
+#: model:ir.ui.menu,name:adi_gecafle_base_stock.menu_gecafle_config
+msgid "Configuration"
+msgstr "Configuration"
+
+#. module: adi_gecafle_base_stock
+#: model:ir.model.fields,field_description:adi_gecafle_base_stock.field_gecafle_producteur__creation_date
+#: model:ir.model.fields,field_description:adi_gecafle_base_stock.field_gecafle_emballage__creation_date
+msgid "Date de création"
+msgstr "Date de création"
+
+#. module: adi_gecafle_base_stock
+#: model:ir.model.fields,field_description:adi_gecafle_base_stock.field_gecafle_producteur__currency_id
+msgid "Devise"
+msgstr "Devise"
+
+#. module: adi_gecafle_base_stock
+#: model:ir.model.fields.selection,name:adi_gecafle_base_stock.selection__gecafle_produuit__type__fruit
+msgid "Fruit"
+msgstr "Fruit"
+
+#. module: adi_gecafle_base_stock
+#: model:ir.model.fields.selection,name:adi_gecafle_base_stock.selection__gecafle_producteur__language__fr_fr
+msgid "Français"
+msgstr "Français"
+
+#. module: adi_gecafle_base_stock
+#: model:ir.ui.menu,name:adi_gecafle_base_stock.menu_gecafle_root
+msgid "GeCaFle"
+msgstr "GeCaFle"
+
+#. module: adi_gecafle_base_stock
+#: model:ir.model.fields,field_description:adi_gecafle_base_stock.field_gecafle_producteur__language
+msgid "Langue"
+msgstr "Langue"
+
+#. module: adi_gecafle_base_stock
+#: model:ir.model.fields.selection,name:adi_gecafle_base_stock.selection__gecafle_produuit__type__legume
+msgid "Légume"
+msgstr "Légume"
+
+#. module: adi_gecafle_base_stock
+#: model:ir.model.fields,field_description:adi_gecafle_base_stock.field_gecafle_producteur__fruit_margin
+msgid "Marge Fruits (%)"
+msgstr "Marge Fruits (%)"
+
+#. module: adi_gecafle_base_stock
+#: model:ir.model.fields,field_description:adi_gecafle_base_stock.field_res_company__marge_fruits
+msgid "Marge Fruits (%)"
+msgstr "Marge Fruits (%)"
+
+#. module: adi_gecafle_base_stock
+#: model:ir.model.fields,field_description:adi_gecafle_base_stock.field_gecafle_producteur__vegetable_margin
+msgid "Marge Légumes (%)"
+msgstr "Marge Légumes (%)"
+
+#. module: adi_gecafle_base_stock
+#: model:ir.model.fields,field_description:adi_gecafle_base_stock.field_res_company__marge_legumes
+msgid "Marge Légumes (%)"
+msgstr "Marge Légumes (%)"
+
+#. module: adi_gecafle_base_stock
+#: model:ir.model.fields,field_description:adi_gecafle_base_stock.field_gecafle_producteur__use_custom_margin
+msgid "Marge personnalisée"
+msgstr "Marge personnalisée"
+
+#. module: adi_gecafle_base_stock
+#: model:ir.model.fields,field_description:adi_gecafle_base_stock.field_gecafle_producteur__mobile
+msgid "Mobile"
+msgstr "Mobile"
+
+#. module: adi_gecafle_base_stock
+#: model:ir.model.fields,field_description:adi_gecafle_base_stock.field_res_company__carreau_number
+msgid "N° de Carreau"
+msgstr "N° de Carreau"
+
+#. module: adi_gecafle_base_stock
+#: model:ir.model.fields,field_description:adi_gecafle_base_stock.field_res_company__reception_counter
+msgid "N° de réception en cours"
+msgstr "N° de réception en cours"
+
+#. module: adi_gecafle_base_stock
+#: model:ir.model.fields,field_description:adi_gecafle_base_stock.field_res_company__vente_counter
+msgid "N° de souche (Vente) en cours"
+msgstr "N° de souche (Vente) en cours"
+
+#. module: adi_gecafle_base_stock
+#: model:ir.model.fields,field_description:adi_gecafle_base_stock.field_gecafle_emballage__name
+msgid "Nom de l'emballage"
+msgstr "Nom de l'emballage"
+
+#. module: adi_gecafle_base_stock
+#: model:ir.model.fields,field_description:adi_gecafle_base_stock.field_gecafle_qualite__name
+msgid "Nom de qualité"
+msgstr "Nom de qualité"
+
+#. module: adi_gecafle_base_stock
+#: model:ir.model.fields,field_description:adi_gecafle_base_stock.field_gecafle_produit__name
+msgid "Nom du produit"
+msgstr "Nom du produit"
+
+#. module: adi_gecafle_base_stock
+#: model:ir.model.fields,field_description:adi_gecafle_base_stock.field_gecafle_producteur__name
+msgid "Nom et Prénom"
+msgstr "Nom et Prénom"
+
+#. module: adi_gecafle_base_stock
+#: model:ir.model.fields,field_description:adi_gecafle_base_stock.field_gecafle_emballage__non_returnable
+msgid "Non rendu"
+msgstr "Non rendu"
+
+#. module: adi_gecafle_base_stock
+#: model:ir.model.fields,field_description:adi_gecafle_base_stock.field_gecafle_producteur__product_count
+msgid "Nombre de produits"
+msgstr "Nombre de produits"
+
+#. module: adi_gecafle_base_stock
+#: model:ir.model.fields,field_description:adi_gecafle_base_stock.field_res_company__reglement_client_counter
+msgid "Num de Règlement Client"
+msgstr "Num de Règlement Client"
+
+#. module: adi_gecafle_base_stock
+#: model:ir.model.fields,field_description:adi_gecafle_base_stock.field_res_company__reglement_producteur_counter
+msgid "Num de Règlement Producteur"
+msgstr "Num de Règlement Producteur"
+
+#. module: adi_gecafle_base_stock
+#: model:ir.model.fields,field_description:adi_gecafle_base_stock.field_res_company__emballage_producteur_counter
+msgid "Num de Emballage Producteur"
+msgstr "Num de Emballage Producteur"
+
+#. module: adi_gecafle_base_stock
+#: model:ir.model.fields,field_description:adi_gecafle_base_stock.field_res_company__versement_producteur_counter
+msgid "Num de Versement Producteur"
+msgstr "Num de Versement Producteur"
+
+#. module: adi_gecafle_base_stock
+#: model:ir.model.fields,field_description:adi_gecafle_base_stock.field_res_company__versement_client_counter
+msgid "Num de Versement Client"
+msgstr "Num de Versement Client"
+
+#. module: adi_gecafle_base_stock
+#: model:ir.model.fields,field_description:adi_gecafle_base_stock.field_gecafle_emballage__weight
+msgid "Poids en Kilos"
+msgstr "Poids en Kilos"
+
+#. module: adi_gecafle_base_stock
+#: model:ir.model.fields,field_description:adi_gecafle_base_stock.field_gecafle_emballage__price_unit
+msgid "Prix Unitaire"
+msgstr "Prix Unitaire"
+
+#. module: adi_gecafle_base_stock
+#: model:ir.model.fields,field_description:adi_gecafle_base_stock.field_gecafle_produit__producteur_id
+#: model:ir.ui.menu,name:adi_gecafle_base_stock.menu_gecafle_producteur
+msgid "Producteur"
+msgstr "Producteur"
+
+#. module: adi_gecafle_base_stock
+#: model:ir.actions.act_window,name:adi_gecafle_base_stock.action_gecafle_producteur
+#: model_terms:ir.ui.view,arch_db:adi_gecafle_base_stock.view_gecafle_producteur_tree
+msgid "Producteurs"
+msgstr "Producteurs"
+
+#. module: adi_gecafle_base_stock
+#: model:ir.model.fields,field_description:adi_gecafle_base_stock.field_gecafle_producteur__product_ids
+#: model:ir.ui.menu,name:adi_gecafle_base_stock.menu_gecafle_produit
+msgid "Produits"
+msgstr "Produits"
+
+#. module: adi_gecafle_base_stock
+#: model:ir.actions.act_window,name:adi_gecafle_base_stock.action_gecafle_qualite
+#: model:ir.ui.menu,name:adi_gecafle_base_stock.menu_gecafle_qualite
+msgid "Qualités"
+msgstr "Qualités"
+
+#. module: adi_gecafle_base_stock
+#: model:ir.model.fields,field_description:adi_gecafle_base_stock.field_gecafle_emballage__quantity_available
+msgid "Quantité disponible"
+msgstr "Quantité disponible"
+
+#. module: adi_gecafle_base_stock
+#: model:ir.model.fields,field_description:adi_gecafle_base_stock.field_gecafle_emballage__quantity_initial
+msgid "Quantité initiale"
+msgstr "Quantité initiale"
+
+#. module: adi_gecafle_base_stock
+#: model:ir.model.fields,field_description:adi_gecafle_base_stock.field_gecafle_producteur__initial_balance
+msgid "Solde Initial"
+msgstr "Solde Initial"
+
+#. module: adi_gecafle_base_stock
+#: model:ir.ui.menu,name:adi_gecafle_base_stock.menu_gecafle_company_config
+msgid "Société"
+msgstr "Société"
+
+#. module: adi_gecafle_base_stock
+#: model:ir.ui.menu,name:adi_gecafle_base_stock.menu_gecafle_stock_root
+msgid "Stock"
+msgstr "Stock"
+
+#. module: adi_gecafle_base_stock
+#: model:ir.model.fields,field_description:adi_gecafle_base_stock.field_gecafle_producteur__phone
+msgid "Téléphone"
+msgstr "Téléphone"
+
+#. module: adi_gecafle_base_stock
+#: model:ir.model.fields,field_description:adi_gecafle_base_stock.field_gecafle_produit__type
+msgid "Type"
+msgstr "Type"
+
+#. module: adi_gecafle_base_stock
+#: model:ir.model.constraint,message:adi_gecafle_base_stock.constraint_gecafle_producteur_name_uniq
+msgid "Le nom du producteur doit être unique!"
+msgstr "Le nom du producteur doit être unique!"
+
+#. module: adi_gecafle_base_stock
+#: model:ir.model.constraint,message:adi_gecafle_base_stock.constraint_gecafle_produit_name_uniq
+msgid "Le nom du produit doit être unique!"
+msgstr "Le nom du produit doit être unique!"
+
+#. module: adi_gecafle_base_stock
+#: model:ir.model.constraint,message:adi_gecafle_base_stock.constraint_gecafle_qualite_code_uniq
+msgid "Le code de qualité doit être unique!"
+msgstr "Le code de qualité doit être unique!"
+
+#. module: adi_gecafle_base_stock
+#: model:ir.model.constraint,message:adi_gecafle_base_stock.constraint_gecafle_qualite_name_uniq
+msgid "Le nom de qualité doit être unique!"
+msgstr "Le nom de qualité doit être unique!"
+
+#. module: adi_gecafle_base_stock
+#: model:ir.model.constraint,message:adi_gecafle_base_stock.constraint_gecafle_emballage_code_uniq
+msgid "Le code de l'emballage doit être unique!"
+msgstr "Le code de l'emballage doit être unique!"

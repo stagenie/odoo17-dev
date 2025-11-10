@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Template du rapport de statistiques -->
+    <template id="report_statistiques_document">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="page">
+                    <!-- En-tête du rapport -->
+                    <div class="text-center mb-4">
+                        <h2>Rapport de Statistiques des Ventes</h2>
+                        <p>
+                            Période : du <span t-esc="date_debut"/> au <span t-esc="date_fin"/>
+                        </p>
+                    </div>
+
+                    <!-- Section Résumé -->
+                    <div class="row mb-4">
+                        <div class="col-3">
+                            <div class="card text-center">
+                                <div class="card-body">
+                                    <h5 class="card-title">Ventes Totales</h5>
+                                    <h3 class="text-primary">
+                                        <span t-esc="'{:,.0f}'.format(total_ventes)"/> DA
+                                    </h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="card text-center">
+                                <div class="card-body">
+                                    <h5 class="card-title">Nombre de Colis</h5>
+                                    <h3 class="text-info">
+                                        <span t-esc="'{:,.0f}'.format(total_colis)"/>
+                                    </h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="card text-center">
+                                <div class="card-body">
+                                    <h5 class="card-title">Poids Total</h5>
+                                    <h3 class="text-success">
+                                        <span t-esc="'{:,.0f}'.format(total_poids)"/> kg
+                                    </h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="card text-center">
+                                <div class="card-body">
+                                    <h5 class="card-title">Commission</h5>
+                                    <h3 class="text-warning">
+                                        <span t-esc="'{:,.0f}'.format(total_commission)"/> DA
+                                    </h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tableau par Produit -->
+                    <div t-if="stats_by_product">
+                        <h4 class="mt-4 mb-3">Statistiques par Produit</h4>
+                        <table class="table table-bordered table-sm">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>Produit</th>
+                                    <th class="text-right">Nombre Colis</th>
+                                    <th class="text-right">Poids (kg)</th>
+                                    <th class="text-right">Montant (DA)</th>
+                                    <th class="text-right">%</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="stats_by_product" t-as="stat">
+                                    <td><span t-esc="stat['produit']"/></td>
+                                    <td class="text-right"><span t-esc="'{:,.0f}'.format(stat['nombre_colis'])"/></td>
+                                    <td class="text-right"><span t-esc="'{:,.2f}'.format(stat['poids_total'])"/></td>
+                                    <td class="text-right"><span t-esc="'{:,.0f}'.format(stat['montant_total'])"/></td>
+                                    <td class="text-right"><span t-esc="'{:.1f}'.format(stat['pourcentage'])"/>%</td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr class="font-weight-bold">
+                                    <td>TOTAL</td>
+                                    <td class="text-right"><span t-esc="'{:,.0f}'.format(total_colis)"/></td>
+                                    <td class="text-right"><span t-esc="'{:,.2f}'.format(total_poids)"/></td>
+                                    <td class="text-right"><span t-esc="'{:,.0f}'.format(total_ventes)"/></td>
+                                    <td class="text-right">100%</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <!-- Tableau par Producteur -->
+                    <div t-if="stats_by_producer" class="mt-4">
+                        <h4 class="mb-3">Statistiques par Producteur</h4>
+                        <table class="table table-bordered table-sm">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>Producteur</th>
+                                    <th class="text-right">Nombre Ventes</th>
+                                    <th class="text-right">Montant (DA)</th>
+                                    <th class="text-right">Commission (DA)</th>
+                                    <th class="text-right">Net (DA)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="stats_by_producer" t-as="stat">
+                                    <td><span t-esc="stat['producteur']"/></td>
+                                    <td class="text-right"><span t-esc="stat['nombre_ventes']"/></td>
+                                    <td class="text-right"><span t-esc="'{:,.0f}'.format(stat['montant_total'])"/></td>
+                                    <td class="text-right"><span t-esc="'{:,.0f}'.format(stat['commission'])"/></td>
+                                    <td class="text-right"><span t-esc="'{:,.0f}'.format(stat['montant_net'])"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Top 10 Produits -->
+                    <div t-if="top_products" class="mt-4">
+                        <h4 class="mb-3">Top 10 Produits</h4>
+                        <table class="table table-striped table-sm">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Produit</th>
+                                    <th class="text-right">Quantité</th>
+                                    <th class="text-right">Montant (DA)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="top_products" t-as="product">
+                                    <td><span t-esc="product_index + 1"/></td>
+                                    <td><span t-esc="product['produit']"/></td>
+                                    <td class="text-right"><span t-esc="'{:,.0f}'.format(product['total_colis'])"/></td>
+                                    <td class="text-right"><span t-esc="'{:,.0f}'.format(product['total_montant'])"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Signature et date -->
+                    <div class="row mt-5">
+                        <div class="col-6">
+                            <p>
+                                Généré le : <span t-esc="datetime.datetime.now().strftime('%d/%m/%Y %H:%M')"/>
+                            </p>
+                        </div>
+                        <div class="col-6 text-right">
+                            <p>
+                                Par : <span t-esc="user.name"/>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+
+    <!-- Rapport Controller Python -->
+    <report
+        id="action_report_statistiques"
+        string="Rapport de Statistiques"
+        model="wizard.gecafle.statistiques"
+        report_type="qweb-pdf"
+        file="adi_gecafle_statistiques.report_statistiques"
+        name="adi_gecafle_statistiques.report_statistiques_document"
+        print_report_name="'Statistiques_' + (object.date_debut).strftime('%Y%m%d') + '_' + (object.date_fin).strftime('%Y%m%d')"
+    />
+</odoo>

@@ -1,0 +1,18 @@
+<!-- Dans views/account_payment_views.xml -->
+<record id="view_account_payment_tree_inherit_gecafle_extended" model="ir.ui.view">
+    <field name="name">account.payment.tree.inherit.gecafle.extended</field>
+    <field name="model">account.payment</field>
+    <field name="inherit_id" ref="account.view_account_payment_tree"/>
+    <field name="arch" type="xml">
+        <xpath expr="//field[@name='name']" position="after">
+            <field name="reception_id" optional="show" string="Réception"/>
+            <field name="type_de_paiement"
+                   widget="badge"
+                   decoration-info="type_de_paiement == 'standard'"
+                   decoration-warning="type_de_paiement == 'avance_producteur'"
+                   decoration-success="type_de_paiement == 'avance_transport'"
+                   decoration-primary="type_de_paiement == 'emballage'"
+                   string="Type"/>
+        </xpath>
+    </field>
+</record>

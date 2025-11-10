@@ -1,0 +1,40 @@
+<odoo>
+
+<record id="view_product_custom_tree" model="ir.ui.view">
+    <field name="name">product.template.custom.tree</field>
+    <field name="model">product.template</field>
+    <field name="arch" type="xml">
+        <tree editable="bottom">
+        	<field name="default_code" string="Référence" readonly="1"/>
+            <field name="name" string="Nom du Produit" readonly="1"/>
+            <field name="standard_price" string="Coût"/>
+            <field name="pourcentage_public" string="M.Pub (%)"/>
+            <field name="list_price" string="Prix Public"/>
+            <field name="pourcentage_revendeur" string="M.Rev (%)"/>
+            <field name="prix_revendeur" string="Prix Revendeur"/>
+            <field name="pourcentage_grossiste" string="M.Gro (%)"/>
+            <field name="prix_grossiste" string="Prix Grossiste"/>
+            
+            
+        </tree>
+    </field>
+</record>
+<record id="action_custom_product_tree" model="ir.actions.act_window">
+    <field name="name">Liste de Prix de Produits </field>
+    <field name="res_model">product.template</field>
+    <field name="view_mode">tree,form</field>
+    <field name="view_id" ref="view_product_custom_tree"/>
+</record>
+
+
+<menuitem id="adi_menu_custom_product_list"
+          name="Liste de Prix Produits"
+
+          parent="muk_product.menu_main" 
+          sequence="10"
+          action="action_custom_product_tree"
+           groups="adi_pricelist_default.group_product_price_access"/>
+
+
+</odoo>
+

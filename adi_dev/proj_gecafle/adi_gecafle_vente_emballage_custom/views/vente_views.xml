@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue formulaire héritée pour les totaux -->
+    <record id="view_gecafle_vente_form_inherit_totaux" model="ir.ui.view">
+        <field name="name">gecafle.vente.form.inherit.totaux.emballage.custom</field>
+        <field name="model">gecafle.vente</field>
+        <field name="inherit_id" ref="adi_gecafle_ventes.view_gecafle_vente_form"/>
+        <field name="priority">100</field>
+        <field name="arch" type="xml">
+            <!-- Ajouter le prix moyen net global dans les totaux -->
+            <xpath expr="//field[@name='total_poids_net']" position="after">
+                <field name="prix_moyen_net_global"
+                       string="Prix moyen net/kg"
+                       widget="monetary"
+                       readonly="1"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Vue tree héritée pour afficher le prix moyen -->
+    <record id="view_gecafle_vente_tree_inherit_prix_moyen" model="ir.ui.view">
+        <field name="name">gecafle.vente.tree.inherit.prix.moyen</field>
+        <field name="model">gecafle.vente</field>
+        <field name="inherit_id" ref="adi_gecafle_ventes.view_gecafle_vente_list"/>
+        <field name="priority">100</field>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='total_poids_net']" position="after">
+                <field name="prix_moyen_net_global"
+                       string="Prix moy./kg"
+                       widget="monetary"
+                       optional="show"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

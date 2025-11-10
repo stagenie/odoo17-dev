@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+     <record id="adi_action_report_picking_siemtec_delivery_customer" model="ir.actions.report">
+            <field name="name">ADI Bon de Retour </field>
+            <field name="model">stock.picking</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">adi_dz_br_ns.adi_report_deliveryslip_customer</field>
+            <field name="report_file">adi_dz_br_ns.adi_report_deliveryslip_customer</field>
+            <field name="print_report_name">'ADI Bon de Retour  - %s - %s' % (object.partner_id.name or '', object.name)</field>
+            <!--<field name="binding_model_id" ref="model_stock_picking"/>-->
+          <field name="binding_model_id" ref="model_stock_picking"/>
+            <field name="binding_type">report</field>
+        </record>                
+
+</odoo>

@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue formulaire du wizard de fusion -->
+    <record id="module_merge_wizard_form_view" model="ir.ui.view">
+        <field name="name">module.merge.wizard.form</field>
+        <field name="model">module.merge.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Fusionner les Modules">
+                <field name="state" invisible="1"/>
+
+                <!-- État: Sélection -->
+                <group invisible="state != 'select'">
+                    <field name="module_ids" widget="many2many_tags"
+                           options="{'no_create': True}"
+                           placeholder="Sélectionnez les modules à fusionner..."/>
+                    <field name="merge_name"/>
+
+                    <separator string="Options de fusion" colspan="2"/>
+                    <field name="include_separator"/>
+                    <field name="separator_style"
+                           invisible="not include_separator"/>
+                </group>
+
+                <!-- État: Aperçu -->
+                <group invisible="state != 'preview'">
+                    <separator string="Aperçu du contenu fusionné" colspan="2"/>
+                    <field name="preview_content"
+                           widget="text"
+                           readonly="1"
+                           nolabel="1"
+                           colspan="2"
+                           style="font-family: monospace; background-color: #f5f5f5;"/>
+                </group>
+
+                <!-- État: Terminé -->
+                <group invisible="state != 'done'">
+                    <div class="alert alert-success" role="alert">
+                        <h4 class="alert-heading">Fusion terminée !</h4>
+                        <p>Le fichier <strong><field name="merge_name" readonly="1" nolabel="1" style="display: inline;"/></strong> a été généré avec succès.</p>
+                        <p>Cliquez sur "Télécharger" pour récupérer le fichier.</p>
+                    </div>
+                </group>
+
+                <footer>
+                    <!-- Boutons selon l'état -->
+                    <button name="action_preview"
+                            string="Aperçu"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'select'"/>
+
+                    <button name="action_merge_and_download"
+                            string="Fusionner et Télécharger"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'preview'"/>
+
+                    <button name="action_merge_and_download"
+                            string="Télécharger"
+                            type="object"
+                            class="btn-success"
+                            invisible="state != 'done'"/>
+
+                    <button name="action_merge_specific_types"
+                            string="Fusion Sélective"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="state == 'done'"
+                            help="Fusionner seulement certains types de fichiers"/>
+
+                    <button special="cancel"
+                            string="Annuler"
+                            class="btn-secondary"
+                            invisible="state == 'done'"/>
+
+                    <button special="cancel"
+                            string="Fermer"
+                            class="btn-secondary"
+                            invisible="state != 'done'"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vue formulaire du wizard de types -->
+    <record id="module_merge_type_wizard_form_view" model="ir.ui.view">
+        <field name="name">module.merge.type.wizard.form</field>
+        <field name="model">module.merge.type.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Sélection des types de fichiers">
+                <group>
+                    <separator string="Types de fichiers à inclure" colspan="2"/>
+                    <field name="include_python"/>
+                    <field name="include_xml"/>
+                    <field name="include_js"/>
+                    <field name="include_css"/>
+                    <field name="include_csv"/>
+                    <field name="include_translation"/>
+                </group>
+                <footer>
+                    <button name="action_merge_selected_types"
+                            string="Fusionner"
+                            type="object"
+                            class="btn-primary"/>
+                    <button special="cancel"
+                            string="Annuler"
+                            class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action pour ouvrir le wizard -->
+    <record id="action_module_merge_wizard" model="ir.actions.act_window">
+        <field name="name">Fusionner des Modules</field>
+        <field name="res_model">module.merge.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="model_module_content_plus"/>
+        <field name="binding_view_types">list</field>
+    </record>
+
+    <!-- Action serveur pour la sélection multiple -->
+    <record id="action_server_merge_modules" model="ir.actions.server">
+        <field name="name">Fusionner les modules sélectionnés</field>
+        <field name="model_id" ref="model_module_content_plus"/>
+        <field name="binding_model_id" ref="model_module_content_plus"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">
+action = {
+    'name': 'Fusionner les Modules',
+    'type': 'ir.actions.act_window',
+    'res_model': 'module.merge.wizard',
+    'view_mode': 'form',
+    'target': 'new',
+    'context': {
+        'default_module_ids': [(6, 0, records.ids)]
+    }
+}
+        </field>
+    </record>
+</odoo>

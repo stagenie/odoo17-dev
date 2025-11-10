@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Catégorie de sécurité -->
+    <record id="module_category_adi_cost" model="ir.module.category">
+        <field name="name">Gestion Prix de Revient</field>
+        <field name="description">Gestion des coûts de production et rebuts</field>
+        <field name="sequence">100</field>
+    </record>
+
+    <!-- Groupe Utilisateur -->
+    <record id="group_adi_cost_user" model="res.groups">
+        <field name="name">Utilisateur Prix de Revient</field>
+        <field name="category_id" ref="module_category_adi_cost"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+        <field name="comment">Peut consulter et créer des analyses de coûts</field>
+    </record>
+
+    <!-- Groupe Manager -->
+    <record id="group_adi_cost_manager" model="res.groups">
+        <field name="name">Responsable Prix de Revient</field>
+        <field name="category_id" ref="module_category_adi_cost"/>
+        <field name="implied_ids" eval="[(4, ref('group_adi_cost_user'))]"/>
+        <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        <field name="comment">Accès complet à la gestion des coûts et validation</field>
+    </record>
+
+    <!-- Règles d'accès par défaut -->
+    <record id="adi_daily_production_rule_user" model="ir.rule">
+        <field name="name">Production journalière - Utilisateur</field>
+        <field name="model_id" ref="model_adi_daily_production"/>
+        <field name="domain_force">[('create_uid', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('group_adi_cost_user'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <record id="adi_daily_production_rule_manager" model="ir.rule">
+        <field name="name">Production journalière - Manager</field>
+        <field name="model_id" ref="model_adi_daily_production"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('group_adi_cost_manager'))]"/>
+    </record>
+</odoo>

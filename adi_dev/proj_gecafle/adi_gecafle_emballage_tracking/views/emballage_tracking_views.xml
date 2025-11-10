@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue formulaire -->
+    <record id="view_emballage_tracking_form" model="ir.ui.view">
+        <field name="name">gecafle.emballage.tracking.form</field>
+        <field name="model">gecafle.emballage.tracking</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_mouvements" type="object"
+                                class="oe_stat_button" icon="fa-exchange">
+                            <field name="mouvement_count" widget="statinfo" string="Mouvements"/>
+                        </button>
+
+                        <button name="action_regulariser" type="object"
+                                class="oe_stat_button" icon="fa-balance-scale"
+                                groups="adi_gecafle_emballage_tracking.group_emballage_manager">
+                            <span class="o_stat_text">Régulariser</span>
+                        </button>
+                    </div>
+
+                    <div class="oe_title">
+                        <h1>
+                            <field name="emballage_id" options="{'no_create': True}"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group>
+                            <field name="is_tracked"/>
+                            <field name="stock_initial"/>
+                            <field name="last_movement_date"/>
+                        </group>
+                        <group>
+                            <field name="stock_disponible" class="oe_read_only"/>
+                            <field name="stock_chez_clients" class="oe_read_only"/>
+                            <field name="stock_chez_producteurs" class="oe_read_only"/>
+                            <field name="stock_total" class="oe_read_only"/>
+                        </group>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vue liste -->
+    <record id="view_emballage_tracking_list" model="ir.ui.view">
+        <field name="name">gecafle.emballage.tracking.list</field>
+        <field name="model">gecafle.emballage.tracking</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="emballage_id"/>
+                <field name="is_tracked" widget="boolean_toggle"/>
+                <field name="stock_initial"/>
+                <field name="stock_disponible" decoration-danger="stock_disponible &lt; 0"/>
+                <field name="stock_chez_clients"/>
+                <field name="stock_chez_producteurs"/>
+                <field name="stock_total"/>
+                <field name="last_movement_date" widget="datetime"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vue recherche -->
+    <record id="view_emballage_tracking_search" model="ir.ui.view">
+        <field name="name">gecafle.emballage.tracking.search</field>
+        <field name="model">gecafle.emballage.tracking</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="emballage_id"/>
+
+                <filter string="Actifs" name="active" domain="[('is_tracked','=',True)]"/>
+                <filter string="Stock négatif" name="negative" domain="[('stock_disponible','&lt;',0)]"/>
+
+                <group expand="0" string="Grouper par">
+                    <filter string="Emballage" name="group_emballage" context="{'group_by':'emballage_id'}"/>
+                    <filter string="Statut" name="group_tracked" context="{'group_by':'is_tracked'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_emballage_tracking" model="ir.actions.act_window">
+        <field name="name">Tracking Emballages</field>
+        <field name="res_model">gecafle.emballage.tracking</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_emballage_tracking_search"/>
+    </record>
+</odoo>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue formulaire avec bouton de suppression forcée -->
+    <record id="view_gecafle_avoir_producteur_form_inherit" model="ir.ui.view">
+        <field name="name">gecafle.avoir.producteur.form.inherit.delete</field>
+        <field name="model">gecafle.avoir.producteur</field>
+        <field name="inherit_id" ref="adi_gecafle_ventes.view_gecafle_avoir_producteur_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Ajouter le bouton dans le header, visible pour tous -->
+            <xpath expr="//header" position="inside">
+                <button name="action_force_delete"
+                        string="🗑️ Supprimer"
+                        type="object"
+                        class="btn-danger"
+                        confirm="Cette action va supprimer définitivement cet avoir producteur. Êtes-vous sûr ?"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

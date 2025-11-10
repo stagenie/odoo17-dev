@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_gecafle_avoir_express_wizard_form" model="ir.ui.view">
+        <field name="name">gecafle.avoir.client.wizard.form</field>
+        <field name="model">gecafle.avoir.client.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Création Express d'Avoir">
+                <group>
+                    <group>
+                        <field name="vente_id" readonly="1"/>
+                        <field name="montant_vente" readonly="1"/>
+                        <field name="type_avoir"/>
+                    </group>
+                    <group>
+                        <field name="montant_avoir"/>
+                        <field name="show_generer_producteurs" invisible="1"/>
+                        <field name="generer_avoirs_producteurs"
+                               invisible="not show_generer_producteurs"
+                               widget="boolean_toggle"/>
+                    </group>
+                </group>
+
+                <group string="Description">
+                    <field name="description"  required="1"/>
+                </group>
+
+                <!-- Message d'information selon le type -->
+                <div class="alert alert-info" invisible="type_avoir != 'consigne'">
+                    <i class="fa fa-info-circle"/> Les avoirs de type consigne ne génèrent pas d'avoirs producteurs
+                </div>
+
+                <footer>
+                    <button name="action_create_avoir_express"
+                            string="Créer et Valider"
+                            type="object"
+                            class="btn-primary"/>
+                    <button string="Annuler"
+                            class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

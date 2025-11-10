@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Rapport Feuille de présence - Version Odoo 17 -->
+    <record id="action_report_attendance_sheet" model="ir.actions.report">
+        <field name="name">Feuille de présence</field>
+        <field name="model">attendance.daily</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_simple_attendance.report_attendance_sheet</field>
+        <field name="report_file">adi_simple_attendance.report_attendance_sheet</field>
+        <field name="print_report_name">'Feuille présence - %s' % object.date</field>
+        <field name="binding_model_id" ref="model_attendance_daily"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_attendance_sheet">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <div class="text-center mb-4">
+                            <h2>FEUILLE DE PRÉSENCE</h2>
+                            <h3>Date :
+                                <span t-field="doc.date"/>
+                            </h3>
+                        </div>
+
+                        <table class="table table-bordered mt-4">
+                            <thead>
+                                <tr class="table-active">
+                                    <th width="5%">N°</th>
+                                    <th width="25%">Nom &amp; Prénom</th>
+                                    <th width="20%">Département</th>
+                                    <th width="30%">Fonction</th>
+                                    <th width="20%">Signature</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-set="counter" t-value="1"/>
+                                <!-- cette condition pour sélectionner uniqueent les présent -->
+<!--                                <t t-foreach="doc.attendance_line_ids.filtered(lambda l: l.presence).sorted('employee_name')"-->
+                                <t t-foreach="doc.attendance_line_ids.sorted('employee_name')"
+                                   t-as="line">
+                                    <tr>
+                                        <td class="text-center">
+                                            <span t-esc="counter"/>
+                                        </td>
+                                        <td>
+                                            <span t-field="line.employee_name"/>
+                                        </td>
+                                        <td>
+                                            <span t-field="line.department_id.name"/>
+                                        </td>
+                                        <td>
+                                            <span t-field="line.job_id.name"/>
+                                        </td>
+                                        <td style="height: 40px;"></td>
+                                    </tr>
+                                    <t t-set="counter" t-value="counter + 1"/>
+                                </t>
+                            </tbody>
+                        </table>
+
+                        <div class="row mt-5">
+                            <div class="col-6">
+                                <p>
+                                    <strong>Superviseur :</strong>
+                                </p>
+                                <div style="height: 60px; border-bottom: 1px solid black; width: 250px;"></div>
+                            </div>
+                            <div class="col-6">
+                                <p>
+                                    <strong>Responsable RH :</strong>
+                                </p>
+                                <div style="height: 60px; border-bottom: 1px solid black; width: 250px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

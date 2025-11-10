@@ -1,0 +1,9 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_emballage_tracking_user,access.emballage.tracking.user,model_gecafle_emballage_tracking,group_emballage_user,1,1,1,0
+access_emballage_tracking_manager,access.emballage.tracking.manager,model_gecafle_emballage_tracking,group_emballage_manager,1,1,1,1
+access_emballage_mouvement_user,access.emballage.mouvement.user,model_gecafle_emballage_mouvement,group_emballage_user,1,1,1,0
+access_emballage_mouvement_manager,access.emballage.mouvement.manager,model_gecafle_emballage_mouvement,group_emballage_manager,1,1,1,1
+access_emballage_balance_client_user,access.emballage.balance.client.user,model_gecafle_emballage_balance_client,group_emballage_user,1,0,0,0
+access_emballage_balance_producteur_user,access.emballage.balance.producteur.user,model_gecafle_emballage_balance_producteur,group_emballage_user,1,0,0,0
+access_emballage_report_wizard_user,access.emballage.report.wizard.user,model_gecafle_emballage_report_wizard,base.group_user,1,1,1,1
+access_emballage_regularisation_wizard_user,access.emballage.regularisation.wizard.user,model_gecafle_emballage_regularisation_wizard,base.group_user,1,1,1,1

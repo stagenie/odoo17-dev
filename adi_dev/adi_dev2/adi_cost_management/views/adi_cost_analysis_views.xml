@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue Tree -->
+    <record id="view_adi_cost_analysis_tree" model="ir.ui.view">
+        <field name="name">adi.cost.analysis.tree</field>
+        <field name="model">adi.cost.analysis</field>
+        <field name="arch" type="xml">
+            <tree string="Analyse des Coûts" create="0" edit="0" delete="0">
+                <field name="production_date"/>
+                <field name="product_id"/>
+                <field name="qty_produced" sum="Total"/>
+                <field name="qty_scrapped" sum="Total"/>
+                <field name="qty_good" sum="Total"/>
+                <field name="scrap_rate" widget="percentage"/>
+                <field name="production_cost" widget="monetary" sum="Total"/>
+                <field name="scrap_cost" widget="monetary" sum="Total"/>
+                <field name="total_cost" widget="monetary" sum="Total"/>
+                <field name="unit_cost_theoretical" widget="monetary"/>
+                <field name="unit_cost_real" widget="monetary"/>
+                <field name="cost_increase" widget="percentage"/>
+                <field name="currency_id" invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vue Pivot -->
+    <record id="view_adi_cost_analysis_pivot" model="ir.ui.view">
+        <field name="name">adi.cost.analysis.pivot</field>
+        <field name="model">adi.cost.analysis</field>
+        <field name="arch" type="xml">
+            <pivot string="Analyse des Coûts">
+                <field name="product_id" type="row"/>
+                <field name="production_date" interval="month" type="col"/>
+                <field name="qty_produced" type="measure"/>
+                <field name="qty_good" type="measure"/>
+                <field name="total_cost" type="measure"/>
+                <field name="unit_cost_real" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Vue Graph -->
+    <record id="view_adi_cost_analysis_graph" model="ir.ui.view">
+        <field name="name">adi.cost.analysis.graph</field>
+        <field name="model">adi.cost.analysis</field>
+        <field name="arch" type="xml">
+            <graph string="Évolution des Coûts" type="line">
+                <field name="production_date" interval="month"/>
+                <field name="unit_cost_real" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Vue Search -->
+    <!-- Vue Search CORRIGÉE -->
+    <record id="view_adi_cost_analysis_search" model="ir.ui.view">
+        <field name="name">adi.cost.analysis.search</field>
+        <field name="model">adi.cost.analysis</field>
+        <field name="arch" type="xml">
+            <search string="Recherche Analyse">
+                <field name="product_id"/>
+                <field name="production_date"/>
+
+                <filter string="Taux Rebut Élevé"
+                        name="high_scrap"
+                        domain="[('scrap_rate','>', 5)]"/>
+
+                <separator/>
+
+                <!-- CORRECTION : Filtres simplifiés -->
+                <filter string="Ce Mois"
+                        name="month"
+                        domain="[]"
+                        context="{'search_default_production_date': 'month'}"/>
+
+                <filter string="3 Derniers Mois"
+                        name="quarter"
+                        domain="[]"
+                        context="{'search_default_production_date': 'quarter'}"/>
+
+                <group expand="0" string="Grouper par">
+                    <filter string="Produit"
+                            name="group_product"
+                            context="{'group_by':'product_id'}"/>
+                    <filter string="Mois"
+                            name="group_month"
+                            context="{'group_by':'production_date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+
+    <!-- Action -->
+    <!-- Action CORRIGÉE -->
+    <record id="action_adi_cost_analysis" model="ir.actions.act_window">
+        <field name="name">Analyse des Coûts</field>
+        <field name="res_model">adi.cost.analysis</field>
+        <field name="view_mode">tree,form,pivot,graph</field>
+        <field name="context">{'group_by': 'product_id'}</field>
+        <field name="domain">[]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Analyse des coûts de production
+            </p>
+            <p>
+                Consultez l'évolution des coûts de revient et l'impact des rebuts
+                sur vos productions.
+            </p>
+        </field>
+    </record>
+</odoo>

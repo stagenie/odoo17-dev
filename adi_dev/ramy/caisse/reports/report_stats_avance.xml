@@ -1,0 +1,152 @@
+<?xml version='1.0' encoding='utf-8'?>
+<odoo>
+  <data>
+    <record id="action_print_report_fund_advance" model="ir.actions.report">
+      <field name="name"> Etat d'Avance</field>
+      <field name="model">fund.advance</field>
+      <field name="report_type">qweb-pdf</field>
+      <field name="report_name">caisse.report_avance</field>
+      <field name="report_file">caisse.report_avance</field>
+      <field name="print_report_name">'Rapport - %s' % (object.name)</field>
+      <field name="binding_model_id" ref="model_fund_advance"/>
+      <field name="binding_type">report</field>
+    </record>
+    
+    <template id="report_avance">
+      <t t-call="web.html_container">
+        <t t-call="web.external_layout">
+          <t t-foreach="docs" t-as="o">
+    
+            <div class="page" style=" padding: 20px;">
+              <h3 class="text-center font-italic" style="color:black;">
+                BON D'AVANCE: <span t-field="o.name"/>
+              </h3>
+              <br/>
+              
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                  <td style="width: 4%;  padding: 10px;">
+                  </td>
+                  <td style="width: 28%; padding: 10px;">
+                  </td>
+                  <td style="width: 4%;  padding: 10px;">
+                  </td>
+                  <td style="width: 28%; padding: 10px;">
+                  </td>
+                  <td style="width: 4%; padding: 10px;">
+                  </td>
+                  <td style="width: 28%; border: 1px solid black; padding: 10px;">
+                    <strong>Date :</strong> <span t-field="o.date"/>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td style="width: 4%;  padding: 10px;">
+                  </td>
+                  <td style="width: 28%; padding: 10px;">
+                  </td>
+                  <td style="width: 4%;  padding: 10px;">
+                  </td>
+                  <td style="width: 28%; padding: 10px;">
+                  </td>
+                  <td style="width: 4%; padding: 10px;">
+                  </td>
+                  <td style="width: 28%; border: 1px solid black; padding: 10px;">
+                    <strong>Status :</strong> <span t-field="o.state"/>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td style="width: 4%; border: 1px solid black; padding: 10px;">
+                    <input type="checkbox" t-att-checked="o.ecart == 0" disabled="disabled"/>
+                  </td>
+                  <td style="width: 28%; border: 1px solid black; padding: 10px;">
+                    <strong>Sans Écart </strong>
+                  </td>
+
+                  <td style="width: 4%; border: 1px solid black; padding: 10px;">
+                    <input type="checkbox" t-att-checked="o.complement != 0" disabled="disabled"/>
+                  </td>
+                  <td style="width: 28%; border: 1px solid black; padding: 10px;">
+                    <strong>Avec Complément</strong>
+                  </td>
+
+                  <td style="width: 4%; border: 1px solid black; padding: 10px;">
+                    <input type="checkbox" t-att-checked="o.retour != 0" disabled="disabled"/>
+                  </td>
+                  <td style="width: 28%; border: 1px solid black; padding: 10px;">
+                    <strong>Avec Retour</strong>
+                  </td>
+                </tr>
+                <tr>
+
+                </tr>
+              </table>
+              
+              <br/>
+    
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                  <td style="border: 1px solid black; padding: 10px;">
+                    <strong>Montant Avance</strong>
+                  </td>
+                  <td style="border: 1px solid black; padding: 10px;">
+                    <span t-field="o.amount" />
+                  </td>
+                </tr>
+                <tr>
+                  <td style="border: 1px solid black; padding: 10px;">
+                    <strong>Montant Dépenses Justifiées</strong>
+                  </td>
+                  <td style="border: 1px solid black; padding: 10px;">
+                    <span t-field="o.total" />
+                  </td>
+                </tr>
+                <tr>
+                  <td style="border: 1px solid black; padding: 10px;">
+                    <strong>Montant Complément</strong>
+                  </td>
+                  <td style="border: 1px solid black; padding: 10px;">
+                    <span t-field="o.complement" />
+                  </td>
+                </tr>
+                <tr>
+                  <td style="border: 1px solid black; padding: 10px;">
+                    <strong>Montant Retour</strong>
+                  </td>
+                  <td style="border: 1px solid black; padding: 10px;">
+                    <span t-field="o.retour"/>
+                  </td>
+                </tr>
+              </table>
+    
+              <br/>
+    
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr style="height: 140px;">
+                  <td style="width: 40%;border: 1px solid black; padding: 10px; text-align: center;">
+                    <strong>Caissier</strong>
+                  </td>
+                  <td style="width: 20%; padding: 10px; text-align: center;">
+
+                  </td>
+                  <td style="width: 40%;border: 1px solid black; padding: 10px; text-align: center;">
+                    <strong>Bénéficiaire</strong>
+                  </td>
+                </tr>
+              
+              </table>
+    
+              <p class="text-right" style="margin-top: 20px;">
+                Imprimé le : <span t-esc="datetime.datetime.now().strftime('%d-%m-%Y %H:%M:%S')"/>,  Par : <span t-esc="user.name"/>
+              </p>
+            </div>
+    
+          </t>
+        </t>
+      </t>
+    </template>
+    
+
+</data>
+</odoo>

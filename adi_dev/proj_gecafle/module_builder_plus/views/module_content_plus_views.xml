@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue formulaire -->
+    <record id="module_content_plus_view_form" model="ir.ui.view">
+        <field name="name">module.content.plus.form</field>
+        <field name="model">module.content.plus</field>
+        <field name="arch" type="xml">
+            <form string="Module Content Plus">
+                <header>
+                    <button name="import_module_file"
+                            string="Traiter le fichier"
+                            type="object"
+                            class="btn-primary"
+                            invisible="not module_file"/>
+                    <button name="%(module_builder_plus.action_import_module_wizard_plus)d"
+                            string="Importer Module (ZIP/RAR)"
+                            type="action"
+                            class="btn-secondary"/>
+
+
+                    <button name="convert_html_to_txt"
+                            string="Exporter en TXT"
+                            type="object"
+                            class="oe_highlight"/>
+                    <button name="convert_html_to_pdf"
+                            string="Exporter en PDF"
+                            type="object"
+                            class="oe_highlight"/>
+
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="export_python_files"
+                                string="Export Python"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-python"
+                                invisible="not processed_content"/>
+                        <button name="export_xml_files"
+                                string="Export XML"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-code"
+                                invisible="not processed_content"/>
+                        <button name="export_js_files"
+                                string="Export JS"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-file-code-o"
+                                invisible="not processed_content"/>
+                        <button name="export_css_files"
+                                string="Export CSS"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-css3"
+                                invisible="not processed_content"/>
+                        <button name="export_translation_files"
+                                string="Export Traductions"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-language"
+                                invisible="not processed_content"/>
+                        <button name="export_data_files"
+                                string="Export Data"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-database"
+                                invisible="not processed_content"/>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Nom du module"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="description"/>
+                            <field name="module_file" filename="file_name"/>
+                            <field name="file_name" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Contenu du Module">
+                            <field name="processed_content" widget="html" options="{'codeview': true}"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vue liste -->
+    <record id="module_content_plus_view_tree" model="ir.ui.view">
+        <field name="name">module.content.plus.list</field>
+        <field name="model">module.content.plus</field>
+        <field name="arch" type="xml">
+            <tree string="Modules Plus">
+                <field name="name"/>
+                <field name="file_name"/>
+                <field name="create_date"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_module_content_plus" model="ir.actions.act_window">
+        <field name="name">Module Builder Plus</field>
+        <field name="res_model">module.content.plus</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Menu -->
+    <menuitem id="menu_module_builder_plus_root"
+              name="Module Builder Plus"
+              sequence="50"/>
+
+    <menuitem id="menu_module_builder_plus"
+              parent="menu_module_builder_plus_root"
+              name="Modules"
+              action="action_module_content_plus"
+              sequence="10"/>
+
+    <menuitem id="menu_code_to_module"
+              parent="menu_module_builder_plus_root"
+              name="Générer Module"
+              action="action_code_to_module_wizard"
+              sequence="20"/>
+</odoo>

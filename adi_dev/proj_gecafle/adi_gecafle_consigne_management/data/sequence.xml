@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Séquence pour les retours de consigne -->
+        <record id="seq_gecafle_consigne_retour" model="ir.sequence">
+            <field name="name">Séquence Retour Consigne</field>
+            <field name="code">gecafle.consigne.retour</field>
+            <field name="prefix">RCONS/%(year)s/</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Menu principal (si pas déjà créé par module précédent) -->
+    <menuitem id="menu_hr_payroll_root"
+              name="Adi Paie"
+              sequence="55"
+              web_icon="adi_employee_advance,static/description/payrol.png"/>
+
+    <!-- Sous-menu -->
+    <menuitem id="menu_employee_advance"
+              name="Avances employés"
+              parent="menu_hr_payroll_root"
+              action="action_employee_advance"
+              sequence="20"/>
+
+    <!-- Menu de configuration -->
+    <menuitem id="menu_advance_config"
+              name="Configuration"
+              parent="adi_employee_advance.menu_hr_payroll_root"
+              sequence="100"/>
+
+    <menuitem id="menu_advance_product_config"
+              name="Article avance"
+              parent="menu_advance_config"
+              action="action_view_advance_product"
+              sequence="10"/>
+</odoo>

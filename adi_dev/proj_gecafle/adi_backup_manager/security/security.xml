@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Catégorie de modules -->
+    <record id="module_category_backup" model="ir.module.category">
+        <field name="name">Backup Manager</field>
+        <field name="sequence">100</field>
+    </record>
+
+    <!-- Groupes de sécurité -->
+    <record id="group_backup_user" model="res.groups">
+        <field name="name">Utilisateur Backup</field>
+        <field name="comment">Peut voir et télécharger les backups</field>
+        <field name="category_id" ref="module_category_backup"/>
+    </record>
+
+    <record id="group_backup_manager" model="res.groups">
+        <field name="name">Gestionnaire Backup</field>
+        <field name="comment">Peut gérer tous les aspects des backups</field>
+        <field name="category_id" ref="module_category_backup"/>
+        <field name="implied_ids" eval="[(4, ref('group_backup_user'))]"/>
+    </record>
+</odoo>

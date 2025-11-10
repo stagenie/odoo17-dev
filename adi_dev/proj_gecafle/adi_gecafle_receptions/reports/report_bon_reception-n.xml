@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+
+    <record id="paperformat_bon_reception_a5" model="report.paperformat">
+        <field name="name">A5 Portrait</field>
+        <field name="default" eval="False"/>
+        <field name="format">A5</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">40</field>
+        <field name="margin_bottom">20</field>
+        <field name="margin_left">7</field>
+        <field name="margin_right">7</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">35</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <!-- Template du rapport -->
+    <template id="report_bon_reception_template">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <!-- Affichage DUPLICATA -->
+                        <div t-if="env.context.get('is_duplicata')"
+                             class="alert alert-info text-center mb-3">
+                            <strong style="font-size: 18px;">DUPLICATA</strong>
+                        </div>
+
+                        <!-- Affichage d'alerte si la réception est annulée -->
+                        <div t-if="o.state == 'annulee'" class="alert alert-danger text-center mb-3">
+                            <strong style="font-size: 18px;">RÉCEPTION ANNULÉE</strong>
+                        </div>
+
+                        <!-- Affichage d'alerte si la réception est en brouillon -->
+                        <div t-if="o.state == 'brouillon'" class="alert alert-warning text-center mb-3">
+                            <strong style="font-size: 18px;">BROUILLON</strong>
+                        </div>
+                        <div class="text-center mb-3">
+                            <h5>
+                                <stong>Bon de Réception N°:
+                                    <span t-field="o.name"/>
+                                </stong>
+                            </h5>
+                            <p>Date Heure de Réception:
+                                <span t-field="o.reception_date"
+                                      t-options="{'widget': 'datetime', 'format': 'dd/MM/yyyy HH:mm:ss'}"/>
+                            </p>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="row">
+                                <div class="col-6">
+                                    <strong>Producteur:</strong>
+                                    <span t-field="o.producteur_id.name"/>
+                                </div>
+                                <div class="col-6">
+                                    <strong>Téléphone:</strong>
+                                    <span t-field="o.producteur_id.phone"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <h6>Produits</h6>
+                            <table class="table table-sm table-bordered">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>N°</th>
+                                        <th>Nombre de Colis</th>
+                                        <th>Désignation</th>
+                                        <th>Type de Colis</th>
+                                        <th>Qualité</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="o.details_reception_ids" t-as="line">
+                                        <tr>
+                                            <td>
+                                                <span t-field="line.num_seq"/>
+                                            </td>
+                                            <td>
+                                                <span t-field="line.qte_colis_recue"/>
+                                            </td>
+                                            <td>
+                                                <span t-field="line.designation_id.name"/>
+                                            </td>
+                                            <td>
+                                                <span t-field="line.type_colis_id.name"/>
+                                            </td>
+                                            <td>
+                                                <span t-field="line.qualite_id.name"/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                    <tr t-if="not o.details_reception_ids">
+                                        <td colspan="5" class="text-center">Aucun produit réceptionné</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="mb-3">
+                            <h6>Emballage</h6>
+                            <table class="table table-sm table-bordered">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>Type de Colis</th>
+                                        <th>Quantité Entrante</th>
+                                        <th>Quantité Sortante</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="o.details_emballage_reception_ids" t-as="emb">
+                                        <tr>
+                                            <td>
+                                                <span t-field="emb.emballage_id.name"/>
+                                            </td>
+                                            <td>
+                                                <span t-field="emb.qte_entrantes"/>
+                                            </td>
+                                            <td>
+                                                <span t-field="emb.qte_sortantes"/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                    <tr t-if="not o.details_emballage_reception_ids">
+                                        <td colspan="3" class="text-center">Aucun emballage réceptionné/rendu</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="row mt-5">
+                            <div class="col-6">
+                                <strong>Utilisateur:</strong>
+                                <span t-field="o.user_id.name"/>
+                            </div>
+                            <div class="col-6 text-right">
+                                <strong>Montant Versé:</strong>
+                                <span t-field="o.avance_producteur"
+                                      t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <!-- Déclaration du rapport (nouvelle syntaxe Odoo 18) -->
+    <record id="action_report_bon_reception" model="ir.actions.report">
+        <field name="name">Bon de Réception A5</field>
+        <field name="model">gecafle.reception</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_gecafle_receptions.report_bon_reception_template</field>
+        <field name="report_file">adi_gecafle_receptions.report_bon_reception_template</field>
+        <field name="binding_model_id" ref="model_gecafle_reception"/>
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="paperformat_bon_reception_a5"/>
+        <field name="print_report_name">'Bon de Reception - %s' % (object.name or '').replace('/','-')</field>
+    </record>
+</odoo>

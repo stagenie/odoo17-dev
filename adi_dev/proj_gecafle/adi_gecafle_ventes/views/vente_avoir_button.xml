@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Ajouter le bouton avoir dans la vue vente -->
+    <record id="view_gecafle_vente_form_inherit_avoir" model="ir.ui.view">
+        <field name="name">gecafle.vente.form.inherit.avoir</field>
+        <field name="model">gecafle.vente</field>
+        <field name="inherit_id" ref="adi_gecafle_ventes.view_gecafle_vente_form"/>
+        <field name="arch" type="xml">
+            <!-- Ajouter les champs invisibles -->
+            <xpath expr="//field[@name='state']" position="after">
+                <field name="avoir_count" invisible="1"/>
+            </xpath>
+
+            <!-- Smart button -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_avoirs"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-file-invoice-dollar">
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_value">
+                            <field name="avoir_count"/>
+                        </span>
+                        <span class="o_stat_text">Avoirs</span>
+                    </div>
+                </button>
+
+
+            </xpath>
+
+            <!-- Bouton pour créer un avoir
+<xpath expr="//header" position="inside">
+                <button name="action_create_avoir"
+                        string="Créer un avoir"
+                        type="object"
+                        class="btn-warning"
+                        invisible="state"
+                        />
+            </xpath>
+            -->
+
+        </field>
+    </record>
+</odoo>

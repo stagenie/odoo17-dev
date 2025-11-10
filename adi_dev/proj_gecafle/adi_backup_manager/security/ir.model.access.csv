@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_backup_directory_user,backup.directory.user,model_backup_directory,group_backup_user,1,0,0,0
+access_backup_directory_manager,backup.directory.manager,model_backup_directory,group_backup_manager,1,1,1,1
+access_backup_file_user,backup.file.user,model_backup_file,group_backup_user,1,0,0,0
+access_backup_file_manager,backup.file.manager,model_backup_file,group_backup_manager,1,1,1,1
+access_backup_recovery_wizard_user,backup.recovery.wizard.user,model_backup_recovery_wizard,group_backup_user,1,1,1,1
+access_backup_content_viewer,backup.content.viewer,model_backup_content_viewer,group_backup_user,1,1,1,1

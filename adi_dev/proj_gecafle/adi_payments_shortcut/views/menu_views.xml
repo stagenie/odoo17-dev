@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ========== ACTIONS POUR LES LISTES FILTRÉES ========== -->
+
+    <!-- Action pour la liste des paiements clients -->
+    <record id="action_customer_payments_direct" model="ir.actions.act_window">
+        <field name="name">Paiements Clients</field>
+        <field name="res_model">account.payment</field>
+        <field name="view_mode">tree,form,kanban,graph</field>
+        <field name="domain">[
+            ('partner_type', '=', 'customer'),
+            ('payment_type', '=', 'inbound')
+            ]
+        </field>
+        <field name="context">{
+            'default_partner_type': 'customer',
+            'default_payment_type': 'inbound',
+            'default_auto_allocate': True,
+            'search_default_state_posted': 1
+            }
+        </field>
+        <field name="search_view_id" ref="account.view_account_payment_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créer un nouveau paiement client
+            </p>
+            <p>
+                Gérez tous les paiements de vos clients avec répartition automatique sur les factures.
+            </p>
+        </field>
+    </record>
+
+    <!-- Action pour la liste des paiements producteurs/fournisseurs -->
+    <record id="action_vendor_payments_direct" model="ir.actions.act_window">
+        <field name="name">Paiements Producteurs</field>
+        <field name="res_model">account.payment</field>
+        <field name="view_mode">tree,form,kanban,graph</field>
+        <field name="domain">[
+            ('partner_type', '=', 'supplier'),
+            ('payment_type', '=', 'outbound')
+            ]
+        </field>
+        <field name="context">{
+            'default_partner_type': 'supplier',
+            'default_payment_type': 'outbound',
+            'default_auto_allocate': True,
+            'search_default_state_posted': 1
+            }
+        </field>
+        <field name="search_view_id" ref="account.view_account_payment_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créer un nouveau paiement producteur
+            </p>
+            <p>
+                Gérez tous les paiements de vos producteurs avec répartition automatique sur les factures.
+            </p>
+        </field>
+    </record>
+
+    <!-- ========== MENUS PRINCIPAUX À LA RACINE ========== -->
+
+    <!-- Menu racine pour Paiements Clients -->
+    <menuitem id="menu_root_customer_payments"
+              name="Paiements Clients"
+              action="action_customer_payments_direct"
+              web_icon="adi_smart_payment_dispatch,static/description/pcli.png"
+              sequence="10"
+          />
+
+    <!-- Menu racine pour Paiements Producteurs -->
+    <menuitem id="menu_root_vendor_payments"
+              name="Paiements Producteurs"
+              action="action_vendor_payments_direct"
+               web_icon="adi_smart_payment_dispatch,static/description/pfour.png"
+              sequence="20"
+          />
+
+
+
+
+</odoo>

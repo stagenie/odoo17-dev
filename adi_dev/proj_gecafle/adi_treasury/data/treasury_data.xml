@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Catégories existantes -->
+        <record id="category_vente" model="treasury.operation.category">
+            <field name="name">Vente</field>
+            <field name="code">VENTE</field>
+            <field name="operation_type">in</field>
+            <field name="sequence">10</field>
+        </record>
+
+        <record id="category_pay_client" model="treasury.operation.category">
+            <field name="name">Paiement client</field>
+            <field name="code">PAY_CLIENT</field>
+            <field name="operation_type">in</field>
+            <field name="is_customer_payment">True</field>
+            <field name="sequence">10</field>
+        </record>
+
+        <record id="category_pay_fourn" model="treasury.operation.category">
+            <field name="name">Paiement fournisseur</field>
+            <field name="code">PAY_FOURN</field>
+            <field name="operation_type">out</field>
+            <field name="is_vendor_payment">True</field>
+            <field name="sequence">11</field>
+        </record>
+
+        <!-- Nouvelles catégories pour les remboursements -->
+        <record id="category_refund_customer" model="treasury.operation.category">
+            <field name="name">Remboursement client</field>
+            <field name="code">REFUND_CUSTOMER</field>
+            <field name="operation_type">out</field>
+            <field name="sequence">20</field>
+        </record>
+
+        <record id="category_refund_supplier" model="treasury.operation.category">
+            <field name="name">Remboursement fournisseur</field>
+            <field name="code">REFUND_SUPPLIER</field>
+            <field name="operation_type">in</field>
+            <field name="sequence">21</field>
+        </record>
+
+        <record id="category_ajustement" model="treasury.operation.category">
+            <field name="name">Ajustement</field>
+            <field name="code">AJUST</field>
+            <field name="operation_type">both</field>
+            <field name="sequence">99</field>
+        </record>
+        <!-- Ajouter après les autres catégories -->
+        <record id="category_initial" model="treasury.operation.category">
+            <field name="name">Solde initial</field>
+            <field name="code">INITIAL</field>
+            <field name="operation_type">in</field>
+            <field name="sequence">1</field>
+        </record>
+        <!-- Ajouter après la catégorie ajustement -->
+        <record id="category_transfer_in" model="treasury.operation.category">
+            <field name="name">Transfert entrant</field>
+            <field name="code">TRANSFER_IN</field>
+            <field name="operation_type">in</field>
+            <field name="sequence">30</field>
+        </record>
+
+        <record id="category_transfer_out" model="treasury.operation.category">
+            <field name="name">Transfert sortant</field>
+            <field name="code">TRANSFER_OUT</field>
+            <field name="operation_type">out</field>
+            <field name="sequence">31</field>
+        </record>
+
+
+    </data>
+</odoo>

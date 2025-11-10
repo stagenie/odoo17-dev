@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Masquer le bouton créer facture producteur pour les réceptions d'achat -->
+    <record id="view_reception_recap_form_inherit_valorisee" model="ir.ui.view">
+        <field name="name">gecafle.reception.recap.form.inherit.valorisee</field>
+        <field name="model">gecafle.reception.recap</field>
+        <field name="inherit_id" ref="adi_gecafle_ventes.view_gecafle_reception_recap_form"/>
+        <field name="arch" type="xml">
+            <!-- Ajouter un champ invisible pour utiliser dans les conditions -->
+            <xpath expr="//sheet" position="inside">
+                <field name="reception_is_valorisee" invisible="1"/>
+            </xpath>
+
+            <!-- Masquer le bouton si la réception est un achat valorisé -->
+            <xpath expr="//button[@name='action_create_vendor_invoice']" position="attributes">
+                <attribute name="invisible">reception_is_valorisee or state != 'valide' or invoice_count > 0</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>

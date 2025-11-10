@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue form héritée pour permettre les modifications -->
+    <record id="view_reception_form_flexible" model="ir.ui.view">
+        <field name="name">gecafle.reception.form.flexible</field>
+        <field name="model">gecafle.reception</field>
+        <field name="inherit_id" ref="adi_gecafle_receptions.view_gecafle_reception_form"/>
+        <field name="priority">20</field>
+        <field name="arch" type="xml">
+            <!-- Rendre les lignes de réception éditables même après confirmation -->
+            <xpath expr="//field[@name='details_reception_ids']" position="attributes">
+                <attribute name="readonly">0</attribute>
+                <attribute name="force_save">1</attribute>
+            </xpath>
+
+            <!-- Rendre les lignes d'emballage éditables aussi -->
+            <xpath expr="//field[@name='details_emballage_reception_ids']" position="attributes">
+                <attribute name="readonly">0</attribute>
+                <attribute name="force_save">1</attribute>
+            </xpath>
+
+            <!-- Pour les réceptions valorisées : permettre modification option acheté -->
+            <xpath expr="//field[@name='details_emballage_reception_ids']/tree//field[@name='is_achete']" position="attributes">
+                <attribute name="readonly">0</attribute>
+                <attribute name="force_save">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='details_emballage_reception_ids']/tree//field[@name='qte_achetee']" position="attributes">
+                <attribute name="readonly">0</attribute>
+                <attribute name="force_save">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='details_emballage_reception_ids']/tree//field[@name='prix_unitaire_achat']" position="attributes">
+                <attribute name="readonly">0</attribute>
+                <attribute name="force_save">1</attribute>
+            </xpath>
+
+            <!-- Message d'info quand confirmé -->
+            <xpath expr="//field[@name='details_reception_ids']" position="before">
+                <div class="alert alert-info" invisible="state != 'confirmee'">
+                    <i class="fa fa-info-circle"/>
+                </div>
+            </xpath>
+
+            <!-- Bouton de synchronisation manuelle (méthode publique) -->
+            <xpath expr="//header" position="inside">
+                <button name="sync_emballages_with_reception"
+                        string="🔄 Sync Emballages"
+                        type="object"
+                        class="btn-secondary"
+                        invisible="state != 'confirmee'"
+                        confirm="Voulez-vous synchroniser les emballages avec les lignes de réception ?"
+                        help="Force la synchronisation des emballages avec les lignes de réception"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

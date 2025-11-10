@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_company_form_wilaya_composition" model="ir.ui.view">
+        <field name="name">res.company.form.wilaya.composition</field>
+        <field name="model">res.company</field>
+        <field name="inherit_id" ref="base.view_company_form"/>
+        <field name="arch" type="xml">
+            <data>
+                <xpath expr="//field[@name='state_id']" position="after">
+                    <field name="composition_id"
+                           class="oe_no_button"
+                           placeholder="Localités"
+                           options="{'no_open': True}"
+                           domain="[('state_id', '=', state_id)]"
+                           style="width: 50%;"/>
+                </xpath>
+                <xpath expr="//field[@name='state_id']" position="attributes">
+                    <attribute name="class">oe_no_button</attribute>
+                    <attribute name="style">width: 50%;padding-right: 5px;</attribute>
+                    <attribute name="placeholder">Wilayas</attribute>
+                </xpath>
+                <xpath expr="//field[@name='city']" position="attributes">
+                    <attribute name="class">oe_no_button</attribute>
+                    <attribute name="style">width: 100%;</attribute>
+                </xpath>
+                <xpath expr="//field[@name='zip']" position="attributes">
+                    <attribute name="class">oe_no_button</attribute>
+                    <attribute name="style">width: 49%;</attribute>
+                </xpath>
+                <xpath expr="//field[@name='country_id']" position="attributes">
+                    <attribute name="class">oe_no_button</attribute>
+                    <attribute name="style">width: 51%;padding-left: 5px;</attribute>
+                </xpath>
+            </data>
+        </field>
+    </record>
+</odoo>

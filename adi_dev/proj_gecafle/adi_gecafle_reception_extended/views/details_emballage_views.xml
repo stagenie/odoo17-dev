@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Extension de la vue tree des détails emballage -->
+    <record id="view_details_emballage_reception_tree_inherit" model="ir.ui.view">
+        <field name="name">gecafle.details.emballage.reception.tree.inherit</field>
+        <field name="model">gecafle.reception</field>
+        <field name="inherit_id" ref="adi_gecafle_receptions.view_gecafle_reception_form_extended"/>
+        <field name="arch" type="xml">
+            <!-- CORRECTION : Utiliser name ou position au lieu de string -->
+            <!-- Option 1 : Utiliser l'attribut name de la page -->
+            <xpath expr="//page[@name='address_page' or @name='products_page' or position()=2]//field[@name='details_emballage_reception_ids']" position="replace">
+                <field name="details_emballage_reception_ids" readonly="state not in ('brouillon')">
+                    <tree editable="bottom">
+                        <field name="emballage_id"/>
+                        <field name="qte_entrantes"/>
+                        <field name="qte_sortantes"/>
+                        <field name="is_achete" widget="boolean_toggle"/>
+                        <field name="qte_achetee" invisible="not is_achete"/>
+                        <field name="prix_unitaire_achat" invisible="not is_achete"/>
+                        <field name="montant_achat"
+                               invisible="not is_achete"
+                               sum="Total Achat"
+                               widget="monetary"/>
+                        <field name="currency_id" invisible="1"/>
+                    </tree>
+                </field>
+            </xpath>
+        </field>
+    </record>
+</odoo>

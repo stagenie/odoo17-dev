@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<data noupdate="1">
+		<record id="motif_family_encais" model="fund.motif.family">
+			<field name="name">Encaissement</field>
+		</record>
+
+		<record id="motif_family_decais" model="fund.motif.family">
+			<field name="name">Décaissement</field>
+		</record>
+        <record id="motif_family_rec" model="fund.motif.family">
+			<field name="name">Recette</field>
+		</record>
+        <record id="motif_family_dep" model="fund.motif.family">
+			<field name="name">Dépense</field>
+		</record>
+		<record id="motif_family_avance" model="fund.motif.family">
+			<field name="name">Avance</field>
+		</record>
+
+		<record id="motif_family_cancel_avance" model="fund.motif.family">
+			<field name="name">Annulation d'avance</field>
+		</record>
+
+		<record id="motif_family_customer_paiement" model="fund.motif.family">
+			<field name="name">Paiement client</field>
+		</record>
+		<record id="motif_family_customer_refund" model="fund.motif.family">
+			<field name="name">Remboursement client</field>
+		</record>
+
+		<record id="motif_family_supplier_paiement" model="fund.motif.family">
+			<field name="name">Paiement Fournisseur</field>
+		</record>
+		<record id="motif_family_supplier_refund" model="fund.motif.family">
+			<field name="name">Remboursement Fournisseur</field>
+		</record>
+	</data>
+</odoo>

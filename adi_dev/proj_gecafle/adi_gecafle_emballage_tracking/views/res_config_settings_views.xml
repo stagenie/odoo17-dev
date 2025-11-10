@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Héritage de la vue de configuration -->
+    <record id="res_config_settings_view_form_inherit_emballage_tracking" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.emballage.tracking</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app data-string="Tracking Emballages" string="Tracking Emballages"
+                     name="adi_gecafle_emballage_tracking">
+                    <block title="Configuration du Tracking d'Emballages" name="emballage_tracking_settings">
+                        <setting string="Emballages à suivre" help="Sélectionnez les emballages qui doivent être suivis automatiquement">
+                            <field name="tracking_emballage_ids" widget="many2many_tags"/>
+                        </setting>
+
+                        <setting string="Options de tracking">
+                            <div class="content-group">
+                                <div class="mt16">
+                                    <field name="tracking_include_non_returned" class="o_light_label"/>
+                                    <label for="tracking_include_non_returned"/>
+                                </div>
+                                <div class="mt8">
+                                    <field name="tracking_auto_create" class="o_light_label"/>
+                                    <label for="tracking_auto_create"/>
+                                </div>
+                                <div class="mt8">
+                                    <field name="tracking_create_on_draft" class="o_light_label"/>
+                                    <label for="tracking_create_on_draft"/>
+                                </div>
+                                <div class="mt8">
+                                    <field name="tracking_allow_manual_adjustment" class="o_light_label"/>
+                                    <label for="tracking_allow_manual_adjustment"/>
+                                </div>
+                            </div>
+                        </setting>
+
+                        <setting string="Affichage et alertes">
+                            <div class="content-group">
+                                <div class="mt16">
+                                    <field name="tracking_show_zero_stock" class="o_light_label"/>
+                                    <label for="tracking_show_zero_stock"/>
+                                </div>
+                                <div class="mt8">
+                                    <field name="tracking_alert_negative_stock" class="o_light_label"/>
+                                    <label for="tracking_alert_negative_stock"/>
+                                </div>
+                                <div class="mt8">
+                                    <label for="tracking_alert_threshold"/>
+                                    <field name="tracking_alert_threshold" class="oe_inline"/>
+                                </div>
+                            </div>
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+</odoo>

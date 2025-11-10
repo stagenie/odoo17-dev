@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_payroll_period_user,payroll.period.user,model_payroll_period,base.group_user,1,1,1,1
+access_payroll_batch_user,payroll.batch.user,model_payroll_batch,base.group_user,1,1,1,1
+access_payroll_slip_user,payroll.slip.user,model_payroll_slip,base.group_user,1,1,1,1
+access_payroll_line_user,payroll.line.user,model_payroll_line,base.group_user,1,1,1,1

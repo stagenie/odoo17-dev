@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_raz_prices_user,RAZ prices access,model_product_razprice_wizard,base.group_user,1,1,1,1
+
+

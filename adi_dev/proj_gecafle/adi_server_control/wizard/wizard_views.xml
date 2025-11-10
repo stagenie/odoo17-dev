@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_server_control_wizard_simple" model="ir.ui.view">
+        <field name="name">server.control.wizard.form.simple</field>
+        <field name="model">server.control.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Confirmation">
+                <!-- Pas de sheet pour utiliser toute la largeur -->
+                <div style="padding: 20px;">
+                    <!-- Message d'alerte sur toute la largeur -->
+                    <div class="alert alert-danger" role="alert" style="font-size: 16px;">
+                        <h3 class="alert-heading text-center">
+                            <i class="fa fa-exclamation-triangle"/> Attention - Action Système Critique
+                        </h3>
+                        <hr/>
+                        <field name="warning_message"
+                               nolabel="1"
+                               readonly="1"
+                               widget="html"
+                               style="font-size: 14px; line-height: 1.8;"/>
+                    </div>
+
+
+
+                    <!-- Zone de confirmation centrée et claire -->
+                    <div class="card mt-4">
+                        <div class="card-body text-center" style="background-color: #f8f9fa;">
+                            <h4 class="card-title">Confirmation Requise</h4>
+                            <div class="alert alert-warning d-inline-block" style="font-size: 20px; font-family: monospace;">
+                                OK
+                            </div>
+                            <div class="form-group mt-3">
+                                <label for="confirmation_text" style="font-size: 14px;">
+                                    Recopiez le mot ci-dessus pour continuer :
+                                </label>
+                                <field name="confirmation_text"
+                                       nolabel="1"
+                                       widget="char"
+                                       placeholder="Saisissez ici..."
+                                       style="text-align: center; font-size: 18px; text-transform: uppercase; max-width: 300px; margin: 0 auto;"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <footer>
+                    <button name="action_confirm"
+                            string="Exécuter l'Action"
+                            type="object"
+                            class="btn btn-danger"
+                            style="min-width: 150px;"/>
+                    <button name="action_cancel"
+                            string="Annuler"
+                            type="object"
+                            class="btn btn-secondary"
+                            style="min-width: 150px;"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Héritage de la vue formulaire des ventes pour ajouter notre nouveau bouton -->
+    <record id="view_gecafle_vente_form_inherit_avoir_stock" model="ir.ui.view">
+        <field name="name">gecafle.vente.form.inherit.avoir.stock</field>
+        <field name="model">gecafle.vente</field>
+        <field name="inherit_id" ref="adi_gecafle_ventes.view_gecafle_vente_form"/>
+        <field name="arch" type="xml">
+            <!-- Remplacer le bouton Avoir Express existant par notre nouveau bouton -->
+            <xpath expr="//field[@name='state']" position="before">
+                <button name="action_create_avoir_with_details"
+                        string="⚡ Avoir "
+                        type="object"
+                        class="btn-success"
+                        icon="fa-bolt"
+                        invisible="state != 'valide'"
+                        help="Crée un avoir avec possibilité de sélectionner les produits à retourner"
+                        groups="adi_gecafle_ventes.group_gecafle_user"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

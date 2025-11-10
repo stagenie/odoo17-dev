@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_server_control_panel,server.control.panel,model_server_control_panel,group_server_control,1,1,1,1
+access_server_control_config,server.control.config,model_server_control_config,group_server_control,1,1,1,0
+access_server_control_wizard,server.control.wizard,model_server_control_wizard,group_server_control,1,1,1,1
+access_database_backup_wizard,database.backup.wizard,model_database_backup_wizard,group_server_control,1,1,1,1

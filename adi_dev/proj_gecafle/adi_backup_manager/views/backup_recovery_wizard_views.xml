@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue Wizard de Récupération CORRIGÉE -->
+    <record id="view_backup_recovery_wizard_form" model="ir.ui.view">
+        <field name="name">backup.recovery.wizard.form</field>
+        <field name="model">backup.recovery.wizard</field>
+        <field name="arch" type="xml">
+            <form string="🔄 Assistant de Récupération">
+                <group col="4">
+                    <field name="directory_id"
+                           widget="selection"
+                           colspan="2"/>
+                    <button name="action_scan_first"
+                            type="object"
+                            string="📡 Scanner d'abord"
+                            class="btn-sm btn-info"
+                            colspan="2"
+                            icon="fa-sync"/>
+                </group>
+
+                <group string="🔍 Filtres" col="4">
+                    <field name="filter_database"
+                           placeholder="Nom de base..."
+                           colspan="2"/>
+                    <field name="filter_date_from"/>
+                    <field name="filter_date_to"/>
+                </group>
+
+                <separator string="📦 Fichiers disponibles"/>
+
+                <div class="alert alert-info"
+                     invisible="backup_file_ids">
+                    <i class="fa fa-info-circle"/> Aucun fichier trouvé. Essayez de scanner le répertoire ou ajustez les filtres.
+                </div>
+
+                <field name="backup_file_ids"
+                       invisible="1"/>
+
+                <field name="selected_file_ids"
+                       widget="many2many_checkboxes"
+                       domain="[('id', 'in', backup_file_ids)]"
+                       nolabel="1">
+                    <tree>
+                        <field name="name"/>
+                        <field name="database_name"/>
+                        <field name="backup_date"/>
+                        <field name="file_size_display"/>
+                        <field name="state" widget="badge"/>
+                    </tree>
+                </field>
+
+                <group string="📊 Résumé">
+                    <group>
+                        <field name="action_type" widget="radio"/>
+                    </group>
+                    <group>
+                        <!-- CORRECTION ICI : Suppression de t-esc et simplification -->
+                        <div class="o_row">
+                            <label for="total_size"/>
+                            <div class="o_row">
+                                <field name="total_size" widget="float" digits="[6,2]" nolabel="1"/>
+                                <span class="text-muted ms-2">MB</span>
+                            </div>
+                        </div>
+
+                        <!-- Affichage alternatif pour les grosses tailles -->
+                        <div class="text-muted" invisible="total_size &lt; 1024">
+                            <i class="fa fa-info-circle"/>
+                            Équivalent à environ <field name="total_size" readonly="1" nolabel="1"/> MB
+                            (soit <span class="fw-bold"><field name="total_size" widget="float" digits="[6,2]" nolabel="1"/> GB</span>)
+                        </div>
+                    </group>
+                </group>
+
+                <footer>
+                    <button name="action_execute"
+                            string="✅ Exécuter"
+                            type="object"
+                            class="btn-primary"
+                            invisible="not selected_file_ids"/>
+                    <button string="Annuler"
+                            class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action du Wizard -->
+    <record id="action_backup_recovery_wizard" model="ir.actions.act_window">
+        <field name="name">💾 Récupération de Backups</field>
+        <field name="res_model">backup.recovery.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{'default_action_type': 'download'}</field>
+    </record>
+
+    <!-- Action pour les fichiers -->
+    <record id="action_backup_files" model="ir.actions.act_window">
+        <field name="name">📄 Tous les Fichiers</field>
+        <field name="res_model">backup.file</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{'search_default_available': 1}</field>
+    </record>
+
+    <!-- Dashboard Action -->
+    <record id="action_backup_dashboard" model="ir.actions.act_window">
+        <field name="name">🎯 Tableau de Bord Backups</field>
+        <field name="res_model">backup.file</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="context">{
+            'search_default_group_database': 1,
+            'search_default_today': 1
+        }</field>
+    </record>
+</odoo>

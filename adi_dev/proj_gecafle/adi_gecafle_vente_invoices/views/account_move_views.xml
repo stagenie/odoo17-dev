@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Héritage de la vue formulaire des factures -->
+    <record id="view_move_form_inherit_gecafle_vente" model="ir.ui.view">
+        <field name="name">account.move.form.inherit.gecafle.vente</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <!-- Ajout des champs invisibles -->
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="gecafle_vente_id" invisible="1"/>
+                <field name="gecafle_client_id" invisible="1"/>
+                <field name="consigne_appliquee" invisible="1"/>
+            </xpath>
+
+            <!-- Smart button pour voir le bon de vente -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_gecafle_vente"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-shopping-cart"
+                        invisible="not gecafle_vente_id"
+                        groups="base.group_user">
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_text">Bon de</span>
+                        <span class="o_stat_text">Vente</span>
+                    </div>
+                </button>
+
+
+                 <!-- Bouton pour imprimer le bon de vente -->
+
+                <button name="action_print_bon_vente"
+                        string="Imprimer Bon de Vente"
+                        type="object"
+                        class="btn-info"
+                        icon="fa-print"
+                        invisible="not gecafle_vente_id"
+                        groups="base.group_user"/>
+                <!-- Nouveau bouton pour le duplicata -->
+                <button name="action_print_bon_vente_duplicata"
+                        string="Imprimer Duplicata"
+                        type="object"
+                        class="btn-secondary"
+                        icon="fa-copy"
+                        invisible="not gecafle_vente_id or not gecafle_vente_id.est_imprimee"
+                        groups="base.group_user"/>
+
+            </xpath>
+
+
+
+            <!-- Ajout d'un onglet pour les informations GECAFLE -->
+            <xpath expr="//notebook" position="inside">
+                <page string="Informations Bon de Vente" name="gecafle_info"
+                      invisible="not gecafle_vente_id">
+                    <group>
+                        <group string="Totaux Poids">
+                            <field name="total_poids_brut"/>
+                            <field name="total_poids_colis"/>
+                            <field name="total_poids_net"/>
+                        </group>
+                        <group string="Totaux Financiers">
+                            <field name="montant_total_net" widget="monetary"/>
+                            <field name="montant_total_emballages" widget="monetary"/>
+                            <field name="montant_total_consigne" invisible="not consigne_appliquee" widget="monetary"/>
+                            <field name="montant_remise_globale" invisible="montant_remise_globale == 0"
+                                   widget="monetary"/>
+                            <field name="montant_total_commission" groups="adi_gecafle_ventes.group_gecafle_direction"
+                                   widget="monetary"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Héritage de la vue de liste des lignes de facture -->
+    <record id="view_move_line_form_inherit_gecafle" model="ir.ui.view">
+        <field name="name">account.move.line.form.inherit.gecafle</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <!-- Ajout de colonnes dans la liste des lignes de facture -->
+            <xpath expr="//field[@name='invoice_line_ids']/tree/field[@name='quantity']" position="after">
+                <field name="gecafle_line_type" invisible="1"/>
+                <field name="nombre_colis"
+                       optional="show"
+                       invisible="parent.gecafle_vente_id == False or gecafle_line_type != 'produit'"
+                       string="Nb Colis"/>
+                <field name="poids_net"
+                       optional="show"
+                       invisible="parent.gecafle_vente_id == False or gecafle_line_type != 'produit'"
+                       string="P. Net"/>
+                <field name="prix_unitaire"
+                       optional="show"
+                       invisible="parent.gecafle_vente_id == False or gecafle_line_type != 'produit'"
+                       string="Prix/U"/>
+                <field name="taux_commission"
+                       optional="hide"
+                       groups="adi_gecafle_ventes.group_gecafle_direction"
+                       invisible="parent.gecafle_vente_id == False"
+                       string="% Com."/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Vue liste des factures - ajout des colonnes personnalisées -->
+    <record id="view_invoice_tree_inherit_gecafle_vente" model="ir.ui.view">
+        <field name="name">account.invoice.tree.inherit.gecafle.vente</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_invoice_tree"/>
+        <field name="arch" type="xml">
+            <!-- CORRECTION : Utiliser amount_total_signed au lieu de amount_total_in_currency_signed -->
+            <xpath expr="//field[@name='amount_total_signed'][1]" position="after">
+                <field name="gecafle_vente_id" invisible="1"/>
+                <field name="total_poids_net"
+                       optional="hide"
+                       invisible="gecafle_vente_id == False"
+                       string="Poids Net Total"/>
+                <field name="montant_total_emballages"
+                       optional="hide"
+                       invisible="gecafle_vente_id == False"
+                       string="Emballages"
+                       widget="monetary"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Filtre de recherche -->
+    <record id="view_account_invoice_filter_inherit_gecafle" model="ir.ui.view">
+        <field name="name">account.invoice.search.inherit.gecafle</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_account_invoice_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='myinvoices']" position="after">
+                <separator/>
+                <filter string="Avec Bon de Vente"
+                        name="with_gecafle_vente"
+                        domain="[('gecafle_vente_id', '!=', False)]"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

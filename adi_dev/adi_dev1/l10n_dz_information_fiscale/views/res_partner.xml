@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_partner_property_form_info_fiscale" model="ir.ui.view">
+        <field name="name">res.partner.property.form.info.fiscale</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="account.view_partner_property_form"/>
+        
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='banks']" position="before">
+                <group string="Information fiscale" name="information_fiscale"
+                       visibility_conditions="{'visible': [('company_type', '=', 'company')]}">
+                    <field name="rc"/>
+                    <field name="nis"/>
+                    <field name="nif"/>
+                    <field name="ai"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_partner_form_info_fiscale" model="ir.ui.view">
+        <field name="name">res.partner.form.info.fiscale</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='vat']" position="attributes">
+                <attribute name="invisible">True</attribute> <!-- replacé par le champ nif -->
+            </xpath>
+        </field>
+    </record>
+</odoo>

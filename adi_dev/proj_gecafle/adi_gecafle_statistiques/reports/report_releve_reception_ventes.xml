@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="paperformat_releve_reception_ventes" model="report.paperformat">
+        <field name="name">Relevé Réceptions-Ventes A4</field>
+        <field name="default" eval="False"/>
+        <field name="format">A4</field>
+        <field name="page_height">0</field>
+        <field name="page_width">0</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">40</field>
+        <field name="margin_bottom">20</field>
+        <field name="margin_left">5</field>
+        <field name="margin_right">5</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">35</field>
+        <field name="dpi">90</field>
+    </record>
+    <!-- Template du rapport avec gestion anti-chevauchement -->
+    <template id="report_releve_reception_ventes_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <!-- En-tête du rapport -->
+                        <div class="header-section">
+                            <div class="text-center mb-3">
+                                <h3 style="margin-bottom: 10px;">Relevé Réceptions et leurs Ventes</h3>
+                                <p style="margin-bottom: 5px;">
+                                    Du :
+                                    <span t-field="o.date_debut"/>
+                                    Au :
+                                    <span t-field="o.date_fin"/>
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Conteneur principal avec gestion des sauts de page -->
+                        <div class="reception-container">
+                            <!-- Pour chaque ligne de réception -->
+                            <t t-foreach="o.line_ids" t-as="line">
+                                <!-- Bloc avec protection contre la coupure -->
+                                <div class="reception-block avoid-break">
+                                    <!-- Info réception -->
+                                    <div class="reception-header bg-light p-2 mb-2">
+                                        <div class="row">
+                                            <div class="col-3">
+                                                <small>
+                                                    <strong>Date:</strong>
+                                                </small>
+                                                <br/>
+                                                <span t-field="line.date_reception" t-options='{"widget": "date"}'/>
+                                            </div>
+                                            <div class="col-3">
+                                                <small>
+                                                    <strong>N° Réception:</strong>
+                                                </small>
+                                                <br/>
+                                                <span t-field="line.reception_id.name"/>
+                                            </div>
+                                            <div class="col-6">
+                                                <small>
+                                                    <strong>Producteur:</strong>
+                                                </small>
+                                                <br/>
+                                                <span t-field="line.producteur_id.name"/>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Détails Réceptions dans un tableau compact -->
+                                    <div class="reception-details">
+                                        <h6 class="mb-2" style="font-size: 14px;">Détails Réceptions</h6>
+                                        <table class="table table-sm table-bordered compact-table">
+                                            <thead class="thead-light">
+                                                <tr style="font-size: 12px;">
+                                                    <th width="35%">Produit</th>
+                                                    <th width="15%" class="text-center">Nombre</th>
+                                                    <th width="25%">Calibre</th>
+                                                    <th width="25%">Emballage</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr t-foreach="line.line_reception_ids" t-as="rec_line"
+                                                    style="font-size: 11px;">
+                                                    <td>
+                                                        <span t-field="rec_line.produit"/>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <span t-field="rec_line.nombre"/>
+                                                    </td>
+                                                    <td>
+                                                        <span t-field="rec_line.calibre"/>
+                                                    </td>
+                                                    <td>
+                                                        <span t-field="rec_line.emballage"/>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <!-- Détails Ventes dans un tableau compact -->
+                                    <div class="ventes-details">
+                                        <h6 class="mb-2" style="font-size: 14px;">Détails Ventes</h6>
+                                        <table class="table table-sm table-bordered compact-table">
+                                            <thead class="thead-light">
+                                                <tr style="font-size: 12px;">
+                                                    <th width="25%">Produit</th>
+                                                    <th width="10%" class="text-center">Nb</th>
+                                                    <th width="15%">Calibre</th>
+                                                    <th width="15%">Emballage</th>
+                                                    <th width="10%" class="text-right">Poids</th>
+                                                    <th width="12%" class="text-right">P.U</th>
+                                                    <th width="13%" class="text-right">Total</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr t-foreach="line.line_vente_ids" t-as="vente_line"
+                                                    style="font-size: 11px;">
+                                                    <td>
+                                                        <span t-field="vente_line.produit"/>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <span t-field="vente_line.nombre"/>
+                                                    </td>
+                                                    <td>
+                                                        <span t-field="vente_line.calibre"/>
+                                                    </td>
+                                                    <td>
+                                                        <span t-field="vente_line.emballage"/>
+                                                    </td>
+                                                    <td class="text-right">
+                                                        <span t-field="vente_line.poids"/>
+                                                    </td>
+                                                    <td class="text-right">
+                                                        <span t-field="vente_line.prix_unitaire"/>
+                                                    </td>
+                                                    <td class="text-right">
+                                                        <span t-field="vente_line.prix_total"
+                                                              t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                            <tfoot>
+                                                <tr class="font-weight-bold" style="font-size: 11px;">
+                                                    <td colspan="6" class="text-right">Total</td>
+                                                    <td class="text-right">
+                                                        <span t-field="line.total_ventes"
+                                                              t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                                    </td>
+                                                </tr>
+                                                <tr style="font-size: 11px;">
+                                                    <td colspan="6" class="text-right">Commission</td>
+                                                    <td class="text-right">
+                                                        <span t-field="line.total_commission"
+                                                              t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                                    </td>
+                                                </tr>
+                                                <tr class="font-weight-bold bg-light" style="font-size: 11px;">
+                                                    <td colspan="6" class="text-right">Net à Payer</td>
+                                                    <td class="text-right">
+                                                        <span t-field="line.net_a_payer"
+                                                              t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                                    </td>
+                                                </tr>
+                                            </tfoot>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <!-- Forcer un saut de page tous les 2 blocs pour éviter l'accumulation -->
+                                <t t-if="line_index % 2 == 1 and not line_last">
+                                    <div style="page-break-after: always;"/>
+                                </t>
+                            </t>
+                        </div>
+
+                        <!-- Totaux généraux - toujours sur une nouvelle section -->
+                        <div class="totals-section avoid-break mt-4">
+                            <div class="row">
+                                <div class="col-6 offset-6">
+                                    <table class="table table-sm">
+                                        <tr class="font-weight-bold">
+                                            <td>Total Général Ventes:</td>
+                                            <td class="text-right">
+                                                <span t-field="o.total_general_ventes"
+                                                      t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Total Commission:</td>
+                                            <td class="text-right">
+                                                <span t-field="o.total_general_commission"
+                                                      t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                            </td>
+                                        </tr>
+                                        <tr class="font-weight-bold bg-light">
+                                            <td>Net Total à Payer:</td>
+                                            <td class="text-right">
+                                                <span t-field="o.total_general_net"
+                                                      t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <style>
+                            /* Styles pour éviter les chevauchements */
+                            .reception-container {
+                            width: 100%;
+                            }
+
+                            .reception-block {
+                            border: 1px solid #dee2e6;
+                            border-radius: 4px;
+                            padding: 10px;
+                            margin-bottom: 15px;
+                            background-color: #ffffff;
+                            }
+
+                            /* Protection contre la coupure de page */
+                            .avoid-break {
+                            page-break-inside: avoid !important;
+                            break-inside: avoid !important;
+                            }
+
+                            /* Si un bloc est trop grand, forcer le saut avant */
+                            .reception-block:has(table:nth-child(n+10)) {
+                            page-break-before: always;
+                            }
+
+                            /* Tables compactes */
+                            .compact-table {
+                            margin-bottom: 10px;
+                            }
+
+                            .compact-table td, .compact-table th {
+                            padding: 3px 5px !important;
+                            line-height: 1.2;
+                            }
+
+                            .reception-header {
+                            border-radius: 3px;
+                            margin-bottom: 10px;
+                            }
+
+                            /* Section des totaux */
+                            .totals-section {
+                            border-top: 2px solid #dee2e6;
+                            padding-top: 15px;
+                            margin-top: 20px;
+                            }
+
+                            /* Forcer saut de page si nécessaire avant totaux */
+                            .totals-section {
+                            page-break-before: auto;
+                            }
+
+                            /* Réduire les marges pour maximiser l'espace */
+                            h6 {
+                            margin-top: 8px;
+                            margin-bottom: 5px;
+                            }
+
+                            .bg-light {
+                            background-color: #f8f9fa !important;
+                            }
+
+                            /* Media print pour l'impression */
+                            @media print {
+                            .reception-block {
+                            page-break-inside: avoid !important;
+                            }
+
+                            .totals-section {
+                            page-break-inside: avoid !important;
+                            }
+
+                            /* Éviter les veuves et orphelins */
+                            p, h1, h2, h3, h4, h5, h6 {
+                            orphans: 3;
+                            widows: 3;
+                            }
+                            }
+                        </style>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+
+    <!-- Mise à jour de la définition du rapport -->
+    <record id="action_report_releve_reception_ventes" model="ir.actions.report">
+        <field name="name">Relevé Réceptions-Ventes</field>
+        <field name="model">gecafle.releve.reception.ventes</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_gecafle_statistiques.report_releve_reception_ventes_document</field>
+        <field name="report_file">Releve_Receptions_Ventes</field>
+        <field name="print_report_name">'Relevé - %s' % (object.name)</field>
+        <field name="paperformat_id" ref="adi_gecafle_statistiques.paperformat_releve_reception_ventes"/>
+    </record>
+</odoo>

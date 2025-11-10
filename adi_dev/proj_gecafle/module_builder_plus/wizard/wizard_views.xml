@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Import Module Wizard -->
+    <record id="import_module_wizard_plus_view_form" model="ir.ui.view">
+        <field name="name">import.module.wizard.plus.form</field>
+        <field name="model">import.module.wizard.plus</field>
+        <field name="arch" type="xml">
+            <form string="Importer Module">
+                <group>
+                    <field name="module_file" filename="file_name"/>
+                    <field name="file_name" invisible="1"/>
+                </group>
+                <footer>
+                    <button name="action_import"
+                            string="Importer"
+                            type="object"
+                            class="btn-primary"/>
+                    <button special="cancel"
+                            string="Annuler"
+                            class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_import_module_wizard_plus" model="ir.actions.act_window">
+        <field name="name">Importer Module</field>
+        <field name="res_model">import.module.wizard.plus</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <!-- Code to Module Wizard -->
+    <record id="code_to_module_wizard_view_form" model="ir.ui.view">
+        <field name="name">code.to.module.wizard.form</field>
+        <field name="model">code.to.module.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Générer Module depuis Code">
+                <field name="state" invisible="1"/>
+                <group invisible="state != 'input'">
+                    <field name="name" placeholder="mon_module_custom"/>
+                    <separator string="Instructions" colspan="2"/>
+                    <div colspan="2" style="background-color: #f0f0f0; padding: 10px; margin-bottom: 10px;">
+                        <p><b>Format requis:</b></p>
+                        <p>Pour chaque fichier, utilisez un marqueur comme:</p>
+                        <ul>
+                            <li><code># fichier: models/mon_model.py</code></li>
+                            <li><code># views/ma_vue.xml</code></li>
+                            <li><code># __manifest__.py</code></li>
+                        </ul>
+                        <p>Puis collez le contenu du fichier en dessous.</p>
+                    </div>
+                    <field name="module_code"
+                           widget="ace"
+                           options="{'mode': 'python'}"
+                           placeholder="# __manifest__.py&#10;{&#10;    'name': 'Mon Module',&#10;    'version': '1.0',&#10;    ...&#10;}&#10;&#10;# models/mon_model.py&#10;from odoo import models, fields&#10;&#10;class MonModel(models.Model):&#10;    _name = 'mon.model'&#10;    ..."
+                           nolabel="1"
+                           colspan="2"/>
+                </group>
+                <group invisible="state != 'done'">
+                    <h3>Module généré avec succès !</h3>
+                    <field name="generated_filename" readonly="1"/>
+                </group>
+                <footer>
+                    <button name="generate_module"
+                            string="Générer Module"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'input'"/>
+                    <button name="generate_module"
+                            string="Générer Module Intelli"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'input'"/>
+                    <button name="download_module"
+                            string="Télécharger"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'done'"/>
+                    <button special="cancel"
+                            string="Fermer"
+                            class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_code_to_module_wizard"
+            model="ir.actions.act_window">
+        <field name="name">Générer Module depuis Code</field>
+        <field name="res_model">code.to.module.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

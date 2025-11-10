@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Types d'opération pour les transferts de production -->
+        <record id="seq_production_transfer" model="ir.sequence">
+            <field name="name">Production Transfer</field>
+            <field name="code">production.transfer</field>
+            <field name="prefix">PT/%(year)s/</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!-- Email template pour les notifications -->
+        <record id="mail_template_production_transfer_urgent" model="mail.template">
+            <field name="name">Production Transfer - Urgent</field>
+            <field name="model_id" ref="stock.model_stock_picking"/>
+            <field name="subject">Transfert urgent requis: ${object.name}</field>
+            <field name="body_html"><![CDATA[
+                <p>Bonjour,</p>
+                <p>Un transfert de production urgent requiert votre attention :</p>
+                <ul>
+                    <li><strong>Référence :</strong> ${object.name}</li>
+                    <li><strong>De :</strong> ${object.location_id.complete_name}</li>
+                    <li><strong>Vers :</strong> ${object.location_dest_id.complete_name}</li>
+                    <li><strong>Date prévue :</strong> ${object.scheduled_date}</li>
+                    <li><strong>Priorité :</strong> ${object.transfer_priority}</li>
+                </ul>
+                % if object.shortage_alert:
+                <p style="color: red;"><strong>⚠️ Attention : Des produits sont manquants pour ce transfert.</strong></p>
+                % endif
+                <p>Merci de traiter ce transfert rapidement.</p>
+            ]]></field>
+        </record>
+    </data>
+</odoo>

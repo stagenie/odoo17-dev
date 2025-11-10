@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ========== SECURITY RULES ========== -->
+
+    <!-- Catégorie de sécurité pour le module -->
+    <record id="module_category_smart_payment" model="ir.module.category">
+        <field name="name">Répartition intelligente des paiements</field>
+        <field name="description">Gestion des droits pour la répartition automatique des paiements</field>
+        <field name="sequence">20</field>
+    </record>
+
+    <!-- Groupes de sécurité spécifiques -->
+    <record id="group_payment_allocation_user" model="res.groups">
+        <field name="name">Utilisateur - Répartition paiements</field>
+        <field name="category_id" ref="module_category_smart_payment"/>
+        <field name="implied_ids" eval="[(4, ref('account.group_account_invoice'))]"/>
+        <field name="comment">Peut créer et modifier les répartitions de paiements</field>
+    </record>
+
+    <record id="group_payment_allocation_manager" model="res.groups">
+        <field name="name">Responsable - Répartition paiements</field>
+        <field name="category_id" ref="module_category_smart_payment"/>
+        <field name="implied_ids" eval="[(4, ref('group_payment_allocation_user'))]"/>
+        <field name="users" eval="[(4, ref('base.user_admin'))]"/>
+        <field name="comment">Accès complet aux répartitions et peut modifier les allocations validées</field>
+    </record>
+
+    <!-- Règles d'accès par société -->
+    <record id="payment_allocation_line_comp_rule" model="ir.rule">
+        <field name="name">Lignes d'allocation par société</field>
+        <field name="model_id" ref="model_payment_allocation_line"/>
+        <field name="domain_force">[('payment_id.company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('account.group_account_user'))]"/>
+    </record>
+
+    <!-- Règle pour limiter l'accès aux propres paiements (optionnel) -->
+    <record id="payment_allocation_own_rule" model="ir.rule">
+        <field name="name">Voir uniquement ses propres allocations</field>
+        <field name="model_id" ref="model_payment_allocation_line"/>
+        <field name="domain_force">[('create_uid', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('group_payment_allocation_user'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+        <field name="active" eval="False"/> <!-- Désactivé par défaut -->
+    </record>
+
+    <!-- Règle pour les responsables - accès total -->
+    <record id="payment_allocation_manager_rule" model="ir.rule">
+        <field name="name">Accès total pour les responsables</field>
+        <field name="model_id" ref="model_payment_allocation_line"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('group_payment_allocation_manager'))]"/>
+    </record>
+</odoo>

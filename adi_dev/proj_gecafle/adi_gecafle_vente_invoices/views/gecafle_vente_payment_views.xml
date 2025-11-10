@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Héritage de la vue formulaire des ventes pour ajouter les infos de paiement -->
+    <record id="view_gecafle_vente_form_inherit_payment" model="ir.ui.view">
+        <field name="name">gecafle.vente.form.inherit.payment</field>
+        <field name="model">gecafle.vente</field>
+        <field name="inherit_id" ref="adi_gecafle_ventes.view_gecafle_vente_form"/>
+        <field name="arch" type="xml">
+            <!-- Ajout des champs invisibles -->
+            <xpath expr="//field[@name='tel_mob_client']" position="after">
+                <field name="show_payment_details"
+                       widget="boolean_toggle"
+                       invisible="not invoice_id or state != 'valide'"/>
+            </xpath>
+            <xpath expr="//field[@name='state']" position="after">
+                <field name="invoice_id" invisible="1"/>
+                <field name="payment_state" invisible="1"/>
+                <field name="amount_residual_signed" invisible="1"/>
+                <field name="payment_count" invisible="1"/>
+                <field name="amount_total_signed" invisible="1"/>
+                <field name="amount_paid" invisible="1"/>
+                <field name="payment_percentage" invisible="1"/>
+                <field name="currency_id" invisible="1"/>
+                <field name="show_payment_details" invisible="1"/>
+            </xpath>
+
+            <!-- Ajout du widget de statut de paiement dans le header -->
+            <xpath expr="//field[@name='state']" position="after">
+                <field name="payment_state"
+                       widget="badge"
+                       decoration-success="payment_state == 'paid'"
+                       decoration-warning="payment_state == 'partial'"
+                       decoration-danger="payment_state == 'not_paid'"
+                       decoration-info="payment_state == 'in_payment'"
+                       invisible="not invoice_id or state != 'valide'"/>
+            </xpath>
+
+            <!-- Ajout du bouton pour voir les paiements dans le button_box
+
+           invisible="payment_count == 0">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_payments" type="object"
+                        class="oe_stat_button" icon="fa-money"
+                        invisible="1">
+                    <field name="payment_count" widget="statinfo" string="Paiement(s)"/>
+                </button>
+            </xpath>
+            -->
+
+
+            <!-- MODIFICATION : Remplacer le group des totaux par une structure améliorée -->
+            <xpath expr="//group[@class='oe_subtotal_footer']" position="replace">
+                <group col="6" colspan="6">
+                    <group colspan="2">
+                        <!-- Options d'affichage -->
+                        <field name="show_payment_details"
+                               widget="boolean_toggle"
+                               invisible="not invoice_id or state != 'valide'"/>
+                    </group>
+
+                    <!-- Section centrale : Informations de paiement -->
+                    <group colspan="2" string="État de Paiement"
+                           invisible="not invoice_id or state != 'valide'"
+                           class="alert alert-info">
+                        <field name="payment_state" string="État" readonly="1"/>
+                        <field name="payment_percentage" widget="percentage" readonly="1"/>
+                        <field name="amount_paid" widget="monetary" readonly="1"/>
+                        <field name="amount_residual_signed"
+                               string="Montant dû"
+                               widget="monetary"
+                               readonly="1"/>
+                    </group>
+
+                    <!-- Section droite : Totaux de vente -->
+                    <group colspan="2" class="oe_subtotal_footer oe_right">
+                        <field name="peut_modifier_prix" invisible="1"/>
+                        <field name="consigne_appliquee" invisible="1"/>
+                        <field name="total_poids_colis" widget="float"/>
+                        <field name="total_poids_net" widget="float"/>
+                        <field name="montant_total_commission"
+                               groups="adi_gecafle_ventes.group_gecafle_direction"
+                               string="Commission"/>
+                        <field name="montant_total_net" widget="monetary"/>
+                        <field name="montant_total_emballages" widget="monetary"/>
+                        <field name="montant_total_a_payer_calc"
+                               widget="monetary"
+                               readonly="1"
+                               invisible="(not peut_modifier_prix)"/>
+                        <field name="montant_remise_globale" widget="monetary"
+                               invisible="(not peut_modifier_prix)"
+                               readonly="state != 'brouillon'"/>
+                        <field name="montant_total_a_payer"
+                               class="oe_subtotal_footer_separator"
+                               readonly="1"
+                               widget="monetary"/>
+                    </group>
+                </group>
+            </xpath>
+
+            <!-- Section détails des paiements (optionnelle) -->
+            <xpath expr="//sheet" position="inside">
+                <group string="Détails des paiements"
+                       invisible="not invoice_id or not show_payment_details or payment_count == 0"
+                       class="mt-4">
+                    <field name="payment_ids" nolabel="1" readonly="1">
+                        <tree create="false" edit="false" delete="false">
+                            <field name="date" string="Date"/>
+                            <field name="name" string="Référence"/>
+                            <field name="journal_id" string="Mode de paiement"/>
+                            <field name="amount" string="Montant" sum="Total payé"/>
+                            <field name="state" widget="badge"
+                                   decoration-success="state == 'posted'"
+                                   decoration-info="state == 'draft'"/>
+                        </tree>
+                    </field>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Vue liste (reste inchangée) -->
+    <record id="view_gecafle_vente_tree_inherit_payment" model="ir.ui.view">
+        <field name="name">gecafle.vente.tree.inherit.payment</field>
+        <field name="model">gecafle.vente</field>
+        <field name="inherit_id" ref="adi_gecafle_ventes.view_gecafle_vente_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='montant_total_a_payer']" position="after">
+                <field name="invoice_id" invisible="1"/>
+                <field name="currency_id" invisible="1"/>
+                <field name="amount_paid" string="Payé" sum="Total Payé"
+                       widget="monetary" optional="show" invisible="not invoice_id"
+                       options="{'currency_field': 'currency_id'}"/>
+                <field name="amount_residual_signed" string="Reste" sum="Total Reste"
+                       widget="monetary" optional="show" invisible="not invoice_id"
+                       decoration-danger="amount_residual_signed > 0"
+                       decoration-success="amount_residual_signed == 0"
+                       options="{'currency_field': 'currency_id'}"/>
+                <field name="payment_state" string="État paiement" optional="show"
+                       widget="badge"
+                       invisible="not invoice_id"
+                       decoration-success="payment_state == 'paid'"
+                       decoration-warning="payment_state == 'partial' or payment_state == 'in_payment'"
+                       decoration-danger="payment_state == 'not_paid'"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Filtre de recherche (reste inchangé) -->
+    <record id="view_gecafle_vente_search_inherit_payment" model="ir.ui.view">
+        <field name="name">gecafle.vente.search.inherit.payment</field>
+        <field name="model">gecafle.vente</field>
+        <field name="inherit_id" ref="adi_gecafle_ventes.view_gecafle_vente_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='filter_valide']" position="after">
+                <separator/>
+                <filter string="Payé" name="filter_paid"
+                        domain="[('payment_state', '=', 'paid')]"/>
+                <filter string="Partiellement payé" name="filter_partial"
+                        domain="[('payment_state', '=', 'partial')]"/>
+                <filter string="Non payé" name="filter_not_paid"
+                        domain="[('payment_state', '=', 'not_paid')]"/>
+            </xpath>
+            <xpath expr="//filter[@name='group_state']" position="after">
+                <filter string="État paiement" name="group_payment_state"
+                        context="{'group_by': 'payment_state'}"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

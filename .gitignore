@@ -1,0 +1,56 @@
+
+# ODOO STANDARD (ne pas versionner)
+addons/
+odoo/
+odoo-bin
+openerp/
+
+# CONFIGURATION (avec mots de passe)
+odoo.conf
+*.conf
+!odoo.conf.example
+
+# PYTHON
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.pyc
+*.pyo
+venv/
+env/
+ENV/
+.venv
+
+# ODOO DATA
+filestore/
+sessions/
+.odoo_db_list
+
+# LOGS
+*.log
+odoo.log*
+logs/
+
+# BACKUPS
+*.zip
+*.tar.gz
+*.tar
+*.bak
+*.sql
+*.dump
+
+# IDEs
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# TEMPORARY
+*.swp
+*.swo
+*~

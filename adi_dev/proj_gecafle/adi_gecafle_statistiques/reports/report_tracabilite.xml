@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Template du rapport -->
+    <template id="report_tracabilite_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2 class="text-center">Mouvement de Stock Journalier</h2>
+                        <h4 class="text-center">
+                            Du <span t-field="o.date_debut"/> au <span t-field="o.date_fin"/>
+                        </h4>
+
+                        <!-- Tableau des mouvements -->
+                        <div class="row mt-4">
+                            <!-- Réceptions -->
+                            <div class="col-6">
+                                <h5 class="bg-primary text-white p-2">Réceptions</h5>
+                                <table class="table table-sm table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>N°</th>
+                                            <th>Producteur</th>
+                                            <th>Produit</th>
+                                            <th>Qual.</th>
+                                            <th>Col.</th>
+                                            <th>Qté</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr t-foreach="o.reception_line_ids" t-as="line">
+                                            <td><span t-field="line.date" t-options='{"widget": "date"}'/></td>
+                                            <td><span t-field="line.numero_reception"/></td>
+                                            <td><span t-field="line.producteur_id"/></td>
+                                            <td><span t-field="line.produit_id.name"/></td>
+                                            <td><span t-field="line.qualite_id.name"/></td>
+                                            <td><span t-field="line.type_colis_id.name"/></td>
+                                            <td class="text-right"><span t-field="line.qte_entrante"/></td>
+                                        </tr>
+                                    </tbody>
+                                    <tfoot>
+                                        <tr class="font-weight-bold">
+                                            <td colspan="3">Total</td>
+                                            <td class="text-right"><span t-field="o.total_entrant"/></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+
+                            <!-- Ventes -->
+                            <div class="col-6">
+                                <h5 class="bg-success text-white p-2">Ventes</h5>
+                                <table class="table table-sm table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>N°</th>
+                                            <th>Client</th>
+                                            <th>Produit</th>
+                                            <th>Qual.</th>
+                                            <th>Col.</th>
+                                            <th>Qté</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr t-foreach="o.vente_line_ids" t-as="line">
+                                            <td><span t-field="line.date" t-options='{"widget": "date"}'/></td>
+                                            <td><span t-field="line.numero_vente"/></td>
+                                            <td><span t-field="line.client_id"/></td>
+                                            <td><span t-field="line.produit_id.name"/></td>
+                                            <td><span t-field="line.qualite_id.name"/></td>
+                                            <td><span t-field="line.type_colis_id.name"/></td>
+                                            <td class="text-right"><span t-field="line.qte_sortante"/></td>
+                                        </tr>
+                                    </tbody>
+                                    <tfoot>
+                                        <tr class="font-weight-bold">
+                                            <td colspan="3">Total</td>
+                                            <td class="text-right"><span t-field="o.total_sortant"/></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Synthèse -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <table class="table">
+                                    <tr>
+                                        <td width="60%"></td>
+                                        <td><strong>Total Entrées:</strong></td>
+                                        <td class="text-right"><span t-field="o.total_entrant"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td><strong>Total Sorties:</strong></td>
+                                        <td class="text-right"><span t-field="o.total_sortant"/></td>
+                                    </tr>
+                                    <tr class="font-weight-bold">
+                                        <td></td>
+                                        <td><strong>Stock Restant:</strong></td>
+                                        <td class="text-right"><span t-field="o.total_restant"/></td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <!-- Définition du rapport -->
+    <record id="action_report_tracabilite" model="ir.actions.report">
+        <field name="name">Mouvement de Stock Journalier</field>
+        <field name="model">gecafle.tracabilite.produits</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_gecafle_statistiques.report_tracabilite_document</field>
+        <field name="report_file">tracabilite</field>
+        <field name="binding_model_id" ref="model_gecafle_tracabilite_produits"/>
+        <field name="binding_type">report</field>
+    </record>
+</odoo>

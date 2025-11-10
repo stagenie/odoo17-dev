@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+		<record id="type_caisse_view_tree" model="ir.ui.view">
+            <field name="name">type.caisse.view.tree</field>
+            <field name="model">type.caisse</field>
+            <field name="arch" type="xml">
+                <tree string="Type des caisse" editable="top">
+                	<field name="name" required="1"/>
+                	<field name="code"/>
+                	<field name="is_from" string="Caisse Emettrice"/>
+                	<field name="is_to" string="Caisse Receptrice"/>
+                	<field name="last_caisse_id" invisible="0" domain="[('state','=','confirm'),('type_caisse','=',id)]" />
+                </tree>
+            </field>
+        </record>
+
+        <record id="type_caisse_action" model="ir.actions.act_window">
+            <field name="name">Type de caisse</field>
+            <field name="res_model">type.caisse</field>
+            <field name="view_mode">tree</field>
+        </record>
+
+        			
+        
+        			
+    					
+    </data>
+</odoo>

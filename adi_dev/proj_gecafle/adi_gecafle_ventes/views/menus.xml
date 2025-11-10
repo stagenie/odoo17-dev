@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Menu principal Avoirs sous Ventes -->
+    <menuitem id="menu_gecafle_avoirs"
+              name="Avoirs"
+              parent="adi_gecafle_ventes.menu_adi_gecafle_ventes"
+              sequence="50"/>
+
+    <!-- Sous-menu Avoirs Client -->
+    <menuitem id="menu_gecafle_avoir_client"
+              name="Avoirs Client"
+              parent="menu_gecafle_avoirs"
+              action="action_gecafle_avoir_client"
+              sequence="10"/>
+
+    <!-- Sous-menu Avoirs Producteur -->
+    <menuitem id="menu_gecafle_avoir_producteur"
+              name="Avoirs Producteur"
+              parent="menu_gecafle_avoirs"
+              action="action_view_vendor_credit"
+              sequence="20"/>
+</odoo>

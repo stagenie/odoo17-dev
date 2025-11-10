@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue liste Balance Client -->
+    <record id="view_emballage_balance_client_list" model="ir.ui.view">
+        <field name="name">gecafle.emballage.balance.client.list</field>
+        <field name="model">gecafle.emballage.balance.client</field>
+        <field name="arch" type="xml">
+            <tree create="false" edit="false">
+                <field name="client_id"/>
+                <field name="emballage_id"/>
+                <field name="total_sortant" sum="Total"/>
+                <field name="total_entrant" sum="Total"/>
+                <field name="solde" sum="Total"
+                       decoration-danger="solde > 0"
+                       decoration-success="solde == 0"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vue recherche Balance Client -->
+    <record id="view_emballage_balance_client_search" model="ir.ui.view">
+        <field name="name">gecafle.emballage.balance.client.search</field>
+        <field name="model">gecafle.emballage.balance.client</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="client_id"/>
+                <field name="emballage_id"/>
+                <filter string="Solde non nul" name="with_balance"
+                        domain="[('solde', '!=', 0)]"/>
+                <filter string="Client doit" name="client_owes"
+                        domain="[('solde', '>', 0)]"/>
+                <group expand="0" string="Grouper par">
+                    <filter string="Client" name="group_client"
+                            context="{'group_by': 'client_id'}"/>
+                    <filter string="Emballage" name="group_emballage"
+                            context="{'group_by': 'emballage_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Vue liste Balance Producteur -->
+    <record id="view_emballage_balance_producteur_list" model="ir.ui.view">
+        <field name="name">gecafle.emballage.balance.producteur.list</field>
+        <field name="model">gecafle.emballage.balance.producteur</field>
+        <field name="arch" type="xml">
+            <tree create="false" edit="false">
+                <field name="producteur_id"/>
+                <field name="emballage_id"/>
+                <field name="total_entrant" sum="Total"/>
+                <field name="total_sortant" sum="Total"/>
+                <field name="solde" sum="Total"
+                       decoration-danger="solde > 0"
+                       decoration-success="solde == 0"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Actions -->
+    <record id="action_emballage_balance_client" model="ir.actions.act_window">
+        <field name="name">Balance Clients</field>
+        <field name="res_model">gecafle.emballage.balance.client</field>
+        <field name="view_mode">tree,pivot</field>
+        <field name="context">{'search_default_with_balance': 1}</field>
+    </record>
+
+    <record id="action_emballage_balance_producteur" model="ir.actions.act_window">
+        <field name="name">Balance Producteurs</field>
+        <field name="res_model">gecafle.emballage.balance.producteur</field>
+        <field name="view_mode">tree,pivot</field>
+        <field name="context">{'search_default_with_balance': 1}</field>
+    </record>
+</odoo>

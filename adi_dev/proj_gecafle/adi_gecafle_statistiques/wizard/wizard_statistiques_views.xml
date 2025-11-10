@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Wizard pour générer les rapports statistiques -->
+    <record id="wizard_statistiques_form" model="ir.ui.view">
+        <field name="name">wizard.gecafle.statistiques.form</field>
+        <field name="model">wizard.gecafle.statistiques</field>
+        <field name="arch" type="xml">
+            <form string="Générer Rapport de Statistiques">
+                <group>
+                    <group string="Période">
+                        <field name="date_debut" required="1"/>
+                        <field name="date_fin" required="1"/>
+                        <field name="type_periode" widget="radio"/>
+                    </group>
+                    <group string="Filtres">
+                        <field name="producteur_ids" widget="many2many_tags"
+                               options="{'no_create': True}"/>
+                        <field name="produit_ids" widget="many2many_tags"
+                               options="{'no_create': True}"/>
+                        <field name="client_ids" widget="many2many_tags"
+                               options="{'no_create': True}"/>
+                        <field name="region_ids" widget="many2many_tags"
+                               options="{'no_create': True}"/>
+                    </group>
+                </group>
+
+                <group string="Options du rapport">
+                    <group>
+                        <field name="type_rapport" widget="radio" required="1"/>
+                        <field name="grouper_par"/>
+                        <field name="inclure_graphiques"/>
+                    </group>
+                    <group>
+                        <field name="inclure_details"/>
+                        <field name="format_export" widget="radio"/>
+                        <field name="envoyer_par_email"/>
+                        <field name="email_destinataire"
+                               invisible="not envoyer_par_email"
+                               required="envoyer_par_email"/>
+                    </group>
+                </group>
+
+                <footer>
+                    <button name="action_generer_rapport"
+                            string="Générer le rapport"
+                            type="object"
+                            class="btn-primary"/>
+                    <button name="action_exporter_excel"
+                            string="Exporter Excel"
+                            type="object"
+                            class="btn-success"
+                            invisible="format_export != 'excel'"/>
+                    <button string="Annuler"
+                            class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action pour ouvrir le wizard -->
+    <record id="action_wizard_statistiques" model="ir.actions.act_window">
+        <field name="name">Générer Rapport Statistique</field>
+        <field name="res_model">wizard.gecafle.statistiques</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="model_gecafle_statistiques_ventes"/>
+    </record>
+</odoo>

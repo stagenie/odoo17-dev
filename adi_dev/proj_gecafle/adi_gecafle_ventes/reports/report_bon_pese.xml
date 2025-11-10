@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Template du Bon de Pesé -->
+    <template id="report_bon_pese_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+
+                        <!-- En-tête personnalisé
+                        <div class="text-center mb-4">
+                            <h3>Carreau N° <t t-esc="o.company_id.carreau_number or '65'"/></h3>
+                            <p style="margin: 0;">
+                                Mandataire en Fruits et Légumes<br/>
+                                Marché de Gros - <t t-esc="o.company_id.partner_id.street or 'AMEUR YOUSSEF YOUNES'"/>
+                            </p>
+                            <hr style="margin: 10px auto; width: 80%;"/>
+                            <h2 style="text-decoration: underline;">Bon de Pesé</h2>
+                        </div>
+
+                        -->
+
+
+                        <!-- Informations générales -->
+                        <div class="row mb-3">
+                            <div class="col-8">
+                                <strong>Date:</strong>
+                                <span t-field="o.date_vente" t-options='{"widget": "datetime", "format": "dd/MM/yyyy HH:mm:ss"}'/>
+                            </div>
+                            <div class="col-4 text-right">
+                                <strong>Client:</strong>
+                                <span t-field="o.client_id.name"/>
+                            </div>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <strong>Utilisateur:</strong>
+                                <span t-esc="o.user_id.name.upper()"/>
+                            </div>
+                        </div>
+
+                        <!-- Tableau des produits -->
+                        <table class="table table-sm table-bordered">
+                            <thead style="background-color: #f0f0f0;">
+                                <tr>
+                                    <th class="text-center" width="12%">Nbre colis</th>
+                                    <th width="30%">Désignation</th>
+                                    <th class="text-center" width="15%">Type Colis</th>
+                                    <th class="text-center" width="10%">Qual.</th>
+                                    <th class="text-right" width="15%">Poids Net</th>
+                                    <th class="text-right" width="18%">Prix /U</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="o.detail_vente_ids" t-as="line">
+                                    <tr>
+                                        <td class="text-center">
+                                            <span t-field="line.nombre_colis"/>
+                                        </td>
+                                        <td>
+                                            <span t-field="line.produit_id.name"/>
+                                        </td>
+                                        <td class="text-center">
+                                            <span t-field="line.type_colis_id.name"/>
+                                        </td>
+                                        <td class="text-center">
+                                            <span t-field="line.qualite_id.name"/>
+                                        </td>
+                                        <td class="text-right">
+                                            <!-- Formatage du poids net avec virgule -->
+                                            <t t-set="poids_net_str" t-value="'%.2f' % line.poids_net"/>
+                                            <span t-esc="poids_net_str.replace('.', ',')"/>
+                                        </td>
+                                        <td class="text-right">
+                                            <!-- Formatage du prix avec virgule -->
+                                            <t t-set="prix_str" t-value="'%.2f' % line.prix_unitaire"/>
+                                            <span t-esc="prix_str.replace('.', ',')"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+
+                        <!-- Calcul et affichage du total avec t-set -->
+                        <t t-set="total_colis" t-value="sum(o.detail_vente_ids.mapped('nombre_colis'))"/>
+                        <t t-set="total_poids" t-value="sum(o.detail_vente_ids.mapped('poids_net'))"/>
+
+                        <div class="row mt-4">
+                            <div class="col-12 text-right">
+                                <strong>Total colis:</strong> <span t-esc="total_colis"/><br/>
+                                <strong>Total poids net:</strong>
+                                <t t-set="total_poids_str" t-value="'%.2f' % total_poids"/>
+                                <span t-esc="total_poids_str.replace('.', ',')"/> kg
+                            </div>
+                        </div>
+
+                        <!-- Signature
+                        <div class="row mt-5 pt-5">
+                            <div class="col-6">
+                                <div class="text-center">
+                                    <p>Le Client:</p>
+                                    <div style="margin-top: 60px; border-top: 1px solid black; width: 200px; margin-left: auto; margin-right: auto;"></div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-center">
+                                    <p>Le Peseur:</p>
+                                    <div style="margin-top: 60px; border-top: 1px solid black; width: 200px; margin-left: auto; margin-right: auto;"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        -->
+
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+
+     <!-- Définition du format A5 -->
+        <record id="paperformat_a5" model="report.paperformat">
+            <field name="name">A5 (148 x 210 mm)</field>
+            <field name="default" eval="False"/>
+            <field name="format">A5</field>
+            <field name="orientation">Portrait</field>
+            <field name="margin_top">10</field>
+            <field name="margin_bottom">10</field>
+            <field name="margin_left">10</field>
+            <field name="margin_right">10</field>
+            <field name="header_line" eval="False"/>
+            <field name="header_spacing">10</field>
+            <field name="dpi">90</field>
+        </record>
+
+    <!-- Définition du rapport -->
+    <record id="action_report_bon_pese" model="ir.actions.report">
+        <field name="name">Bon de Pesé</field>
+        <field name="model">gecafle.vente</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_gecafle_ventes.report_bon_pese_document</field>
+        <field name="report_file">adi_gecafle_ventes.report_bon_pese</field>
+        <field name="print_report_name">'Bon de Pesé - %s' % (object.name)</field>
+<!--        <field name="paperformat_id" ref="base.paperformat_euro"/>-->
+        <field name="binding_model_id" ref="model_gecafle_vente"/>
+         <field name="paperformat_id" ref="adi_gecafle_ventes.paperformat_a5"/>
+        <field name="binding_type">report</field>
+    </record>
+
+
+</odoo>

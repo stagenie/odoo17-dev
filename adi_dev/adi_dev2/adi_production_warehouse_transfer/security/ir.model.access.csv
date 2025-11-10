@@ -1,0 +1,8 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_mrp_bom_transfer_wizard,mrp.bom.transfer.wizard,model_mrp_bom_transfer_wizard,mrp.group_mrp_user,1,1,1,1
+access_mrp_bom_transfer_wizard_line,mrp.bom.transfer.wizard.line,model_mrp_bom_transfer_wizard_line,mrp.group_mrp_user,1,1,1,1
+access_production_transfer_dashboard,production.transfer.dashboard,model_production_transfer_dashboard,mrp.group_mrp_user,1,0,0,0
+access_production_stock_alert,production.stock.alert,model_production_stock_alert,mrp.group_mrp_user,1,0,0,0
+access_production_transfer_stats,production.transfer.stats,model_production_transfer_stats,mrp.group_mrp_user,1,0,0,0
+access_production_warehouse_stats,production.warehouse.stats,model_production_warehouse_stats,mrp.group_mrp_user,1,0,0,0
+

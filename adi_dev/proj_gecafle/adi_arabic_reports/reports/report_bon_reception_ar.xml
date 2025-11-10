@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Template de contenu partagé pour le bon de réception -->
+    <template id="report_bon_reception_content_ar">
+        <div class="page" dir="rtl">
+            <!-- Section DUPLICATA : utilise la variable is_duplicata définie dans les wrappers -->
+            <div t-if="is_duplicata" class="alert alert-info text-center mb-3">
+                <strong style="font-size: 18px;">نسخة مكررة</strong>
+            </div>
+
+            <!-- Section états : fonctionne directement -->
+            <div t-if="o.state == 'annulee'" class="alert alert-danger text-center mb-3">
+                <strong style="font-size: 18px;">استلام ملغى</strong>
+            </div>
+
+            <div t-if="o.state == 'brouillon'" class="alert alert-warning text-center mb-3">
+                <strong style="font-size: 18px;">مسودة</strong>
+            </div>
+
+            <div class="text-center mb-3">
+                <h5>
+                    <strong>وصل الاستلام رقم: <span t-field="o.name"/></strong>
+                </h5>
+                <p>تاريخ ووقت الاستلام:
+                    <span t-field="o.reception_date"
+                          t-options="{'widget': 'datetime', 'format': 'dd/MM/yyyy HH:mm:ss'}"/>
+                </p>
+            </div>
+
+            <div class="mb-3">
+                <div class="row">
+                    <div class="col-6 text-right">
+                        <strong>المنتج:</strong> <span t-field="o.producteur_id.name"/>
+                    </div>
+                    <div class="col-6">
+                        <strong>الهاتف:</strong> <span t-field="o.producteur_id.phone"/>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <h6>المنتجات</h6>
+                <table class="table table-sm table-bordered">
+                    <thead class="thead-light">
+                        <tr>
+                            <!-- ORDRE INVERSÉ : De droite à gauche -->
+                            <th class="text-center">الرقم</th>
+                            <th class="text-center">عدد العبوات</th>
+                            <th class="text-center">التسمية</th>
+                            <th class="text-center">نوع العبوة</th>
+                            <th class="text-center">الجودة</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="o.details_reception_ids" t-as="line">
+                            <tr>
+                                <!-- DONNÉES DANS LE MÊME ORDRE -->
+                                <td class="text-center"><span t-field="line.num_seq"/></td>
+                                <td class="text-center"><span t-field="line.qte_colis_recue"/></td>
+                                <td class="text-center"><span t-field="line.designation_id.name"/></td>
+                                <td class="text-center"><span t-field="line.type_colis_id.name"/></td>
+                                <td class="text-center"><span t-field="line.qualite_id.name"/></td>
+                            </tr>
+                        </t>
+                        <tr t-if="not o.details_reception_ids">
+                            <td colspan="5" class="text-center">لا توجد منتجات مستلمة</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mb-3">
+                <h6>العبوات</h6>
+                <table class="table table-sm table-bordered">
+                    <thead class="thead-light">
+                        <tr>
+                            <!-- ORDRE INVERSÉ -->
+                            <th class="text-center">نوع العبوة</th>
+                            <th class="text-center">الكمية الداخلة</th>
+                            <th class="text-center">الكمية الخارجة</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="o.details_emballage_reception_ids" t-as="emb">
+                            <tr>
+                                <!-- DONNÉES DANS LE MÊME ORDRE -->
+                                <td class="text-center"><span t-field="emb.emballage_id.name"/></td>
+                                <td class="text-center"><span t-field="emb.qte_entrantes"/></td>
+                                <td class="text-center"><span t-field="emb.qte_sortantes"/></td>
+                            </tr>
+                        </t>
+                        <tr t-if="not o.details_emballage_reception_ids">
+                            <td colspan="3" class="text-center">لا توجد عبوات مستلمة/مرجعة</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="row mt-5">
+                <div class="col-6 text-right">
+                    <strong>المستخدم:</strong> <span t-field="o.user_id.name"/>
+                </div>
+                <div class="col-6">
+                    <strong>المبلغ المدفوع:</strong>
+                    <span t-field="o.avance_producteur"
+                          t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Template wrapper pour le rapport normal -->
+    <template id="report_bon_reception_normal_ar">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <!-- Définir is_duplicata à False pour le rapport normal -->
+                    <t t-set="is_duplicata" t-value="False"/>
+                    <t t-call="adi_arabic_reports.report_bon_reception_content_ar"/>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <!-- Template wrapper pour le duplicata -->
+    <template id="report_bon_reception_duplicata_ar">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <!-- Définir is_duplicata à True pour le duplicata -->
+                    <t t-set="is_duplicata" t-value="True"/>
+                    <t t-call="adi_arabic_reports.report_bon_reception_content_ar"/>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <!-- Action pour le rapport normal -->
+    <record id="action_report_bon_reception_ar" model="ir.actions.report">
+        <field name="name">وصل الاستلام</field>
+        <field name="model">gecafle.reception</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_arabic_reports.report_bon_reception_normal_ar</field>
+        <field name="report_file">adi_arabic_reports.report_bon_reception_ar</field>
+        <field name="binding_model_id" ref="adi_gecafle_receptions.model_gecafle_reception"/>
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="adi_gecafle_receptions.paperformat_bon_reception_a5"/>
+        <field name="print_report_name">'وصل الاستلام - %s' % (object.name or '').replace('/','-')</field>
+    </record>
+
+    <!-- Action pour le duplicata -->
+    <record id="action_report_bon_reception_duplicata_ar" model="ir.actions.report">
+        <field name="name">وصل الاستلام - نسخة مكررة</field>
+        <field name="model">gecafle.reception</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_arabic_reports.report_bon_reception_duplicata_ar</field>
+        <field name="report_file">adi_arabic_reports.report_bon_reception_duplicata_ar</field>
+        <field name="paperformat_id" ref="adi_gecafle_receptions.paperformat_bon_reception_a5"/>
+        <field name="print_report_name">'نسخة مكررة - وصل الاستلام - %s' % (object.name or '').replace('/','-')</field>
+    </record>
+</odoo>

@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue formulaire -->
+    <!-- Vue formulaire avec état de paiement -->
+    <record id="view_employee_loan_form" model="ir.ui.view">
+        <field name="name">employee.loan.form</field>
+        <field name="model">employee.loan</field>
+        <field name="arch" type="xml">
+            <form string="Prêt Employé">
+                <header>
+                    <button name="action_submit"
+                            string="Soumettre"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_approve"
+                            string="Approuver et générer échéancier"
+                            type="object"
+                            class="btn-success"
+                            invisible="state != 'submitted'"
+                            confirm="Approuver ce prêt et générer l'échéancier ?"/>
+                    <button name="action_start"
+                            string="Démarrer le remboursement"
+                            type="object"
+                            invisible="state != 'approved'"/>
+                    <button name="action_cancel"
+                            string="Annuler"
+                            type="object"
+                            invisible="state not in ('draft','submitted','approved')"
+                            confirm="Êtes-vous sûr de vouloir annuler ce prêt ?"/>
+                    <button name="action_print_loan_agreement"
+                            string="Imprimer bon de prêt"
+                            type="object"
+                            invisible="state not in ('approved','running','paid')"/>
+
+                    <field name="state" widget="statusbar" statusbar_visible="draft,submitted,approved,running,paid"/>
+                </header>
+                <sheet>
+                    <field name="invoice_id" invisible="1"/>
+
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_invoice"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-file-text-o"
+                                invisible="not invoice_id">
+                            <div class="o_stat_info">
+                                <field name="invoice_state" widget="badge"
+                                       decoration-success="invoice_state == 'posted'"
+                                       decoration-warning="invoice_state == 'draft'"/>
+                                <span class="o_stat_text">Facture</span>
+                            </div>
+                        </button>
+
+                        <!-- AJOUT : Bouton pour l'état de paiement -->
+                        <button name="action_view_invoice"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-money"
+                                invisible="not invoice_id">
+                            <div class="o_stat_info">
+                                <field name="invoice_payment_state"
+                                       widget="badge"
+                                       decoration-success="invoice_payment_state in ('paid', 'in_payment')"
+                                       decoration-warning="invoice_payment_state == 'partial'"
+                                       decoration-danger="invoice_payment_state == 'not_paid'"/>
+                                <span class="o_stat_text">Paiement</span>
+                            </div>
+                        </button>
+                    </div>
+
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="employee_id"
+                                   options="{'no_create': True}"
+                                   readonly="state in ('approved', 'running')"/>
+                            <field name="job_id"/>
+                            <field name="department_id"/>
+                        </group>
+                        <group>
+                            <field name="date"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <group string="Détails du prêt">
+                        <group>
+                            <field name="loan_amount"
+                                   widget="monetary"
+                                   readonly="state in ('approved', 'running')"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="purpose"
+                                   readonly="state in ('approved', 'running')"/>
+                        </group>
+                        <group>
+                            <field name="installment_count"
+                                   readonly="state in ('approved', 'running')"/>
+                            <field name="installment_amount" widget="monetary"/>
+                            <field name="payment_frequency"
+                                   readonly="state in ('approved', 'running')"/>
+                            <field name="start_date"
+                                   readonly="state in ('approved', 'running')"/>
+                        </group>
+                    </group>
+                    <group string="Suivi" invisible="state in ('draft', 'submitted')">
+                        <group>
+                            <field name="total_paid" widget="monetary"/>
+                            <field name="remaining_amount" widget="monetary"/>
+                        </group>
+                        <group>
+                            <field name="next_payment_date"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Échéancier" invisible="state in ('draft', 'submitted')">
+                            <field name="installment_ids" readonly="1">
+                                <tree decoration-success="state == 'paid'"
+                                      decoration-warning="state == 'partial'"
+                                      decoration-info="state == 'pending'">
+                                    <field name="sequence" string="N°"/>
+                                    <field name="date"/>
+                                    <field name="amount" widget="monetary" sum="Total"/>
+                                    <field name="amount_paid" widget="monetary" sum="Total payé"/>
+                                    <field name="state" widget="badge"
+                                           decoration-success="state == 'paid'"
+                                           decoration-warning="state == 'partial'"
+                                           decoration-info="state == 'pending'"/>
+                                    <field name="is_processed" widget="boolean_toggle"/>
+<!--                                    <button name="action_pay"-->
+<!--                                            string="Payer"-->
+<!--                                            type="object"-->
+<!--                                            class="btn-sm btn-primary"-->
+<!--                                            invisible="state == 'paid'"/>-->
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="activity_ids" widget="mail_activity"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+            </form>
+        </field>
+    </record>
+    <!-- Vue arbre -->
+    <record id="view_employee_loan_tree" model="ir.ui.view">
+        <field name="name">employee.loan.tree</field>
+        <field name="model">employee.loan</field>
+        <field name="arch" type="xml">
+            <tree string="Prêts Employés"
+                  decoration-info="state == 'draft'"
+                  decoration-warning="state in ('submitted', 'approved')"
+                  decoration-success="state in ('running', 'paid')"
+                  decoration-muted="state == 'cancelled'">
+                <field name="name"/>
+                <field name="employee_id"/>
+                <field name="date"/>
+                <field name="loan_amount" widget="monetary" sum="Total"/>
+                <field name="installment_count"/>
+                <field name="remaining_amount" widget="monetary" sum="Restant"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'draft'"
+                       decoration-warning="state in ('submitted', 'approved')"
+                       decoration-success="state in ('running', 'paid')"
+                       decoration-danger="state == 'cancelled'"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vue recherche -->
+    <record id="view_employee_loan_search" model="ir.ui.view">
+        <field name="name">employee.loan.search</field>
+        <field name="model">employee.loan</field>
+        <field name="arch" type="xml">
+            <search string="Rechercher prêt">
+                <field name="name"/>
+                <field name="employee_id"/>
+                <field name="loan_amount"/>
+                <field name="state"/>
+                <separator/>
+                <filter name="draft" string="Brouillon" domain="[('state', '=', 'draft')]"/>
+                <filter name="submitted" string="Soumis" domain="[('state', '=', 'submitted')]"/>
+                <filter name="approved" string="Approuvés" domain="[('state', '=', 'approved')]"/>
+                <filter name="running" string="En cours" domain="[('state', '=', 'running')]"/>
+                <filter name="paid" string="Remboursés" domain="[('state', '=', 'paid')]"/>
+                <separator/>
+                <filter name="this_year" string="Cette année"
+                        domain="[('date', '&gt;=', (context_today() - relativedelta(years=1)).strftime('%Y-01-01')),
+                                ('date', '&lt;=', context_today().strftime('%Y-12-31'))]"/>
+                <group expand="0" string="Grouper par">
+                    <filter name="group_by_employee" string="Employé" context="{'group_by': 'employee_id'}"/>
+                    <filter name="group_by_state" string="État" context="{'group_by': 'state'}"/>
+                    <filter name="group_by_month" string="Mois" context="{'group_by': 'date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_employee_loan" model="ir.actions.act_window">
+        <field name="name">Prêts Employés</field>
+        <field name="res_model">employee.loan</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créer une nouvelle demande de prêt
+            </p>
+            <p>
+                Gérez les prêts accordés à vos employés avec un système d'échéancier automatique.
+            </p>
+        </field>
+    </record>
+
+    <!-- Séquence -->
+    <record id="sequence_employee_loan" model="ir.sequence">
+        <field name="name">Prêt Employé</field>
+        <field name="code">employee.loan</field>
+        <field name="prefix">LOAN/%(year)s/</field>
+        <field name="padding">4</field>
+        <field name="company_id" eval="False"/>
+    </record>
+</odoo>

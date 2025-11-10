@@ -1,0 +1,7 @@
+<odoo>
+	<record id="group_product_price_access" model="res.groups">
+    <field name="name">Accès Prix Produits</field>
+   <!-- <field name="category_id" ref="base.module_category_sales_management"/>-->
+</record>
+
+</odoo>

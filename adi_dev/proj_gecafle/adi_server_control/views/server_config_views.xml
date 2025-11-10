@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue formulaire configuration -->
+    <record id="view_server_config_form" model="ir.ui.view">
+        <field name="name">server.control.config.form</field>
+        <field name="model">server.control.config</field>
+        <field name="arch" type="xml">
+            <form string="Configuration du Contrôle Serveur">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="service_name"/>
+                        <h1>
+                            <field name="service_name" placeholder="odoo17"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group string="Configuration du Service">
+                            <field name="service_name" help="Nom exact du service systemd (vérifier avec: systemctl status odoo*)"/>
+                            <field name="enable_logging"/>
+                            <field name="active" readonly="1"/>
+                        </group>
+                        <group string="Délais de Sécurité">
+                            <field name="shutdown_delay" widget="integer"/>
+                            <field name="reboot_delay" widget="integer"/>
+                        </group>
+                    </group>
+
+                    <div class="alert alert-info" role="alert">
+                        <h4 class="alert-heading">💡 Instructions de Configuration</h4>
+                        <p>Pour que ce module fonctionne correctement, exécutez sur le serveur Ubuntu :</p>
+                        <pre style="background-color: #2b2b2b; color: #f8f8f2; padding: 10px;">
+# Configuration sudo (une seule fois)
+# 1. Identifier l'utilisateur Odoo et le nom exact du service
+sudo ps aux | grep odoo
+systemctl list-units --type=service | grep odoo
+# 2. Créer le fichier sudoers (TRÈS IMPORTANT : utiliser visudo)
+sudo visudo -f /etc/sudoers.d/odoo-control
+# 3. Ajouter EXACTEMENT ces lignes (adapter selon votre configuration)
+# Si l'utilisateur est 'odoo' et le service 'odoo17.service':
+odoo ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart odoo17.service
+odoo ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart odoo17
+odoo ALL=(ALL) NOPASSWD: /usr/bin/systemctl stop odoo17.service
+odoo ALL=(ALL) NOPASSWD: /usr/bin/systemctl stop odoo17
+odoo ALL=(ALL) NOPASSWD: /usr/bin/systemctl start odoo17.service
+odoo ALL=(ALL) NOPASSWD: /usr/bin/systemctl start odoo17
+odoo ALL=(ALL) NOPASSWD: /usr/bin/systemctl status odoo17.service
+odoo ALL=(ALL) NOPASSWD: /usr/bin/systemctl status odoo17
+odoo ALL=(ALL) NOPASSWD: /usr/sbin/shutdown
+odoo ALL=(ALL) NOPASSWD: /usr/sbin/reboot
+odoo ALL=(ALL) NOPASSWD: /usr/bin/shutdown
+odoo ALL=(ALL) NOPASSWD: /usr/bin/reboot
+# 4. Vérifier les permissions du fichier
+sudo chmod 0440 /etc/sudoers.d/odoo-control
+sudo chown root:root /etc/sudoers.d/odoo-control
+# 5. Vérifier la syntaxe
+sudo visudo -c
+# 6. Tester depuis l'utilisateur odoo
+sudo -u odoo sudo systemctl status odoo17
+# 7. Si ça ne marche pas, vérifier AppArmor (Ubuntu 24)
+sudo aa-status | grep odoo
+# 8. Si AppArmor bloque, créer une exception
+sudo nano /etc/apparmor.d/local/usr.bin.odoo
+# Ajouter :
+# /usr/bin/systemctl ix,
+# /usr/sbin/shutdown ix,
+# /usr/sbin/reboot ix,
+# 9. Recharger AppArmor
+sudo systemctl reload apparmor
+</pre>
+                        <p><strong>Service Name:</strong> Vérifiez le nom exact avec : <code>systemctl list-units | grep odoo</code></p>
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action configuration -->
+    <record id="action_server_config" model="ir.actions.act_window">
+        <field name="name">Configuration</field>
+        <field name="res_model">server.control.config</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Menu Principal -->
+    <menuitem id="menu_adi_cost_root"
+              name="Prix de Revient"
+              web_icon="adi_cost_management,static/description/prix_revient.png"
+              sequence="65"/>
+
+    <!-- Sous-menu Productions -->
+    <menuitem id="menu_adi_cost_production"
+              name="Productions"
+              parent="menu_adi_cost_root"
+              sequence="10"/>
+
+    <menuitem id="menu_daily_production"
+              name="Productions Journalières"
+              parent="menu_adi_cost_production"
+              action="action_adi_daily_production"
+              sequence="10"/>
+
+    <menuitem id="menu_scrap_management"
+              name="Gestion des Rebuts"
+              parent="menu_adi_cost_production"
+              action="action_adi_scrap_management"
+              sequence="20"/>
+
+    <!-- Sous-menu Analyses -->
+    <menuitem id="menu_adi_cost_reporting"
+              name="Analyses"
+              parent="menu_adi_cost_root"
+              sequence="20"/>
+
+    <menuitem id="menu_cost_analysis"
+              name="Analyse des Coûts"
+              parent="menu_adi_cost_reporting"
+              action="action_adi_cost_analysis"
+              sequence="10"/>
+
+    <!-- Menu pour le Wizard -->
+    <menuitem id="menu_cost_calculation_wizard"
+              name="Calculer les Coûts"
+              parent="menu_adi_cost_reporting"
+              action="action_cost_calculation_wizard"
+              sequence="20"/>
+
+    <!-- Sous-menu Configuration -->
+    <menuitem id="menu_adi_cost_config"
+              name="Configuration"
+              parent="menu_adi_cost_root"
+              groups="group_adi_cost_manager"
+              sequence="99"/>
+</odoo>

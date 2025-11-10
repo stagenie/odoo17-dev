@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Ajouter bouton dans la vue nomenclature -->
+    <record id="mrp_bom_form_view_inherit_transfer" model="ir.ui.view">
+        <field name="name">mrp.bom.form.inherit.transfer</field>
+        <field name="model">mrp.bom</field>
+        <field name="inherit_id" ref="mrp.mrp_bom_form_view"/>
+        <field name="arch" type="xml">
+            <!-- Ajouter le bouton après le champ code -->
+            <xpath expr="//sheet" position="before">
+                <header>
+                    <button name="action_generate_transfer_wizard"
+                            string="Générer Transfert MP → Production"
+                            type="object"
+                            class="btn-primary"
+                            icon="fa-exchange"
+                            help="Générer un transfert des matières premières vers l'entrepôt de production"/>
+                </header>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Action pour ouvrir la vue structure & coût depuis le menu -->
+    <record id="action_mrp_bom_structure_transfer" model="ir.actions.server">
+        <field name="name">Structure &amp; Coût avec Transfert</field>
+        <field name="model_id" ref="mrp.model_mrp_bom"/>
+        <field name="state">code</field>
+        <field name="code">
+action = model.action_generate_transfer_wizard()
+        </field>
+    </record>
+</odoo>

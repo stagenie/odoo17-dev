@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="action_emballage_producteur" model="ir.actions.act_window">
+            <field name="name">Opérations Emballage Producteur</field>
+            <field name="res_model">gecafle.emballage.producteur</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <!-- Sous-menu Réceptions pointant vers l'action liste des producteurs-->
+        <menuitem id="menu_gecafle_manag_producteur_root"
+                  name="Producteur"
+                  parent="menu_gecafle_reception_root"
+                  sequence="2"/>
+        <menuitem id="menu_gecafle_prodcuteur"
+                  name="Producteurs"
+                  parent="menu_gecafle_manag_producteur_root"
+                  action="adi_gecafle_base_stock.action_gecafle_producteur"
+                  sequence="2"/>
+
+        <menuitem id="menu_gecafle_emballage_producteur"
+                  name="Opérations Emballage Producteur"
+                  parent="menu_gecafle_manag_producteur_root"
+                  action="action_emballage_producteur"
+                  sequence="80"/>
+
+        <record id="view_gecafle_emballage_producteur_list" model="ir.ui.view">
+            <field name="name">gecafle.emballage.producteur.list</field>
+            <field name="model">gecafle.emballage.producteur</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="name"/>
+                    <field name="date_heure_operation"/>
+                    <field name="producteur_id"/>
+                    <field name="reception_id" optional="show"/>
+
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_gecafle_emballage_producteur_form" model="ir.ui.view">
+            <field name="name">gecafle.emballage.producteur.form</field>
+            <field name="model">gecafle.emballage.producteur</field>
+            <field name="arch" type="xml">
+                <form string="Opération Emballage Producteur">
+                    <header>
+                        <!-- Boutons d'action éventuels -->
+                    </header>
+                    <sheet>
+                        <group>
+                            <field name="name" readonly="1"/>
+                            <field name="date_heure_operation"/>
+                            <field name="producteur_id"/>
+                            <field name="reception_id" readonly="1" invisible="not reception_id"/>
+                        </group>
+
+                        <notebook>
+                            <page string="Détails des Opérations">
+                                <field name="prod_emb_operations_ids">
+                                    <tree editable="bottom">
+                                        <field name="emballage_id"/>
+                                        <field name="quantite_entrante"/>
+                                        <field name="quantite_sortante"/>
+                                        <field name="remarque" optional="hide"/>
+                                    </tree>
+                                    <!-- Optionnel : définir également une vue formulaire pour les lignes -->
+                                    <form string="Détail Opération Emballage">
+                                        <sheet>
+                                            <group>
+                                                <field name="emballage_id"/>
+                                                <field name="quantite_entrante"/>
+                                                <field name="quantite_sortante"/>
+                                            </group>
+                                            <group>
+                                                <field name="remarque"/>
+                                            </group>
+                                        </sheet>
+                                    </form>
+                                </field>
+                            </page>
+                            <page string="Observations">
+                                <group>
+                                    <field name="observation"/>
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <!-- Chatter pour la traçabilité -->
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="activity_ids" widget="mail_activity"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+        <record id="view_gecafle_emballage_producteur_search" model="ir.ui.view">
+            <field name="name">gecafle.emballage.producteur.search</field>
+            <field name="model">gecafle.emballage.producteur</field>
+            <field name="arch" type="xml">
+                <search string="Recherche Opérations Emballage Producteur">
+                    <field name="name"/>
+                    <field name="date_heure_operation"/>
+                    <field name="producteur_id"/>
+                </search>
+            </field>
+        </record>
+
+
+    </data>
+</odoo>

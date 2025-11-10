@@ -1,0 +1,12 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_gecafle_reception_manager,gecafle.reception.manager,model_gecafle_reception,,1,1,1,1
+access_gecafle_details_reception_user,access.gecafle.details_reception.user,model_gecafle_details_reception,base.group_user,1,1,1,1
+access_gecafle_details_emballage_reception_user,access.gecafle.details_emballage_reception.user,model_gecafle_details_emballage_reception,base.group_user,1,1,1,1
+
+access_gecafle_stock_reception_user,access.gecafle.stock_reception.user,model_gecafle_stock,base.group_user,1,1,1,1
+access_gecafle_destockage_user,access.gecafle.destockage.user,model_gecafle_destockage,base.group_user,1,1,1,1
+access_gecafle_destockage_wizard_user,access.gecafle.destockage.wizard.user,model_gecafle_destockage_wizard,base.group_user,1,1,1,1
+access_gecafle_emballage_production_user,access.gecafle.emballage.production,model_gecafle_emballage_producteur,base.group_user,1,1,1,1
+access_gecafle_detail_emballage_production_user,access.gecafle.detail.emballage.production,model_gecafle_emballage_producteur_details_operations,base.group_user,1,1,1,1
+
+

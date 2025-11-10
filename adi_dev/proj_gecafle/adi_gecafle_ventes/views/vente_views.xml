@@ -1,0 +1,302 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Vue Liste pour les Ventes - MODIFIÉ: list → tree -->
+    <record id="view_gecafle_vente_list" model="ir.ui.view">
+        <field name="name">gecafle.vente.list</field>
+        <field name="model">gecafle.vente</field>
+        <field name="arch" type="xml">
+            <tree string="Ventes" decoration-info="state=='brouillon'"
+                  decoration-success="state=='valide'" decoration-danger="state=='annule'"
+                  default_order="date_vente desc">
+                <field name="name" string="N° Souche"/>
+                <field name="currency_id" invisible="1" optional="hide"/>
+                <field name="date_vente" string="Date/Heure"/>
+                <field name="client_id" string="Client"/>
+                <field name="user_id" string="Vendeur"/>
+                <field name="total_poids_brut" optional="hide" sum="Total Poids Brut"/>
+                <field name="total_poids_colis" optional="hide" sum="Total Poids Colis"/>
+                <field name="total_poids_net" sum="Total Poids Net"/>
+                <field name="montant_total_commission"
+                       groups="adi_gecafle_ventes.group_gecafle_direction"
+                       sum="Total Commission"
+                       widget="monetary" options="{'currency_field': 'currency_id'}"
+                />
+                <field name="montant_total_emballages" optional="hide" sum="Total Emballages"
+                       widget="monetary" options="{'currency_field': 'currency_id'}"
+                />
+                <field name="montant_total_consigne" optional="hide" sum="Total Consigne"
+                       widget="monetary" options="{'currency_field': 'currency_id'}"
+                />
+                <field name="montant_total_net" sum="Total Net" widget="monetary"
+                       options="{'currency_field': 'currency_id'}"/>
+                <field name="montant_total_a_payer" sum="Total à Payer" widget="monetary"
+                       options="{'currency_field': 'currency_id'}"/>
+                <field name="state" string="État" widget="badge"
+                       decoration-info="state == 'brouillon'"
+                       decoration-success="state == 'valide'"
+                       decoration-danger="state == 'annule'"/>
+                <field name="est_imprimee" optional="show"/>
+                <button name="action_imprimer_bon_vente"
+                        string="Imprimer" type="object"
+                        icon="fa-print" class="btn-link"
+                        invisible="state != 'valide'"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vue Recherche pour les Ventes -->
+    <record id="view_gecafle_vente_search" model="ir.ui.view">
+        <field name="name">gecafle.vente.search</field>
+        <field name="model">gecafle.vente</field>
+        <field name="arch" type="xml">
+            <search string="Recherche Ventes">
+                <!-- Champs de recherche basiques -->
+                <field name="name" string="N° Souche"/>
+                <field name="client_id" string="Client"/>
+                <field name="date_vente" string="Date de vente"/>
+                <field name="user_id" string="Vendeur"/>
+
+                <!-- Recherche dans les lignes de vente -->
+                <field name="detail_vente_ids" string="Détails" filter_domain="['|', '|', '|',
+                ('detail_vente_ids.producteur_id', 'ilike', self),
+                ('detail_vente_ids.produit_id', 'ilike', self),
+                ('detail_vente_ids.qualite_id', 'ilike', self),
+                ('detail_vente_ids.type_colis_id', 'ilike', self)]"/>
+
+                <!-- Filtres prédéfinis -->
+                <filter string="Brouillon" name="filter_brouillon" domain="[('state','=','brouillon')]"/>
+                <filter string="Validé" name="filter_valide" domain="[('state','=','valide')]"/>
+                <filter string="Annulé" name="filter_annule" domain="[('state','=','annule')]"/>
+
+                <!-- Filtres par date -->
+                <filter string="Aujourd'hui" name="filter_today"
+                        domain="[('date_vente','&gt;=',context_today().strftime('%Y-%m-%d'))]"/>
+                <filter string="Cette semaine" name="filter_week"
+                        domain="[('date_vente','&gt;=',(context_today() - datetime.timedelta(days=7)).strftime('%Y-%m-%d'))]"/>
+                <filter string="Ce mois"
+                        name="this_month"
+                        date="date_vente"
+                        default_period="this_month"/>
+
+
+                <!-- Groupements -->
+                <group expand="0" string="Grouper par">
+                    <filter string="Client" name="group_client" context="{'group_by': 'client_id'}"/>
+                    <filter string="État" name="group_state" context="{'group_by': 'state'}"/>
+                    <filter string="Vendeur" name="group_user" context="{'group_by': 'user_id'}"/>
+                    <filter string="Date" name="group_date" context="{'group_by': 'date_vente:day'}"/>
+                    <filter string="Mois" name="group_month" context="{'group_by': 'date_vente:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Vue Formulaire pour les Ventes - MODIFIÉ: list → tree dans les One2many -->
+    <record id="view_gecafle_vente_form" model="ir.ui.view">
+        <field name="name">gecafle.vente.form</field>
+        <field name="model">gecafle.vente</field>
+        <field name="arch" type="xml">
+            <form string="Vente">
+                <header>
+                    <field name="est_imprimee" invisible="1"/>
+
+                    <button name="action_confirm"
+                            string="Valider"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'brouillon'"/>
+<!--                    confirm="Êtes-vous sûr de vouloir valider cette vente?."-->
+                    <button name="action_cancel"
+                            string="Annuler"
+                            type="object"
+                            confirm="Êtes-vous sûr de vouloir annuler cette vente ? Le stock sera restauré."
+                            class="btn-danger"
+                            invisible="state not in ('brouillon', 'valide')"/>
+
+                    <button name="action_reset_draft"
+                            string="Remettre en brouillon"
+                            confirm="Êtes-vous sûr de vouloir remettre cette vente en brouillon? Le stock sera restauré."
+                            type="object"
+                            invisible="state not in ('annule', 'valide')"/>
+
+
+                    <!-- Boutons d'impression utilisant des méthodes Python -->
+                    <button name="action_imprimer_bon_vente"
+                            string="Imprimer Bon de Vente" type="object"
+                            invisible="state != 'valide'" class="btn-info"/>
+                    <button name="action_imprimer_duplicata"
+                            string="Imprimer Duplicata" type="object"
+                            invisible="state != 'valide' or not est_imprimee" class="btn-secondary"/>
+
+                    <!--
+                    <button name="action_create_avoir"
+                            string="Créer un avoir"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="state != 'valide'"/>
+
+                    -->
+
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="brouillon,valide"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <!-- Les boutons seront ajoutés ici par héritage -->
+
+                    </div>
+
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="date_vente" readonly="state != 'brouillon'"/>
+                            <field name="client_id" readonly="state != 'brouillon'"/>
+                            <field name="tel_mob_client" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="user_id" readonly="1" string="Vendeur"/>
+                            <field name="region_id" readonly="1"/>
+                            <field name="adresse" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <!-- Page pour les lignes de détails -->
+                        <page string="Détails de vente" name="details_vente">
+                            <field name="detail_vente_ids" readonly="state != 'brouillon'">
+                                <tree editable="bottom">
+                                    <field name="reception_id"
+                                           options="{'no_create': True, 'no_open': True}"
+                                           placeholder="Tapez le N réception, nom producteur ou date..."/>
+
+
+                                    <field name="detail_reception_id"
+                                           options="{'no_create': True, 'no_open': True}"
+                                           domain="[('reception_id', '=', reception_id), ('qte_colis_disponibles', '>', 0)]"/>
+                                    <field name="producteur_id" optional="hide" readonly="1"/>
+                                    <field name="produit_id" optional="hide" readonly="1"/>
+                                    <field name="qualite_id" optional="hide" readonly="1"/>
+                                    <field name="type_colis_id" optional="hide" readonly="1"/>
+                                    <field name="nombre_colis"/>
+                                    <field name="poids_brut_un_colis" optional="hide"/>
+                                    <field name="prix_colis" optional="hide"/>
+                                    <field name="poids_brut"/>
+                                    <field name="poids_colis" optional="hide" readonly="1"/>
+                                    <field name="poids_net" readonly="1"/>
+                                    <field name="prix_unitaire"/>
+                                    <field name="currency_id" invisible="1" optional="hide"/>
+                                    <field name="montant_net" readonly="1"/>
+                                    <field name="taux_commission"
+                                           optional="hide"
+                                           groups="adi_gecafle_ventes.group_gecafle_direction"
+                                           readonly="1"/>
+                                    <field name="montant_commission"
+                                           optional="hide"
+                                           groups="adi_gecafle_ventes.group_gecafle_direction"
+                                           readonly="1"/>
+
+
+                                </tree>
+                            </field>
+                        </page>
+
+                        <!-- Page pour les lignes d'emballages -->
+                        <page string="Emballages" name="emballages">
+                            <field name="detail_emballage_vente_ids" readonly="state != 'brouillon'">
+                                <tree editable="bottom">
+                                    <field name="emballage_id"/>
+                                    <field name="qte_sortantes"/>
+                                    <field name="qte_entrantes"/>
+                                </tree>
+                            </field>
+                            <group>
+                                <field name="emballages_consigne_desc" readonly="1"/>
+                                <field name="montant_total_consigne"
+                                       string="Montant Consigne"
+                                       readonly="state != 'brouillon'"/>
+                            </group>
+                        </page>
+
+                        <!-- Page pour les notes -->
+                        <page string="Notes" name="notes" readonly="state != 'brouillon'">
+                            <group>
+                                <field name="notes" placeholder="Conditions de vente..."
+                                       readonly="state != 'brouillon'"/>
+                                <field name="observation" placeholder="Observations..."
+                                       readonly="state != 'brouillon'"/>
+                            </group>
+                        </page>
+                    </notebook>
+
+                    <!-- Sections pour les montants en bas du formulaire -->
+                    <group class="oe_subtotal_footer">
+                        <group class="oe_subtotal_footer_separator" string="Récapitulatif Poids">
+                            <field name="total_poids_colis" widget="float"/>
+                            <field name="total_poids_net" widget="float"/>
+                            <field name="montant_total_commission"
+                                   groups="adi_gecafle_ventes.group_gecafle_direction"
+                                   string="Commission"/>
+                        </group>
+                        <group class="oe_subtotal_footer_separator" string="Récapitulatif Financier">
+                            <field name="peut_modifier_prix" invisible="1"/>
+                            <field name="consigne_appliquee" invisible="1"/>
+                            <field name="montant_total_net" widget="monetary"/>
+                            <field name="montant_total_emballages" widget="monetary"/>
+                            <field name="montant_emballages_rendus"
+                                   widget="monetary"
+                                   optional="show"
+                                   invisible="montant_emballages_rendus == 0"/>
+                            <field name="montant_emballages_non_rendus"
+                                   widget="monetary"
+                                   optional="show"
+                                   invisible="montant_emballages_non_rendus == 0"/>
+                            <field name="montant_total_a_payer_calc"
+                                   widget="monetary"
+                                   readonly="1"
+                                   invisible="(not peut_modifier_prix)"/>
+
+                            <!-- Champ de remise (visible uniquement si autorisé) -->
+                            <field name="montant_remise_globale" widget="monetary"
+                                   invisible="(not peut_modifier_prix)"
+                                   readonly="state != 'brouillon'"/>
+
+                            <field name="montant_total_a_payer"
+                                   class="oe_subtotal_footer_separator"
+                                   readonly="1"
+                                   widget="monetary"/>
+                        </group>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="activity_ids" widget="mail_activity"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action pour la liste des Ventes -->
+    <record id="action_gecafle_vente" model="ir.actions.act_window">
+        <field name="name">Ventes</field>
+        <field name="res_model">gecafle.vente</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_gecafle_vente_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créez votre première vente!
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu pour les ventes -->
+    <menuitem id="menu_gecafle_vente"
+              name="Ventes"
+              parent="menu_adi_gecafle_ventes"
+              action="action_gecafle_vente"
+              sequence="1"/>
+</odoo>

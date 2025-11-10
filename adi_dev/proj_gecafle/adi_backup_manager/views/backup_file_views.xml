@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue Tree (Liste) des fichiers de backup -->
+    <record id="view_backup_file_tree" model="ir.ui.view">
+        <field name="name">backup.file.tree</field>
+        <field name="model">backup.file</field>
+        <field name="arch" type="xml">
+            <tree string="Fichiers de Sauvegarde"
+                  decoration-success="state == 'available'"
+                  decoration-info="state == 'downloaded'"
+                  decoration-warning="state == 'synced'"
+                  decoration-danger="state == 'deleted'"
+                  multi_edit="1">
+                <field name="name"/>
+                <field name="database_name"/>
+                <field name="backup_date" widget="datetime"/>
+                <field name="file_size_display" string="Taille"/>
+                <field name="file_type"/>
+                <field name="state" widget="badge"/>
+                <field name="is_protected" widget="boolean_toggle"/>
+                <button name="action_download_file"
+                        type="object"
+                        string="Télécharger"
+                        icon="fa-download"
+                        class="btn-sm btn-primary"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vue Formulaire -->
+    <record id="view_backup_file_form" model="ir.ui.view">
+        <field name="name">backup.file.form</field>
+        <field name="model">backup.file</field>
+        <field name="arch" type="xml">
+            <form string="Fichier de Sauvegarde">
+                <header>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_download_file"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-download">
+                            <field name="download_count" widget="statinfo" string="Téléchargements"/>
+                        </button>
+                        <button name="action_toggle_protection"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-lock">
+                            <field name="is_protected" widget="boolean_button" string="Protection"/>
+                        </button>
+                    </div>
+
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group string="Informations">
+                            <field name="directory_id" readonly="1"/>
+                            <field name="database_name"/>
+                            <field name="backup_date"/>
+                            <field name="file_type"/>
+                        </group>
+                        <group string="Détails Techniques">
+                            <field name="file_path" readonly="1"/>
+                            <field name="file_size_display" string="Taille"/>
+                            <field name="creation_date"/>
+                            <field name="modification_date"/>
+                        </group>
+                    </group>
+
+                    <group string="Historique">
+                        <field name="download_date"/>
+                        <field name="is_downloaded"/>
+                    </group>
+
+                    <field name="notes" placeholder="Ajouter des notes..."/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vue Recherche CORRIGÉE -->
+    <record id="view_backup_file_search" model="ir.ui.view">
+        <field name="name">backup.file.search</field>
+        <field name="model">backup.file</field>
+        <field name="arch" type="xml">
+            <search string="Rechercher Backups">
+                <field name="name"/>
+                <field name="database_name"/>
+                <field name="directory_id"/>
+
+                <filter string="Disponibles" name="available"
+                        domain="[('state','=','available')]"/>
+                <filter string="Téléchargés" name="downloaded"
+                        domain="[('is_downloaded','=',True)]"/>
+                <filter string="Protégés" name="protected"
+                        domain="[('is_protected','=',True)]"/>
+
+                <separator/>
+
+                <!-- Utiliser des dates de filtre sans datetime complexe -->
+                <filter string="Aujourd'hui" name="today"
+                        date="backup_date"/>
+
+                <filter string="Cette semaine" name="week"
+                        date="backup_date"
+                        default_period="this_week"/>
+
+                <filter string="Ce mois" name="month"
+                        date="backup_date"
+                        default_period="this_month"/>
+
+                <filter string="Cette année" name="year"
+                        date="backup_date"
+                        default_period="this_year"/>
+
+                <group expand="0" string="Grouper par">
+                    <filter name="group_database" string="Base de données"
+                            context="{'group_by':'database_name'}"/>
+                    <filter name="group_type" string="Type"
+                            context="{'group_by':'file_type'}"/>
+                    <filter name="group_state" string="État"
+                            context="{'group_by':'state'}"/>
+                    <filter name="group_date" string="Date de backup"
+                            context="{'group_by':'backup_date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+</odoo>

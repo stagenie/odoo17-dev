@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_currency_form_inherit_extend_caisse" model="ir.ui.view">
+        <field name="name">view.currency.form.inherit.extend.caisse</field>
+        <field name="model">res.currency</field>
+        <field name="inherit_id" ref="caisse.view_currency_form_inherit"/>
+        <field name="arch" type="xml"> 
+            <xpath expr="//group" position="replace">
+                <group>
+                    <group string="Espéce"> 
+                        <!-- Blillets -->
+                        <field name="cashbox_lines_ids" nolabel="1" context="{'default_currency_id': id}">
+                            <tree editable="bottom">
+                                <field name="currency_id" column_invisible="1"/>
+                                <field name="sequence" widget="handle"/>
+                                <field name="coin_value" string="Valeur de billet" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            </tree>
+                        </field>
+                    </group>
+                    
+                </group>
+            </xpath>        
+        </field>
+    </record>
+
+</odoo>

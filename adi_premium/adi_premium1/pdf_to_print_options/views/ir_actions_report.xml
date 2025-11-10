@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="act_report_view_inherit" model="ir.ui.view">
+        <field name="name">ir.actions.report.pdf.options</field>
+        <field name="model">ir.actions.report</field>
+        <field name="inherit_id" ref="base.act_report_xml_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='advanced']" position="inside">
+                <group string="Options d'impression PDF">
+                    <!-- ✅ Odoo 17: invisible direct sans attrs -->
+                    <field name="default_print_option"
+                           invisible="report_type != 'qweb-pdf'"
+                           help="Choisir l'action par défaut lors du clic sur un rapport PDF"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Template du rapport Avoir Client en Arabe -->
+    <template id="report_avoir_client_document_ar">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page" dir="rtl">
+                        <h2 class="text-center">إشعار دائن للعميل</h2>
+
+                        <div class="row mt-4">
+                            <div class="col-6 text-right">
+                                <strong>العميل:</strong> <span t-field="o.client_id.name"/><br/>
+                                <strong>الهاتف:</strong> <span t-field="o.client_id.tel_mob"/><br/>
+                                <strong>العنوان:</strong> <span t-field="o.client_id.adresse"/>
+                            </div>
+                            <div class="col-6">
+                                <strong>رقم الإشعار:</strong> <span t-field="o.name"/><br/>
+                                <strong>التاريخ:</strong> <span t-field="o.date"/><br/>
+                                <strong>النوع:</strong>
+                                <span t-if="o.type_avoir == 'non_vendu'">بضاعة غير مباعة</span>
+                                <span t-elif="o.type_avoir == 'qualite'">مشكلة في الجودة</span>
+                                <span t-elif="o.type_avoir == 'perte'">خسارة/تلف</span>
+                                <span t-elif="o.type_avoir == 'accord_commercial'">اتفاق تجاري</span>
+                                <span t-elif="o.type_avoir == 'consigne'">إرجاع الأمانة</span>
+                            </div>
+                        </div>
+
+                        <!-- État -->
+                        <div t-if="o.state == 'annule'" class="alert alert-danger text-center mt-3">
+                            <strong>إشعار ملغى</strong>
+                        </div>
+
+                        <!-- Informations de la vente d'origine -->
+                        <div class="mt-4 p-3 bg-light">
+                            <h5>البيع الأصلي</h5>
+                            <table class="table table-sm">
+                                <tr>
+                                    <td width="50%"><strong>رقم وصل البيع:</strong></td>
+                                    <td><span t-field="o.vente_id.name"/></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>تاريخ البيع:</strong></td>
+                                    <td><span t-field="o.vente_id.date_vente" t-options='{"widget": "date"}'/></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>المبلغ الأصلي:</strong></td>
+                                    <td><strong><span t-field="o.montant_vente_origine"/></strong></td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <!-- Détails de l'avoir AVEC ORDRE INVERSÉ -->
+                        <div class="mt-4">
+                            <table class="table table-bordered">
+                                <tr>
+                                    <td class="text-right"><strong>سبب الإشعار:</strong></td>
+                                    <td><span t-field="o.description"/></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-right"><strong>مبلغ الإشعار:</strong></td>
+                                    <td>
+                                        <strong><span t-field="o.montant_avoir"/></strong>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-right"><strong>المبلغ الجديد للدفع:</strong></td>
+                                    <td>
+                                        <strong>
+                                            <span t-esc="o.montant_vente_origine - o.montant_avoir"
+                                                  t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                        </strong>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <!-- Répartition sur les producteurs -->
+                        <div t-if="o.avoir_producteur_ids" class="mt-4">
+                            <h5>التوزيع على المنتجين:</h5>
+                            <table class="table table-sm table-bordered">
+                                <thead>
+                                    <tr>
+                                        <!-- ORDRE INVERSÉ -->
+                                        <th>الحالة</th>
+                                        <th class="text-center">المبلغ</th>
+                                        <th class="text-right">المنتج</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr t-foreach="o.avoir_producteur_ids" t-as="ap">
+                                        <!-- DONNÉES DANS LE MÊME ORDRE -->
+                                        <td>
+                                            <span t-if="ap.state == 'brouillon'">مسودة</span>
+                                            <span t-elif="ap.state == 'valide'">مؤكد</span>
+                                            <span t-elif="ap.state == 'annule'">ملغى</span>
+                                        </td>
+                                        <td class="text-center"><span t-field="ap.montant_total"/></td>
+                                        <td class="text-right"><span t-field="ap.producteur_id.name"/></td>
+                                    </tr>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td></td>
+                                        <td class="text-center">
+                                            <strong><span t-esc="sum(o.avoir_producteur_ids.mapped('montant_total'))"
+                                                          t-options='{"widget": "monetary", "display_currency": o.currency_id}'/></strong>
+                                        </td>
+                                        <td class="text-right"><strong>المجموع:</strong></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+
+                        <!-- Signatures (optionnel) -->
+                        <div class="row mt-5">
+                            <div class="col-6 text-right">
+                                <p>العميل:<br/><br/>_____________________</p>
+                            </div>
+                            <div class="col-6">
+                                <p>المسؤول:<br/><br/>_____________________</p>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <!-- Définition du rapport -->
+    <record id="action_report_avoir_client_ar" model="ir.actions.report">
+        <field name="name">إشعار دائن للعميل</field>
+        <field name="model">gecafle.avoir.client</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_arabic_reports.report_avoir_client_document_ar</field>
+        <field name="report_file">adi_arabic_reports.report_avoir_client_ar</field>
+        <field name="print_report_name">'إشعار دائن للعميل - %s' % (object.name)</field>
+        <field name="paperformat_id" ref="base.paperformat_euro"/>
+        <field name="binding_model_id" ref="adi_gecafle_ventes.model_gecafle_avoir_client"/>
+        <field name="binding_type">report</field>
+    </record>
+</odoo>

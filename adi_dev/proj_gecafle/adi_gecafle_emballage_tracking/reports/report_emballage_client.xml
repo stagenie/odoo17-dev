@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_emballage_client_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="wizard">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2 class="text-center">RÉCAP EMBALLAGE CLIENT</h2>
+
+                        <!-- En-tête -->
+                        <div class="row mb-4">
+                            <div class="col-6">
+                                <strong>Client:</strong>
+                                <span t-if="wizard.client_id" t-field="wizard.client_id.name"/>
+                                <span t-else="">Tous les clients</span>
+                            </div>
+                            <div class="col-6 text-right">
+                                <strong>Période:</strong>
+                                Du <span t-field="wizard.date_debut"/>
+                                au <span t-field="wizard.date_fin"/>
+                            </div>
+                        </div>
+
+                        <!-- Récupération des mouvements -->
+                        <t t-set="movements_vente" t-value="wizard._get_vente_movements()"/>
+                        <t t-set="movements_autres" t-value="wizard._get_autres_movements()"/>
+
+                        <!-- Tableau principal avec correction de l'itération -->
+                        <table class="table table-sm table-bordered">
+                            <thead>
+                                <tr class="bg-primary text-white">
+                                    <th colspan="5" class="text-center">Emballage Entrés/Sortie Ventes</th>
+<!--                                    <th colspan="5" class="text-center">Autres Emballages Entrés/Sortie</th>-->
+                                </tr>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>N° Souche</th>
+                                    <th>Emballage</th>
+                                    <th class="text-right">Qté Sortante</th>
+                                    <th class="text-right">Qté Entrante</th>
+                                    <!--
+                                    <th>Date Mouv</th>
+                                    <th>Num Mouv</th>
+                                    <th>Emballage</th>
+                                    <th class="text-right">Qté Sortante</th>
+                                    <th class="text-right">Qté Entrante</th>
+                                     -->
+
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Utilisation d'une boucle avec index correct -->
+                                <t t-set="max_length" t-value="max(len(movements_vente) if movements_vente else 0, len(movements_autres) if movements_autres else 0)"/>
+                                <t t-if="max_length > 0">
+                                    <t t-foreach="range(max_length)" t-as="idx">
+                                        <tr>
+                                            <!-- Colonne ventes -->
+                                            <t t-if="movements_vente and idx &lt; len(movements_vente)">
+                                                <t t-set="mv" t-value="movements_vente[idx]"/>
+                                                <td><t t-esc="mv['date']"/></td>
+                                                <td><t t-esc="mv['reference']"/></td>
+                                                <td><t t-esc="mv['emballage']"/></td>
+                                                <td class="text-right"><t t-esc="mv['qte_sortante']"/></td>
+                                                <td class="text-right"><t t-esc="mv['qte_entrante']"/></td>
+                                            </t>
+                                            <!--
+                                            <t t-else="">
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                            </t>
+                                            -->
+
+
+                                            <!-- Colonne autres -->
+                                            <t t-if="movements_autres and idx &lt; len(movements_autres)">
+                                                <t t-set="ma" t-value="movements_autres[idx]"/>
+                                                <td><t t-esc="ma['date']"/></td>
+                                                <td><t t-esc="ma['reference']"/></td>
+                                                <td><t t-esc="ma['emballage']"/></td>
+                                                <td class="text-right"><t t-esc="ma['qte_sortante']"/></td>
+                                                <td class="text-right"><t t-esc="ma['qte_entrante']"/></td>
+                                            </t>
+                                            <!--
+                                            <t t-else="">
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                            </t>
+                                            -->
+
+                                        </tr>
+                                    </t>
+                                </t>
+                                <t t-else="">
+                                    <tr>
+                                        <td colspan="10" class="text-center text-muted">
+                                            Aucun mouvement trouvé pour cette période
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+
+                        <!-- Récapitulatif -->
+                        <h4 class="mt-4">Récapitulatif par Emballage</h4>
+                        <table class="table table-sm table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Emballage</th>
+                                    <th class="text-right">Qté Sortante</th>
+                                    <th class="text-right">Qté Entrante</th>
+                                    <th class="text-right">Différence</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-set="recap" t-value="wizard._get_recap_data()"/>
+                                <t t-if="recap">
+                                    <tr t-foreach="recap" t-as="r">
+                                        <td><t t-esc="r['emballage']"/></td>
+                                        <td class="text-right"><t t-esc="r['sortante']"/></td>
+                                        <td class="text-right"><t t-esc="r['entrante']"/></td>
+                                        <td class="text-right">
+                                            <strong t-attf-class="#{r['difference'] > 0 and 'text-danger' or 'text-success'}">
+                                                <t t-esc="r['difference']"/>
+                                            </strong>
+                                        </td>
+                                    </tr>
+                                </t>
+                                <t t-else="">
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted">
+                                            Aucune donnée récapitulative
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

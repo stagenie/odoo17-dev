@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+    	
+        <record id="caisse_date_view_from" model="ir.ui.view">
+            <field name="name">caisse.date.view.from</field>
+            <field name="model">caisse.date.fin</field>
+            <field name="arch" type="xml">
+                <form string="Caisse">
+                    <group>
+                    	<field name='date_fin' required='1'/>
+                    </group>
+
+	                <footer>
+	                	<button name='fermer' type='object' string='Valider' class="oe_highlight" confirm="Veuillez confirmer SVP"/>
+	                	or
+	                    <button string="Cancel" class="oe_link" special="cancel" />
+	                </footer>
+                </form>
+            </field>
+        </record>
+
+
+
+        <record id="caisse_date_action" model="ir.actions.act_window">
+            <field name="name">Date fermeture de la caisse</field>
+            <field name="res_model">caisse.date.fin</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+
+
+    </data>
+</odoo>

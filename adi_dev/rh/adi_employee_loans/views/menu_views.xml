@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Menus -->
+    <menuitem id="menu_employee_loan"
+              name="Prêts employés"
+              parent="adi_employee_advance.menu_hr_payroll_root"
+              action="action_employee_loan"
+              sequence="30"/>
+
+    <menuitem id="menu_loan_installment"
+              name="Échéances de prêt"
+              parent="adi_employee_advance.menu_hr_payroll_root"
+              action="action_loan_installment"
+              sequence="35"/>
+</odoo>

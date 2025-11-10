@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="adi_account_invoices" model="ir.actions.report">
+            <field name="name">ADI Facture</field>
+            <field name="model">account.move</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">adi_dz_reports.adi_report_invoice_with_payments</field>
+            <field name="report_file">adi_dz_reports.adi_report_invoice_with_payments</field>
+            <field name="print_report_name">(object._get_report_base_filename())</field>
+          <!--  <field name="attachment">(object.state == 'posted') and ((object.name or 'INV').replace('/','_')+'.pdf')</field>-->
+            <field name="binding_model_id" ref="model_account_move"/>
+            <field name="binding_type">report</field>            
+        </record>
+
+
+        <record id="adi_account_invoices_without_payment" model="ir.actions.report">
+            <field name="name">ADI Factures Sans Paiements</field>
+            <field name="model">account.move</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">adi_dz_reports.adi_report_invoice</field>
+            <field name="report_file">adi_dz_reports.adi_report_invoice</field>
+            <field name="print_report_name">(object._get_report_base_filename())</field>
+            <!-- <field name="attachment">(object.state == 'posted') and ((object.name or 'INV').replace('/','_')+'.pdf')</field>-->
+            <field name="binding_model_id" ref="model_account_move"/>
+            <field name="binding_type">report</field>
+        </record>
+        
+
+         <record id="adi_account_invoices_item" model="ir.actions.report">
+            <field name="name">ADI Facture - avec Item</field>
+            <field name="model">account.move</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">adi_dz_reports.adi_report_invoice_with_payments_item</field>
+            <field name="report_file">adi_dz_reports.adi_report_invoice_with_payments_item</field>
+            <field name="print_report_name">(object._get_report_base_filename())</field>
+          <!--  <field name="attachment">(object.state == 'posted') and ((object.name or 'INV').replace('/','_')+'.pdf')</field>-->
+            <field name="binding_model_id" ref="model_account_move"/>
+            <field name="binding_type">report</field>            
+        </record>
+
+
+        <record id="adi_account_invoices_without_payment_item" model="ir.actions.report">
+            <field name="name">ADI Factures Sans Paiements- Avec Item</field>
+            <field name="model">account.move</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">adi_dz_reports.adi_report_invoice_item</field>
+            <field name="report_file">adi_dz_reports.adi_report_invoice_item</field>
+            <field name="print_report_name">(object._get_report_base_filename())</field>
+            <!-- <field name="attachment">(object.state == 'posted') and ((object.name or 'INV').replace('/','_')+'.pdf')</field>-->
+            <field name="binding_model_id" ref="model_account_move"/>
+            <field name="binding_type">report</field>
+        </record>
+        
+
+
+
+
+                <record id="adi_action_account_original_vendor_bill" model="ir.actions.report">
+            <field name="name">Original Bills</field>
+            <field name="model">account.move</field>
+            <field name="binding_model_id" ref="model_account_move"/>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">adi_dz_reports.report_original_vendor_bill</field>
+            <field name="report_file">adi_dz_reports.report_original_vendor_bill</field>
+            <!--<field name="attachment">'original_vendor_bill.pdf'</field>-->
+            <!--<field name="attachment_use">True</field>-->
+            <field name="binding_view_types">list</field>
+        </record>
+
+    </data>
+</odoo>

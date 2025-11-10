@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Template du rapport -->
+    <!-- Template du rapport corrigé -->
+    <template id="report_treasury_transfer_document">
+        <t t-call="web.external_layout">
+            <t t-set="doc" t-value="doc.with_context(lang=doc.user_id.lang)"/>
+            <div class="page">
+                <!-- En-tête du bon -->
+                <div class="text-center mb-4">
+                    <h2>BON DE TRANSFERT DE CAISSE</h2>
+                    <h4 t-field="doc.name"/>
+                </div>
+
+                <!-- Informations générales -->
+                <div class="row mt-4">
+                    <div class="col-6">
+                        <strong>Date du transfert :</strong>
+                        <span t-field="doc.date" t-options='{"widget": "datetime", "format": "dd/MM/yyyy HH:mm"}'/>
+                    </div>
+                    <div class="col-6 text-right">
+                        <strong>État :</strong>
+                        <span t-field="doc.state" class="badge badge-info"/>
+                    </div>
+                </div>
+
+                <!-- Caisses/Coffres selon le type -->
+                <div class="row mt-5">
+                    <div class="col-6">
+                        <div class="border rounded p-3">
+                            <h5 class="text-center mb-3">SOURCE</h5>
+                            <table class="table table-sm">
+                                <!-- Caisse source -->
+                                <t t-if="doc.transfer_type in ['cash_to_cash', 'cash_to_safe']">
+                                    <tr>
+                                        <td>
+                                            <strong>Type :</strong>
+                                        </td>
+                                        <td>Caisse</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <strong>Nom :</strong>
+                                        </td>
+                                        <td>
+                                            <span t-field="doc.cash_from_id.name"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <strong>Code :</strong>
+                                        </td>
+                                        <td>
+                                            <span t-field="doc.cash_from_id.code"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <strong>Responsable :</strong>
+                                        </td>
+                                        <td>
+                                            <span t-field="doc.cash_from_id.responsible_id.name"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <strong>Solde actuel :</strong>
+                                        </td>
+                                        <td>
+                                            <span t-esc="doc.cash_from_id.current_balance"
+                                                  t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                                        </td>
+                                    </tr>
+                                </t>
+                                <!-- Coffre source -->
+                                <t t-if="doc.transfer_type in ['safe_to_cash', 'safe_to_safe']">
+                                    <tr>
+                                        <td>
+                                            <strong>Type :</strong>
+                                        </td>
+                                        <td>Coffre</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <strong>Nom :</strong>
+                                        </td>
+                                        <td>
+                                            <span t-field="doc.safe_from_id.name"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <strong>Code :</strong>
+                                        </td>
+                                        <td>
+                                            <span t-field="doc.safe_from_id.code"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <strong>Responsables :</strong>
+                                        </td>
+                                        <td>
+                                            <t t-foreach="doc.safe_from_id.responsible_ids" t-as="user">
+                                                <span t-field="user.name"/>
+                                                <t t-if="not user_last">,</t>
+                                            </t>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <strong>Solde actuel :</strong>
+                                        </td>
+                                        <td>
+                                            <span t-esc="doc.safe_from_id.current_balance"
+                                                  t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="col-6">
+                        <div class="border rounded p-3">
+                            <h5 class="text-center mb-3">DESTINATION</h5>
+                            <table class="table table-sm">
+                                <!-- Caisse destination -->
+                                <t t-if="doc.transfer_type in ['cash_to_cash', 'safe_to_cash']">
+                                    <tr>
+                                        <td>
+                                            <strong>Type :</strong>
+                                        </td>
+                                        <td>Caisse</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <strong>Nom :</strong>
+                                        </td>
+                                        <td>
+                                            <span t-field="doc.cash_to_id.name"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <strong>Code :</strong>
+                                        </td>
+                                        <td>
+                                            <span t-field="doc.cash_to_id.code"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <strong>Responsable :</strong>
+                                        </td>
+                                        <td>
+                                            <span t-field="doc.cash_to_id.responsible_id.name"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <strong>Solde actuel :</strong>
+                                        </td>
+                                        <td>
+                                            <span t-esc="doc.cash_to_id.current_balance"
+                                                  t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                                        </td>
+                                    </tr>
+                                </t>
+                                <!-- Coffre destination -->
+                                <t t-if="doc.transfer_type in ['cash_to_safe', 'safe_to_safe']">
+                                    <tr>
+                                        <td>
+                                            <strong>Type :</strong>
+                                        </td>
+                                        <td>Coffre</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <strong>Nom :</strong>
+                                        </td>
+                                        <td>
+                                            <span t-field="doc.safe_to_id.name"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <strong>Code :</strong>
+                                        </td>
+                                        <td>
+                                            <span t-field="doc.safe_to_id.code"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <strong>Responsables :</strong>
+                                        </td>
+                                        <td>
+                                            <t t-foreach="doc.safe_to_id.responsible_ids" t-as="user">
+                                                <span t-field="user.name"/>
+                                                <t t-if="not user_last">,</t>
+                                            </t>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <strong>Solde actuel :</strong>
+                                        </td>
+                                        <td>
+                                            <span t-esc="doc.safe_to_id.current_balance"
+                                                  t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Montant du transfert -->
+                <div class="row mt-5">
+                    <div class="col-12">
+                        <div class="alert alert-info text-center">
+                            <h3 class="mb-0">
+                                Montant du transfert :
+                                <strong>
+                                    <span t-field="doc.amount"
+                                          t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                                </strong>
+                            </h3>
+                            <div class="mt-2">
+                                <strong>Montant en lettres :</strong>
+                                <span t-esc="doc.amount_to_text()"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Le reste du template reste identique -->
+            </div>
+        </t>
+    </template>
+
+    <!-- Template principal pour les transferts multiples -->
+    <template id="report_treasury_transfer">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="adi_treasury.report_treasury_transfer_document"/>
+            </t>
+        </t>
+    </template>
+
+    <!-- Définition du rapport avec record -->
+    <record id="action_report_treasury_transfer" model="ir.actions.report">
+        <field name="name">Bon de transfert</field>
+        <field name="model">treasury.transfer</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_treasury.report_treasury_transfer</field>
+        <field name="report_file">adi_treasury.report_treasury_transfer</field>
+        <field name="print_report_name">'Bon de transfert - %s' % (object.name)</field>
+        <field name="binding_model_id" ref="model_treasury_transfer"/>
+        <field name="binding_type">report</field>
+    </record>
+</odoo>

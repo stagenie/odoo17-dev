@@ -1,0 +1,20 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_treasury_cash_user,treasury.cash user,model_treasury_cash,group_treasury_user,1,1,0,0
+access_treasury_cash_manager,treasury.cash manager,model_treasury_cash,group_treasury_manager,1,1,1,1
+access_treasury_transfer_user,treasury.transfer user,model_treasury_transfer,group_treasury_user,1,1,1,0
+access_treasury_transfer_manager,treasury.transfer manager,model_treasury_transfer,group_treasury_manager,1,1,1,1
+access_treasury_safe_user,treasury.safe user,model_treasury_safe,group_treasury_user,1,0,0,0
+access_treasury_safe_manager,treasury.safe manager,model_treasury_safe,group_treasury_manager,1,1,1,1
+access_treasury_safe_operation_user,treasury.safe.operation user,model_treasury_safe_operation,group_treasury_user,1,1,1,0
+access_treasury_safe_operation_manager,treasury.safe.operation manager,model_treasury_safe_operation,group_treasury_manager,1,1,1,1
+
+access_treasury_operation_category_user,treasury.operation.category user,model_treasury_operation_category,group_treasury_user,1,0,0,0
+access_treasury_operation_category_manager,treasury.operation.category manager,model_treasury_operation_category,group_treasury_manager,1,1,1,1
+access_treasury_cash_operation_user,treasury.cash.operation user,model_treasury_cash_operation,group_treasury_user,1,1,1,0
+access_treasury_cash_operation_manager,treasury.cash.operation manager,model_treasury_cash_operation,group_treasury_manager,1,1,1,1
+access_treasury_cash_closing_user,treasury.cash.closing user,model_treasury_cash_closing,group_treasury_user,1,1,0,0
+access_treasury_cash_closing_manager,treasury.cash.closing manager,model_treasury_cash_closing,group_treasury_manager,1,1,1,1
+
+access_treasury_cash_closing_line_user,treasury.cash.closing.line user,model_treasury_cash_closing_line,group_treasury_user,1,0,0,0
+access_treasury_cash_closing_line_manager,treasury.cash.closing.line manager,model_treasury_cash_closing_line,group_treasury_manager,1,1,1,1
+

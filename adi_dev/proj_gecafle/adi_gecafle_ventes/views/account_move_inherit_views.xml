@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Héritage de la vue formulaire de account.move pour ajouter le smart button -->
+    <record id="view_move_form_inherit_gecafle" model="ir.ui.view">
+        <field name="name">account.move.form.inherit.gecafle</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <!-- Ajouter le champ invisible -->
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="avoir_producteur_id" invisible="1"/>
+                <field name="avoir_producteur_count" invisible="1"/>
+            </xpath>
+
+            <!-- Ajouter le bouton dans le header -->
+            <xpath expr="//header" position="inside">
+                <button name="action_print_avoir_producteur"
+                        string="Imprimer Avoir Producteur"
+                        type="object"
+                        class="btn-info"
+                        icon="fa-print"
+                        invisible="not avoir_producteur_id or move_type != 'in_refund'"/>
+            </xpath>
+
+            <!-- Ajout du champ recap_id et recap_count (invisibles) -->
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="recap_id" invisible="1"/>
+                <field name="recap_count" invisible="1"/>
+            </xpath>
+
+            <!-- Ajout du smart button dans la button_box -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <!-- Smart button pour voir le récapitulatif source -->
+                <button name="action_view_recap_source"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-list-alt"
+                        invisible="recap_count == 0 or move_type != 'in_invoice'"
+                        groups="base.group_user">
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_text">Récapitulatif</span>
+                        <span class="o_stat_text">Source</span>
+                    </div>
+                </button>
+            </xpath>
+
+            <!-- Ajout du bouton d'impression dans le header -->
+            <xpath expr="//header" position="inside">
+                <!-- Bouton pour imprimer directement la facture -->
+                <button name="action_print_vendor_invoice"
+                        string="Imprimer Facture"
+                        type="object"
+                        class="btn-info"
+                        icon="fa-print"
+                        invisible="move_type != 'in_invoice' or state == 'draft'"
+                        groups="base.group_user"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Ajout d'un filtre de recherche pour les factures avec récapitulatif -->
+    <record id="view_account_invoice_filter_inherit_gecafle" model="ir.ui.view">
+        <field name="name">account.invoice.search.inherit.gecafle</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_account_invoice_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='myinvoices']" position="after">
+                <separator/>
+                <filter string="Avec Récapitulatif"
+                        name="with_recap"
+                        domain="[('recap_id', '!=', False)]"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Héritage de la vue paiement -->
+    <record id="view_account_payment_form_inherit_treasury" model="ir.ui.view">
+        <field name="name">account.payment.form.inherit.treasury</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_form"/>
+        <field name="arch" type="xml">
+            <!-- Ajouter après le champ journal_id -->
+            <field name="journal_id" position="after">
+                <field name="journal_type" invisible="1"/>  <!-- Champ invisible pour les conditions -->
+                <field name="is_cash_collected"
+                       invisible="journal_type != 'cash'"
+                       help="Cocher si ce paiement doit être enregistré en caisse"/>
+                <field name="cash_id"
+                       invisible="not is_cash_collected"
+                       required="is_cash_collected"
+                       options="{'no_create': True}"/>
+            </field>
+
+            <!-- Ajouter un bouton dans le header -->
+            <xpath expr="//header" position="inside">
+                <button name="action_mark_cash_collected"
+                        string="Marquer comme prélevé en caisse"
+                        type="object"
+                        class="btn-secondary"
+                        invisible="state != 'posted' or treasury_operation_id or journal_type == 'cash'"
+                        confirm="Voulez-vous enregistrer ce paiement dans une caisse ?"/>
+            </xpath>
+
+            <!-- Afficher l'opération de caisse liée -->
+            <xpath expr="//sheet" position="inside">
+                <group string="Caisse" invisible="not treasury_operation_id">
+                    <field name="treasury_operation_id" readonly="1"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Vue tree des paiements -->
+    <record id="view_account_payment_tree_inherit_treasury" model="ir.ui.view">
+        <field name="name">account.payment.tree.inherit.treasury</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_tree"/>
+        <field name="arch" type="xml">
+            <field name="state" position="after">
+                <field name="is_cash_collected" widget="boolean_toggle" optional="show"/>
+                <field name="treasury_operation_id" optional="show"/>
+            </field>
+        </field>
+    </record>
+
+
+    <!-- Action serveur pour marquer plusieurs paiements -->
+<record id="action_mark_payments_as_cash_collected" model="ir.actions.server">
+    <field name="name">Marquer comme prélevé en caisse</field>
+    <field name="model_id" ref="account.model_account_payment"/>
+    <field name="binding_model_id" ref="account.model_account_payment"/>
+    <field name="binding_view_types">list</field>
+    <field name="state">code</field>
+    <field name="code">
+if records:
+    # Demander la caisse cible
+    records.write({'is_cash_collected': True})
+    # Message
+    if len(records) == 1:
+        msg = "Paiement marqué comme prélevé en caisse"
+    else:
+        msg = "%d paiements marqués comme prélevés en caisse" % len(records)
+
+    # Afficher une notification
+    action = {
+        'type': 'ir.actions.client',
+        'tag': 'display_notification',
+        'params': {
+            'title': 'Succès',
+            'message': msg,
+            'type': 'success',
+        }
+    }
+    action
+    </field>
+</record>
+</odoo>

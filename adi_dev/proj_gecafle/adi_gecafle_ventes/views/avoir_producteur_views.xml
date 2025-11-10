@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue formulaire -->
+    <record id="view_gecafle_avoir_producteur_form" model="ir.ui.view">
+        <field name="name">gecafle.avoir.producteur.form</field>
+        <field name="model">gecafle.avoir.producteur</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_validate" string="Valider"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'brouillon'"/>
+
+                    <button name="action_cancel" string="Annuler"
+                            type="object"
+                            class="btn-danger"
+                            invisible="state not in ('brouillon', 'valide')"/>
+
+                    <button name="action_draft"
+                            string="Remettre en brouillon"
+                            type="object"
+                            invisible="state != 'annule'"/>
+
+                    <button name="action_print_avoir"
+                            string="Imprimer"
+                            type="object"
+                            class="btn-info"
+                            invisible="state == 'brouillon'"/>
+
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="brouillon,valide"/>
+                </header>
+
+                <sheet>
+                    <field name="credit_note_id" invisible="1"/>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_vendor_credit"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-file-invoice"
+                                string="Note de crédit">
+                            <field name="credit_note_count" widget="statinfo" string="Note crédit"/>
+                        </button>
+                    </div>
+
+                    <!-- Badge d'état de paiement -->
+                    <widget name="web_ribbon" title="Payé" invisible="not is_paid"/>
+
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group>
+                            <field name="producteur_id" options="{'no_create': True}"/>
+                            <field name="reception_id" options="{'no_create': True}"/>
+                            <field name="avoir_client_id" readonly="1" invisible="not avoir_client_id"/>
+                            <field name="vente_id" readonly="1" invisible="not vente_id"/>
+                            <field name="date"/>
+                        </group>
+                        <group>
+                            <field name="type_avoir"/>
+                            <field name="montant_total" widget="monetary"/>
+                            <field name="company_id" groups="base.group_multi_company" invisible="1"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                    </group>
+
+                    <group string="Description">
+                        <field name="description"
+                               placeholder="Décrivez la raison de l'avoir..."/>
+                    </group>
+
+                    <!-- Informations de paiement -->
+                    <group string="État de paiement" invisible="not credit_note_id">
+                        <group>
+                            <field name="credit_note_state" string="État facture"/>
+                            <field name="credit_note_payment_state"
+                                   widget="badge"
+                                   decoration-success="credit_note_payment_state == 'paid'"
+                                   decoration-warning="credit_note_payment_state == 'partial'"
+                                   decoration-danger="credit_note_payment_state in ('not_paid', False)"/>
+                        </group>
+                        <group>
+                            <field name="credit_note_amount_paid" widget="monetary"/>
+                            <field name="credit_note_amount_residual" widget="monetary"/>
+                            <field name="is_paid" invisible="1"/>
+                        </group>
+                    </group>
+
+                    <group string="Notes internes" groups="base.group_user">
+                        <field name="notes" nolabel="1" placeholder="Notes internes (non visibles sur les documents)..."/>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vue liste mise à jour -->
+    <record id="view_gecafle_avoir_producteur_tree" model="ir.ui.view">
+        <field name="name">gecafle.avoir.producteur.tree</field>
+        <field name="model">gecafle.avoir.producteur</field>
+        <field name="arch" type="xml">
+            <tree decoration-info="state == 'brouillon'"
+                  decoration-success="state == 'valide' and is_paid"
+                  decoration-muted="state == 'annule'">
+                <field name="name"/>
+                <field name="date"/>
+                <field name="producteur_id"/>
+                <field name="reception_id" optional="show"/>
+                <field name="avoir_client_id" optional="show"/>
+                <field name="type_avoir"/>
+                <field name="montant_total" sum="Total"/>
+                <field name="state"/>
+                <field name="credit_note_payment_state"
+                       string="Paiement"
+                       widget="badge"
+                       optional="show"
+                       decoration-success="credit_note_payment_state == 'paid'"
+                       decoration-warning="credit_note_payment_state == 'partial'"
+                       decoration-danger="credit_note_payment_state in ('not_paid', False)"/>
+                <field name="is_paid" invisible="1"/>
+            </tree>
+        </field>
+    </record>
+</odoo>

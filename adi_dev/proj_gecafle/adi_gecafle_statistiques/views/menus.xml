@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Menu principal -->
+    <menuitem id="menu_gecafle_statistiques_root"
+              name="Statistiques"
+              sequence="100"
+              web_icon="adi_gecafle_statistiques,static/description/statista.png"/>
+
+    <!-- Dashboard -->
+    <menuitem id="menu_dashboard"
+              name="Tableau de bord"
+              parent="menu_gecafle_statistiques_root"
+              action="action_dashboard"
+              sequence="10"/>
+
+    <!-- Analyses -->
+    <menuitem id="menu_analyses"
+              name="Analyses"
+              parent="menu_gecafle_statistiques_root"
+              sequence="10"/>
+
+    <menuitem id="menu_tracabilite"
+              name="Traçabilité"
+              parent="menu_gecafle_statistiques_root"
+              action="action_gecafle_tracabilite"
+              sequence="20"/>
+
+    <menuitem id="menu_stat_ventes"
+              name="Statistiques Ventes"
+              parent="menu_analyses"
+              action="action_statistiques_ventes"
+              sequence="10"/>
+
+    <menuitem id="menu_stat_produit"
+              name="Par Produit"
+              parent="menu_analyses"
+              action="action_statistiques_produits"
+              sequence="20"/>
+
+    <menuitem id="menu_stat_producteur"
+              name="Par Producteur"
+              parent="menu_analyses"
+              action="action_statistiques_producteurs"
+              sequence="30"/>
+
+    <!-- Relevés -->
+    <menuitem id="menu_releves"
+              name="Relevés"
+              parent="menu_gecafle_statistiques_root"
+              sequence="30"/>
+
+    <menuitem id="menu_releve_reception_ventes"
+              name="Relevé Réceptions-Ventes"
+              parent="menu_releves"
+              action="action_releve_reception_ventes"
+              sequence="10"/>
+
+    <!-- Sous-menus pour les listes de ventes -->
+<menuitem id="menu_liste_ventes_total"
+          name="Liste des Ventes Total"
+          parent="menu_releves"
+          action="action_liste_ventes_total"
+          sequence="20"/>
+
+<menuitem id="menu_liste_ventes_payees"
+          name="Liste des Ventes Payées"
+          parent="menu_releves"
+          action="action_liste_ventes_payees"
+          sequence="30"/>
+
+<menuitem id="menu_liste_ventes_credit"
+          name="Liste des Ventes Crédit"
+          parent="menu_releves"
+          action="action_liste_ventes_credit"
+          sequence="40"/>
+
+</odoo>

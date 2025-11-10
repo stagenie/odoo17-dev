@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue Formulaire -->
+    <record id="view_releve_reception_ventes_form" model="ir.ui.view">
+        <field name="name">gecafle.releve.reception.ventes.form</field>
+        <field name="model">gecafle.releve.reception.ventes</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_generate_releve"
+                            type="object"
+                            string="Générer le relevé"
+                            class="btn-primary"
+                            invisible="state == 'confirme'"/>
+                    <button name="action_print_releve"
+                            type="object"
+                            string="Imprimer Récap Tout"
+                            class="btn-success"
+                            invisible="state != 'confirme'"/>
+                    <button name="action_print_releve_pages"
+                            type="object"
+                            string="Imprimer Récap Par Page"
+                            class="btn-warning"
+                            invisible="state != 'confirme'"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="date_debut"/>
+                            <field name="date_fin"/>
+                            <field name="producteur_id" options="{'no_create': True}"/>
+                        </group>
+                        <group>
+                            <field name="date_creation"/>
+                            <field name="total_general_ventes"/>
+                            <field name="total_general_commission"/>
+                            <field name="total_general_net"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Détails par Réception">
+                            <field name="line_ids" readonly="state == 'confirme'">
+                                <tree create="false" delete="false">
+                                    <field name="date_reception"/>
+                                    <field name="reception_id"/>
+                                    <field name="producteur_id"/>
+                                    <field name="total_ventes"/>
+                                    <field name="total_commission"/>
+                                    <field name="net_a_payer"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vue Liste -->
+    <record id="view_releve_reception_ventes_tree" model="ir.ui.view">
+        <field name="name">gecafle.releve.reception.ventes.tree</field>
+        <field name="model">gecafle.releve.reception.ventes</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="date_creation"/>
+                <field name="date_debut"/>
+                <field name="date_fin"/>
+                <field name="producteur_id"/>
+                <field name="total_general_net"/>
+                <field name="state" widget="badge"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_releve_reception_ventes" model="ir.actions.act_window">
+        <field name="name">Relevé Réceptions-Ventes</field>
+        <field name="res_model">gecafle.releve.reception.ventes</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

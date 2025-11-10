@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue tree héritée pour afficher le poids unitaire moyen global -->
+    <record id="view_gecafle_vente_tree_inherit_prix_moyen" model="ir.ui.view">
+        <field name="name">gecafle.vente.tree.inherit.poids.moyen</field>
+        <field name="model">gecafle.vente</field>
+        <field name="inherit_id" ref="adi_gecafle_ventes.view_gecafle_vente_list"/>
+        <field name="priority">100</field>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='total_poids_net']" position="after">
+                <!-- CORRECTION : Utiliser poids_unitaire_moyen_global au lieu de prix_moyen_net_global -->
+                <field name="poids_unitaire_moyen_global"
+                       string="Poids moy./colis"
+                       optional="show"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

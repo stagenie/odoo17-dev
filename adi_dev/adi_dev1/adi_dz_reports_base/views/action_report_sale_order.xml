@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="adicops_action_report_saleorder" model="ir.actions.report">
+        <field name="name">ADI- Devis / Commande</field>
+        <field name="model">sale.order</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_dz_reports.adicops_report_saleorder</field>
+        <field name="report_file">adi_dz_reports.adicops_report_saleorder</field>
+        <field name="print_report_name">(object.state in ('draft', 'sent') and 'Quotation - %s' % (object.name)) or 'Order - %s' % (object.name)</field>
+        <field name="binding_model_id" ref="model_sale_order"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <record id="action_report_pro_forma_invoice" model="ir.actions.report">
+        <field name="name">ADI-PRO-FORMA</field>
+        <field name="model">sale.order</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_dz_reports.adicops_report_saleorder_pro_forma</field>
+        <field name="report_file">adi_dz_reports.adicops_report_saleorder_pro_forma</field>
+        <field name="print_report_name">'PRO-FORMA - %s' % (object.name)</field>
+        <field name="binding_model_id" ref="model_sale_order"/>
+        <field name="binding_type">report</field>
+        <field name="groups_id" eval="[(4, ref('sale.group_proforma_sales'))]"/>
+    </record>
+
+    <record id="adicops_action_report_saleorder_item" model="ir.actions.report">
+        <field name="name">ADI- Devis / Commande - Avec Item</field>
+        <field name="model">sale.order</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_dz_reports.adicops_report_saleorder_item</field>
+        <field name="report_file">adi_dz_reports.adicops_report_saleorder_item</field>
+        <field name="print_report_name">(object.state in ('draft', 'sent') and 'Quotation - %s' % (object.name)) or 'Order - %s' % (object.name)</field>
+        <field name="binding_model_id" ref="model_sale_order"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <record id="action_report_pro_forma_invoice_item" model="ir.actions.report">
+        <field name="name">ADI-PRO-FORMA- Avec Item </field>
+        <field name="model">sale.order</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_dz_reports.adicops_report_saleorder_pro_forma_item</field>
+        <field name="report_file">adi_dz_reports.adicops_report_saleorder_pro_forma_item</field>
+        <field name="print_report_name">'PRO-FORMA - %s' % (object.name)</field>
+        <field name="binding_model_id" ref="model_sale_order"/>
+        <field name="binding_type">report</field>
+        <field name="groups_id" eval="[(4, ref('sale.group_proforma_sales'))]"/>
+    </record>
+
+
+     
+</odoo>

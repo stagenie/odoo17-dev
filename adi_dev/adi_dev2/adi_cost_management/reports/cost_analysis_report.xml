@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Template principal du rapport - ID CORRIGÉ -->
+    <template id="report_cost_analysis_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <!-- En-tête du rapport -->
+                        <div class="oe_structure"/>
+                        <h2 class="text-center mb-4">Rapport d'Analyse des Coûts de Production</h2>
+
+                        <!-- Informations générales -->
+                        <div class="row mb-4">
+                            <div class="col-6">
+                                <table class="table table-sm">
+                                    <tr>
+                                        <td width="40%"><strong>Référence:</strong></td>
+                                        <td><span t-field="doc.name"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Date Production:</strong></td>
+                                        <td><span t-field="doc.production_date"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Produit:</strong></td>
+                                        <td><span t-field="doc.product_id.display_name"/></td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="col-6">
+                                <table class="table table-sm">
+                                    <tr>
+                                        <td width="40%"><strong>État:</strong></td>
+                                        <td>
+                                            <span t-if="doc.state == 'draft'" class="badge badge-secondary">Brouillon</span>
+                                            <span t-if="doc.state == 'confirmed'" class="badge badge-warning">Confirmé</span>
+                                            <span t-if="doc.state == 'validated'" class="badge badge-success">Validé</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Quantité Produite:</strong></td>
+                                        <td><span t-esc="'%.2f' % doc.qty_produced"/> unités</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Quantité Bonne:</strong></td>
+                                        <td><span t-esc="'%.2f' % doc.qty_good"/> unités</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Détail des Coûts -->
+                        <h4 class="mt-4 mb-3">Détail des Coûts</h4>
+                        <table class="table table-sm">
+                            <thead style="background-color: #f0f0f0;">
+                                <tr>
+                                    <th width="70%">Description</th>
+                                    <th width="30%" class="text-right">Montant (DA)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Coût Matières Premières</td>
+                                    <td class="text-right">
+                                        <span t-esc="'%.2f' % (doc.raw_material_cost or 0)"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Coût Total de Production</td>
+                                    <td class="text-right">
+                                        <span t-esc="'%.2f' % (doc.total_production_cost or 0)"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Coût des Rebuts</td>
+                                    <td class="text-right">
+                                        <span t-esc="'%.2f' % (doc.total_scrap_cost or 0)"/>
+                                    </td>
+                                </tr>
+                                <tr style="border-top: 2px solid #000; font-weight: bold;">
+                                    <td>COÛT TOTAL</td>
+                                    <td class="text-right">
+                                        <span t-esc="'%.2f' % (doc.total_cost_with_scrap or 0)"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- Analyse du Prix de Revient -->
+                        <h4 class="mt-4 mb-3">Analyse du Prix de Revient</h4>
+                        <table class="table table-sm">
+                            <thead style="background-color: #f0f0f0;">
+                                <tr>
+                                    <th width="50%">Type de Coût</th>
+                                    <th width="25%" class="text-right">Coût Unitaire (DA)</th>
+                                    <th width="25%" class="text-right">Variation</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Prix de Revient Théorique (sans rebuts)</td>
+                                    <td class="text-right">
+                                        <span t-esc="'%.2f' % (doc.unit_cost_theoretical or 0)"/>
+                                    </td>
+                                    <td class="text-right">-</td>
+                                </tr>
+                                <tr style="font-weight: bold;">
+                                    <td>Prix de Revient Réel (avec rebuts)</td>
+                                    <td class="text-right text-danger">
+                                        <span t-esc="'%.2f' % (doc.unit_cost_real or 0)"/>
+                                    </td>
+                                    <td class="text-right text-danger">
+                                        <t t-if="doc.unit_cost_theoretical and doc.unit_cost_theoretical > 0">
+                                            +<span t-esc="'%.1f' % ((doc.unit_cost_real - doc.unit_cost_theoretical) / doc.unit_cost_theoretical * 100)"/>%
+                                        </t>
+                                        <t t-else="">N/A</t>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- Détail des Rebuts si existants -->
+                        <t t-if="doc.scrap_ids">
+                            <h4 class="mt-4 mb-3">Détail des Rebuts</h4>
+                            <table class="table table-sm">
+                                <thead style="background-color: #f0f0f0;">
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Type</th>
+                                        <th>Produit</th>
+                                        <th class="text-right">Qté (kg)</th>
+                                        <th class="text-right">Coût/kg</th>
+                                        <th class="text-right">Total (DA)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="doc.scrap_ids" t-as="scrap">
+                                        <tr>
+                                            <td><span t-field="scrap.scrap_date"/></td>
+                                            <td>
+                                                <t t-if="scrap.scrap_type == 'finished'">Produit Fini</t>
+                                                <t t-elif="scrap.scrap_type == 'packaging'">Emballage</t>
+                                                <t t-else="">Matière Première</t>
+                                            </td>
+                                            <td><span t-field="scrap.product_id.name"/></td>
+                                            <td class="text-right"><span t-esc="'%.2f' % (scrap.qty_kg or 0)"/></td>
+                                            <td class="text-right"><span t-esc="'%.2f' % (scrap.cost_per_kg or 0)"/></td>
+                                            <td class="text-right"><span t-esc="'%.2f' % (scrap.total_cost or 0)"/></td>
+                                        </tr>
+                                    </t>
+                                    <tr style="border-top: 1px solid #000; font-weight: bold;">
+                                        <td colspan="5">Total Rebuts</td>
+                                        <td class="text-right">
+                                            <span t-esc="'%.2f' % sum(doc.scrap_ids.mapped('total_cost'))"/>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </t>
+
+                        <!-- Ordres de Fabrication -->
+                        <t t-if="doc.production_ids">
+                            <h4 class="mt-4 mb-3">Ordres de Fabrication</h4>
+                            <table class="table table-sm">
+                                <thead style="background-color: #f0f0f0;">
+                                    <tr>
+                                        <th>Référence</th>
+                                        <th>Produit</th>
+                                        <th class="text-right">Quantité Planifiée</th>
+                                        <th class="text-right">Quantité Produite</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="doc.production_ids" t-as="production">
+                                        <tr>
+                                            <td><span t-field="production.name"/></td>
+                                            <td><span t-field="production.product_id.name"/></td>
+                                            <td class="text-right"><span t-esc="'%.2f' % (production.product_qty or 0)"/></td>
+                                            <td class="text-right"><span t-esc="'%.2f' % (production.qty_produced or 0)"/></td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </t>
+
+                        <!-- Pied de page avec signature -->
+                        <div class="row mt-5">
+                            <div class="col-6 text-center">
+                                <p style="margin-top: 50px; border-top: 1px solid black; display: inline-block; width: 200px;">
+                                    Responsable Production
+                                </p>
+                            </div>
+                            <div class="col-6 text-center">
+                                <p style="margin-top: 50px; border-top: 1px solid black; display: inline-block; width: 200px;">
+                                    Direction
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="oe_structure"/>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <!-- Action Report -->
+    <record id="action_report_cost_analysis" model="ir.actions.report">
+        <field name="name">Rapport Analyse des Coûts</field>
+        <field name="model">adi.daily.production</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_cost_management.report_cost_analysis_document</field>
+        <field name="report_file">adi_cost_management.report_cost_analysis</field>
+        <field name="print_report_name">'Analyse_' + (object.name or 'NA').replace('/', '_') + '.pdf'</field>
+        <field name="binding_model_id" ref="model_adi_daily_production"/>
+        <field name="binding_type">report</field>
+    </record>
+</odoo>

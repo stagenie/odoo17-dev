@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <template id="adi_report_delivery_document">
+    
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <t t-set="o" t-value="o.with_context(lang=o.partner_id.lang)" />
+                <t t-set="partner" t-value="o.partner_id or (o.move_ids and o.move_ids[0].partner_id) or False"/>
+                <t t-set="currency" t-value="o.company_id.currency_id"/>
+
+
+                  <div class="page">
+                 
+                        <table  style="font-size:18px"  width="100%" class="table table-borderless">
+                        <tr>
+                        <td class="text-left" width="65%">  
+                                <strong>
+                                
+                                    <span >Bon de Livraison Valorisé N° : </span>
+                                    
+                                    <span  t-field="o.name"/> <span>/</span>                            
+                                    <span  t-field="o.origin"/>
+                                
+                                </strong>
+                                
+                                    <div  name="customer">
+                                        <div>
+                                                <strong>Client : </strong> <span t-field="o.partner_id.name"/>
+                                        </div>
+                                    </div>
+
+                        </td>
+                        
+                        <td class="text-end">
+                                <div id="informations-css" class="text-align: right">
+                                
+                                <div t-if="o.state" class="col-auto" name="div_sched_date">
+                                    <strong>Date: </strong>
+                                    <t t-if="o.state == 'done'">
+                                        <span t-field="o.date_done"/>
+                                    </t>
+                                       <t t-if="o.state != 'done'">
+                                        <span t-field="o.scheduled_date"/>
+                                      </t>
+                                       
+                                </div>     
+                                                                                                                     
+                                    
+                                </div>
+                                <t t-if="o.move_ids[0].sale_line_id.order_id">                      
+                                     <div class="col-auto" name="div_user_v">
+                                                <strong>Vendeur :</strong>  
+                                                  <span t-field="o.move_ids[0].sale_line_id.order_id.user_id"/>
+                                               
+                                        </div>        
+                                </t>
+                                      
+                            </td>
+                        </tr> 
+                        </table>
+                    
+                     <t t-set="number_ligne" t-value="0"/>
+                     <table class="table table-sm o_main_table" style="font-size:13px" name="adi_stock_move_table">
+                        <thead>
+                            <tr>
+                                <!--<th name="th_sm_product"><strong>N°</strong></th>-->
+                                <th name="th_sm_product"><strong>Description</strong></th>
+                                <th name="th_sm_quantity"><strong>Quantité</strong></th>
+                                  <t t-if="o.move_ids[0].sale_line_id.order_id">
+                                    <th name="th_prix_unit"><strong>Prix Unitaire</strong></th>
+                                    <th name="th_prix_ht"><strong>Montant HT</strong></th>
+                                   </t> 
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-set="lines" 
+                            t-value="o.move_ids.filtered(lambda x: x.product_uom_qty)"/>
+                            <!-- N° de ligne -->
+                               <t t-if="o.move_ids[0].sale_line_id.order_id">                      
+                                   <t t-set="amount_total" t-value="0"/>
+                                   <t t-set="amount_total_ttc" t-value="0"/>
+                                   <t t-set="amount_total_tva" t-value="0"/>
+                                </t>
+                                    
+                            <tr t-foreach="lines" t-as="move">
+                                <t t-set="number_ligne" t-value="number_ligne+1"/>
+                               <t t-if="o.move_ids[0].sale_line_id.order_id">
+                                       <t t-set="amount" t-value="move.sale_line_id.price_unit*move.product_uom_qty"/>                                
+                                
+                                    <t t-set="amount_total" t-value="amount_total+amount"/>                                
+                                    <!-- TVA -->
+                                    <t t-set="total_tva" t-value="0"/>                                
+                                    <t t-foreach="move.sale_line_id.tax_id" t-as="ltva">
+                                        <t t-set="total_tva" t-value="ltva.amount/100+total_tva"/>
+                                    </t>
+                                    <t t-set="tva" t-value="(1+total_tva) if move.sale_line_id.tax_id else 1"/>
+                                    <t t-set="amount_ttc" t-value="amount*tva"/>
+                                    <t t-set="amount_total_ttc" t-value="amount_total_ttc+amount_ttc"/>                                 
+                                    <t t-set="amount_total_tva" t-value="amount_total_tva+(amount_ttc-amount)"/> 
+                               </t> 
+                               
+                               <!-- 
+                                   <td>
+                                    <span t-esc="number_ligne"/>                                    
+                                </td>
+                               -->
+                               
+                                <td>
+                                    <span t-field="move.product_id"/>
+                                    <p t-if="move.description_picking != move.product_id.name and move.description_picking != move.product_id.display_name">
+                                        <span t-field="move.description_picking"/>
+                                    </p>
+                                </td>
+                                <td>
+                                    <!--<span t-field="move.quantity_done"/>-->
+                                    <span t-field="move.product_uom_qty"/>
+                                    <span t-field="move.product_uom"/>
+                                </td>
+                                  <t t-if="o.move_ids[0].sale_line_id.order_id">
+                                        <td>  
+                                        
+                                                <span
+                                                t-field="move.sale_line_id.price_unit"                                     
+                                                />
+                                                <!--t-options='{"widget": "monetary", "display_currency": currency}'-->
+                                            
+                                        </td>                                
+                                        <td>
+                                            <span
+                                            t-esc="amount"
+                                            t-options='{"widget": "monetary", "display_currency": currency}'
+
+                                            />
+                                            
+                                        </td>    
+                                    </t>  
+
+                            </tr>
+                        </tbody>
+                        
+                     </table> 
+                      <t t-if="o.move_ids[0].sale_line_id.order_id">
+                            <div class="clearfix mb-4">
+                            <div id="total" class="row">
+                                <div t-attf-class="#{'col-6' if report_type != 'html' else 'col-sm-7 col-md-6'} ms-auto">
+                                        <table 
+                                                class="table table-sm" 
+                                                style="page-break-inside: avoid;">
+                                            <t t-set="amount_ttc" t-value="amount_total+total_tva"/>
+
+                                            <tr class="border-black o_total">
+                                                    <td><strong>Total HT</strong></td>
+                                                    <td class="text-end">
+                                                        <span
+                                                         t-esc="amount_total"
+                                                         t-options='{"widget": "monetary", 
+                                                         "display_currency": currency}'
+                                                         />
+                                                    </td>
+                                            </tr>
+                                            <tr class="border-black">
+                                                    <td><strong>TVA</strong></td>
+                                                    <td class="text-end">
+                                                        <span
+                                                         t-esc="amount_total_tva"
+                                                         t-options='{"widget": "monetary", 
+                                                         "display_currency": currency}'
+                                                         />
+                                                    </td>
+                                            </tr>
+                                            <tr class="border-black o_total">
+                                                    <td><strong>Total TTC</strong></td>
+                                                    <td class="text-end">
+                                                        <span
+                                                         t-esc="amount_total_ttc"
+                                                         t-options='{"widget": "monetary", 
+                                                         "display_currency": currency}'
+                                                         />
+                                                    </td>
+                                            </tr>
+                                        </table>
+                                </div>
+                            </div>
+                         </div>
+                        </t>
+
+
+                        
+
+                    </div>
+           
+         </t>
+     </t>
+
+    </template>
+
+    
+    <template id="adi_dz_reports.adi_report_deliveryslip_valorised">
+        <t t-foreach="docs" t-as="o">
+            <t t-call="adi_dz_reports.adi_report_delivery_document" t-lang="o.partner_id.lang"/>
+        </t>
+    </template>
+</odoo>

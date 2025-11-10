@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_gecafle_reception_form_inherit_sales" model="ir.ui.view">
+        <field name="name">gecafle.reception.form.inherit.sales</field>
+        <field name="model">gecafle.reception</field>
+        <field name="inherit_id" ref="adi_gecafle_receptions.view_gecafle_reception_form"/>
+        <field name="arch" type="xml">
+            <!-- Ajouter les champs techniques pour le verrouillage -->
+            <xpath expr="//field[@name='state']" position="after">
+                <field name="has_linked_sales" invisible="1"/>
+                <field name="recap_count" invisible="1"/>
+
+            </xpath>
+
+
+            <!-- Empêcher l'annulation si des ventes sont liées -->
+            <xpath expr="//button[@name='action_cancel']" position="attributes">
+                <attribute name="invisible">has_linked_sales or state not in ('brouillon', 'confirmee')</attribute>
+            </xpath>
+
+            <!-- Empêcher la remise en brouillon si des ventes sont liées -->
+            <xpath expr="//button[@name='action_reset_to_draft']" position="attributes">
+                <attribute name="invisible">has_linked_sales or state not in ('confirmee')</attribute>
+            </xpath>
+
+
+
+
+        </field>
+
+
+    </record>
+
+    <record id="view_gecafle_reception_form_inherit_sales_protection" model="ir.ui.view">
+        <field name="name">gecafle.reception.form.inherit.sales.protection</field>
+        <field name="model">gecafle.reception</field>
+        <field name="inherit_id" ref="adi_gecafle_receptions.view_gecafle_reception_form"/>
+        <field name="arch" type="xml">
+            <!-- Conserver le Smart Button pour les ventes -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_linked_sales" type="object"
+                        class="oe_stat_button" icon="fa-shopping-cart"
+                        invisible="linked_sale_count == 0">
+                    <field name="linked_sale_count" widget="statinfo" string="Ventes"/>
+                </button>
+            </xpath>
+
+            <!-- Modifier l'affichage des lignes de réception pour montrer visuellement celles qui sont utilisées -->
+            <xpath expr="//field[@name='details_reception_ids']/tree" position="attributes">
+                <attribute name="decoration-info">has_linked_sales</attribute>
+            </xpath>
+
+            <!-- Ajouter les champs pour indiquer si la ligne est utilisée dans des ventes -->
+            <xpath expr="//field[@name='details_reception_ids']/tree/field[@name='qte_colis_disponibles']"
+                   position="after">
+                <field name="has_linked_sales" invisible="1" optional="hide"/>
+                <field name="linked_sale_count" string="Ventes" optional="show" widget="badge"/>
+                <field name="linked_sale_names" string="Ventes liées" optional="hide"/>
+            </xpath>
+
+            <!-- Ajouter une infobulle en bas de la section pour expliquer les restrictions -->
+            <xpath expr="//field[@name='details_reception_ids']" position="after">
+                <div class="alert alert-info" role="alert">
+                    <i class="fa fa-info-circle"></i>
+                    <span>Les lignes en bleu sont utilisées dans des ventes. Vous pouvez modifier leur quantité si
+                        nécessaire (augmentation uniquement), mais pas les supprimer ou changer leur
+                        produit/qualité/emballage.
+                    </span>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+
+    <!-- Dans reception_extended.xml, ajoutez dans la vue formulaire -->
+    <record id="view_gecafle_reception_form_inherit_payment" model="ir.ui.view">
+        <field name="name">gecafle.reception.form.inherit.payment</field>
+        <field name="model">gecafle.reception</field>
+        <field name="inherit_id" ref="adi_gecafle_receptions.view_gecafle_reception_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Ajouter les champs invisibles -->
+            <xpath expr="//field[@name='state']" position="after">
+                <field name="payment_state" invisible="1"/>
+                <field name="currency_id" invisible="1"/>
+            </xpath>
+
+            <!-- Ajouter le widget de statut de paiement dans le header -->
+            <xpath expr="//field[@name='state']" position="after">
+                <field name="payment_state"
+                       widget="badge"
+                       decoration-success="payment_state == 'paid'"
+                       decoration-warning="payment_state == 'partial'"
+                       decoration-danger="payment_state == 'unpaid'"
+                       decoration-info="payment_state == 'not_invoiced'"
+                       invisible="recap_count == 0"/>
+            </xpath>
+
+            <!-- Ajouter un groupe pour les informations de paiement-->
+            <xpath expr="//sheet/group" position="after">
+                <group string="État de Paiement"
+                       invisible="recap_count == 0 or payment_state == 'not_invoiced'"
+                       class="alert alert-info">
+                    <group>
+                        <field name="payment_state" string="État"/>
+                        <field name="payment_percentage"/>
+                    </group>
+                    <group>
+                        <field name="payment_amount_paid" widget="monetary"/>
+                        <field name="payment_amount_due" widget="monetary"/>
+                    </group>
+                </group>
+            </xpath>
+
+
+        </field>
+    </record>
+
+    <!-- Ajouter dans la vue liste pour voir rapidement l'état -->
+    <record id="view_gecafle_reception_tree_inherit_payment" model="ir.ui.view">
+        <field name="name">gecafle.reception.tree.inherit.payment</field>
+        <field name="model">gecafle.reception</field>
+        <field name="inherit_id" ref="adi_gecafle_receptions.view_gecafle_reception_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='state']" position="after">
+                <field name="payment_state"
+                       widget="badge"
+                       optional="show"
+                       decoration-success="payment_state == 'paid'"
+                       decoration-warning="payment_state == 'partial'"
+                       decoration-danger="payment_state == 'unpaid'"
+                       decoration-info="payment_state == 'not_invoiced'"/>
+                <field name="payment_amount_total" widget="monetary" optional="show"/>
+                <field name="payment_amount_paid" widget="monetary" optional="show"/>
+                <field name="payment_amount_due" widget="monetary" optional="show"/>
+
+            </xpath>
+        </field>
+    </record>
+
+
+    <!-- Dans reception_extended.xml-->
+
+    <record id="view_gecafle_reception_search_inherit_payment" model="ir.ui.view">
+        <field name="name">gecafle.reception.search.inherit.payment</field>
+        <field name="model">gecafle.reception</field>
+        <field name="inherit_id" ref="adi_gecafle_receptions.view_gecafle_reception_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='confirmed']" position="after">
+                <separator/>
+                <filter string="Payées"
+                        name="paid"
+                        domain="[('payment_state', '=', 'paid')]"/>
+                <filter string="Non payées"
+                        name="unpaid"
+                        domain="[('payment_state', '=', 'unpaid')]"/>
+                <filter string="Partiellement payées"
+                        name="partial"
+                        domain="[('payment_state', '=', 'partial')]"/>
+            </xpath>
+            <xpath expr="//group" position="inside">
+                <filter string="État de paiement"
+                        name="group_by_payment_state"
+                        context="{'group_by': 'payment_state'}"/>
+            </xpath>
+        </field>
+    </record>
+
+
+</odoo>

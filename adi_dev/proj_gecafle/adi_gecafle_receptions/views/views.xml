@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+  
+  <record id="view_gecafle_producteur_tree_extented" model="ir.ui.view">
+    <field name="name">gecafle.producteur.tree</field>
+    <field name="model">gecafle.producteur</field>
+         <field name="type">tree</field>
+     
+    <field name="arch" type="xml">
+        <tree>
+            <field name="name"/>
+            <field name="phone"/>         
+            <field name="address"/>
+        </tree>
+    </field>
+</record>
+
+
+
+  <record id="view_gecafle_producteur_form" model="ir.ui.view">
+    <field name="name">gecafle.producteur.form</field>
+    <field name="model">gecafle.producteur</field>
+    <field name="arch" type="xml">
+      <form string="Producteur">
+        <sheet>
+          <group>
+            <field name="name"/>
+            <field name="phone"/>
+            <field name="address"/>
+           <!-- <field name="language_id"/>  --> 
+          </group>
+          <group>
+            <field name="initial_balance"/>
+            <field name="creation_date"/>
+          </group>
+          <group>
+            <field name="personalized_margin"/>
+            <field name="margin_fruits"/>
+            <field name="margin_vegetables"/>
+          </group>
+          <group>
+            <field name="currency_id"/>
+          </group>
+        </sheet>
+      </form>
+    </field>
+  </record>
+
+  <record id="view_gecafle_producteur_search" model="ir.ui.view">
+    <field name="name">gecafle.producteur.search</field>
+    <field name="model">gecafle.producteur</field>
+    <field name="arch" type="xml">
+      <search string="Recherche Producteur">
+        <field name="name"/>
+        <field name="phone"/>
+       <!-- <field name="language_id"/> --> 
+      </search>
+    </field>
+  </record>
+
+  <!-- Vues Produits -->
+
+  
+  <record id="view_gecafle_produit_tree" model="ir.ui.view">
+    <field name="name">gecafle.produit.tree</field>
+    <field name="model">gecafle.produit</field>
+    <field name="arch" type="xml">
+      <tree>
+        <field name="name"/>
+        <field name="producteur_id"/>
+        <field name="type"/>
+      </tree>
+    </field>
+  </record>
+
+  <record id="view_gecafle_produit_form" model="ir.ui.view">
+    <field name="name">gecafle.produit.form</field>
+    <field name="model">gecafle.produit</field>
+    <field name="arch" type="xml">
+      <form string="Produit">
+        <sheet>
+          <group>
+            <field name="name"/>
+            <field name="producteur_id"/>
+            <field name="type"/>
+            <field name="image" widget="image" options="{'preview_image': 'image', 'size': [90, 90]}"/>
+          </group>
+        </sheet>
+      </form>
+    </field>
+  </record>
+
+  <record id="view_gecafle_produit_search" model="ir.ui.view">
+    <field name="name">gecafle.produit.search</field>
+    <field name="model">gecafle.produit</field>
+    <field name="arch" type="xml">
+      <search string="Recherche Produit">
+        <field name="name"/>
+        <filter string="Fruit" domain="[('type', '=', 'fruit')]"/>
+        <filter string="Légume" domain="[('type', '=', 'legume')]"/>
+        <group expand="0" string="Group By">
+          <filter name="group_by_producteur" string="Producteur" context="{'group_by': 'producteur_id'}"/>
+          <filter name="group_by_type" string="Type" context="{'group_by': 'type'}"/>
+        </group>
+      </search>
+    </field>
+  </record>
+
+  <!-- Vues Stock -->
+  <record id="view_gecafle_stock_tree" model="ir.ui.view">
+    <field name="name">gecafle.stock.tree</field>
+    <field name="model">gecafle.stock</field>
+    <field name="arch" type="xml">
+      <tree >
+        <field name="producteur_id"/>
+        <field name="reception_number"/>
+        <field name="reception_date"/>
+        <field name="qualite_id"/>
+        <field name="emballage_id"/>
+        <field name="available_quantity"/>
+      </tree>
+    </field>
+  </record>
+
+  <record id="view_gecafle_stock_form" model="ir.ui.view">
+    <field name="name">gecafle.stock.form</field>
+    <field name="model">gecafle.stock</field>
+    <field name="arch" type="xml">
+      <form string="Stock">
+        <sheet>
+          <group>
+            <field name="producteur_id"/>
+            <field name="reception_number"/>
+            <field name="reception_date"/>
+            <field name="qualite_id"/>
+            <field name="emballage_id"/>
+            <field name="available_quantity"/>
+          </group>
+        </sheet>
+      </form>
+    </field>
+  </record>
+
+  <record id="view_gecafle_stock_search" model="ir.ui.view">
+    <field name="name">gecafle.stock.search</field>
+    <field name="model">gecafle.stock</field>
+    <field name="arch" type="xml">
+      <search string="Recherche Stock">
+        <field name="reception_date"/>
+        <filter string="Fruit" domain="[('gecafle.produit.type', '=', 'fruit')]"/>
+        <filter string="Légume" domain="[('gecafle.produit.type', '=', 'legume')]"/>
+        <group expand="0" string="Group By">
+          <filter name="group_by_producteur" string="Producteur" context="{'group_by': 'producteur_id'}"/>
+          <filter name="group_by_produit" string="Produit" context="{'group_by': 'producteur_id'}"/>
+          <filter name="group_by_qualite" string="Qualité" context="{'group_by': 'qualite_id'}"/>
+          <filter name="group_by_emballage" string="Emballage" context="{'group_by': 'emballage_id'}"/>
+          <filter name="group_by_date" string="Date" context="{'group_by': 'reception_date'}"/>
+        </group>
+        <filter string="Aujourd'hui" domain="[('reception_date', '=', context_today())]"/>
+      </search>
+    </field>
+  </record>
+
+  <!-- Vues Déstockage -->
+  <record id="view_gecafle_destockage_tree" model="ir.ui.view">
+    <field name="name">gecafle.destockage.tree</field>
+    <field name="model">gecafle.destockage</field>
+    <field name="arch" type="xml">
+      <tree string="Historique Déstockage">
+        <field name="stock_id"/>
+        <field name="date_time"/>
+        <field name="observation"/>
+      </tree>
+    </field>
+  </record>
+
+  <record id="view_gecafle_destockage_form" model="ir.ui.view">
+    <field name="name">gecafle.destockage.form</field>
+    <field name="model">gecafle.destockage</field>
+    <field name="arch" type="xml">
+      <form string="Déstockage">
+        <sheet>
+          <group>
+            <field name="stock_id"/>
+            <field name="date_time"/>
+            <field name="observation"/>
+          </group>
+        </sheet>
+      </form>
+    </field>
+  </record>
+
+  <record id="view_gecafle_destockage_search" model="ir.ui.view">
+    <field name="name">gecafle.destockage.search</field>
+    <field name="model">gecafle.destockage</field>
+    <field name="arch" type="xml">
+      <search string="Recherche Déstockage">
+        <field name="date_time"/>
+        <group expand="0" string="Group By">
+          <filter name="group_by_producteur" string="Producteur" context="{'group_by': 'stock_id/producteur_id'}"/>
+          <filter name="group_by_produit" string="Produit" context="{'group_by': 'stock_id/product_id'}"/>
+          <filter name="group_by_qualite" string="Qualité" context="{'group_by': 'stock_id/qualite_id'}"/>
+          <filter name="group_by_emballage" string="Emballage" context="{'group_by': 'stock_id/emballage_id'}"/>
+        </group>
+      </search>
+    </field>
+  </record>
+
+  <!-- Vues Qualité -->
+  <record id="view_gecafle_qualite_tree" model="ir.ui.view">
+    <field name="name">gecafle.qualite.tree</field>
+    <field name="model">gecafle.qualite</field>
+    <field name="arch" type="xml">
+      <tree >
+        <field name="code"/>
+        <field name="name"/>
+        <field name="classification"/>
+      </tree>
+    </field>
+  </record>
+
+  <record id="view_gecafle_qualite_form" model="ir.ui.view">
+    <field name="name">gecafle.qualite.form</field>
+    <field name="model">gecafle.qualite</field>
+    <field name="arch" type="xml">
+      <form string="Qualité">
+        <sheet>
+          <group>
+            <field name="code"/>
+            <field name="name"/>
+            <field name="classification"/>
+          </group>
+        </sheet>
+      </form>
+    </field>
+  </record>
+
+  <record id="view_gecafle_qualite_search" model="ir.ui.view">
+    <field name="name">gecafle.qualite.search</field>
+    <field name="model">gecafle.qualite</field>
+    <field name="arch" type="xml">
+      <search string="Recherche Qualité">
+        <field name="code"/>
+        <field name="name"/>
+        <field name="classification"/>
+      </search>
+    </field>
+  </record>
+
+  <!-- Vues Emballage -->
+  <record id="view_gecafle_emballage_tree" model="ir.ui.view">
+    <field name="name">gecafle.emballage.tree</field>
+    <field name="model">gecafle.emballage</field>
+    <field name="arch" type="xml">
+      <tree string="Liste des Emballages">
+        <field name="code"/>
+        <field name="weight"/>
+        <field name="unit_price"/>
+        <field name="non_returnable"/>
+        <field name="available_quantity"/>
+        <field name="initial_quantity"/>
+      </tree>
+    </field>
+  </record>
+
+  <record id="view_gecafle_emballage_form" model="ir.ui.view">
+    <field name="name">gecafle.emballage.form</field>
+    <field name="model">gecafle.emballage</field>
+    <field name="arch" type="xml">
+      <form string="Emballage">
+        <sheet>
+          <group>
+            <field name="code"/>
+            <field name="weight"/>
+            <field name="unit_price"/>
+            <field name="non_returnable"/>
+            <field name="initial_quantity"/>
+            <field name="creation_date"/>
+          </group>
+        </sheet>
+      </form>
+    </field>
+  </record>
+
+  <record id="view_gecafle_emballage_search" model="ir.ui.view">
+    <field name="name">gecafle.emballage.search</field>
+    <field name="model">gecafle.emballage</field>
+    <field name="arch" type="xml">
+      <search string="Recherche Emballage">
+        <field name="code"/>
+        <field name="weight"/>
+        <field name="unit_price"/>
+        <filter string="Non Rendu" domain="[('non_returnable', '=', True)]"/>
+      </search>
+    </field>
+  </record>
+
+<!-- Actions -->
+  <record id="action_gecafle_producteur" model="ir.actions.act_window">
+    <field name="name">Producteurs</field>
+    <field name="res_model">gecafle.producteur</field>
+    <field name="view_mode">tree,form,search</field>
+  </record>
+
+  <record id="action_gecafle_produit" model="ir.actions.act_window">
+    <field name="name">Produits</field>
+    <field name="res_model">gecafle.produit</field>
+    <field name="view_mode">tree,form,search</field>
+  </record>
+
+  <record id="action_gecafle_stock" model="ir.actions.act_window">
+    <field name="name">Journal de Stock</field>
+    <field name="res_model">gecafle.stock</field>
+    <field name="view_mode">tree,form,search</field>
+  </record>
+
+  <record id="action_gecafle_destockage" model="ir.actions.act_window">
+    <field name="name">Déstockage</field>
+    <field name="res_model">gecafle.destockage</field>
+    <field name="view_mode">tree,form,search</field>
+  </record>
+
+
+<!-- Menus -->
+  <!-- Application Stock (menu détaché) -->
+  <menuitem id="menu_stock_root" name="Stock" sequence="10"/>
+
+  <!-- Vous pouvez ajouter d'autres menus pour Producteurs, Qualités ou Emballages si nécessaire -->
+  <menuitem id="menu_gecafle_producteur" name="Producteurs" 
+    parent="menu_stock_root" action="action_gecafle_producteur" sequence="5"/>
+
+  <menuitem id="menu_gecafle_produit" name="Produits"
+    parent="menu_stock_root" action="action_gecafle_produit" sequence="10"/>
+  <menuitem id="menu_gecafle_stock_list" name="Journal de Stock" 
+    parent="menu_stock_root" action="action_gecafle_stock" sequence="20"/>
+  <menuitem id="menu_gecafle_destockage_list" name="Historique Déstockage" 
+  parent="menu_stock_root" action="action_gecafle_destockage" sequence="30"/>
+  
+   <menuitem id="menu_gecafle_producteurs_list" name="Historique Déstockage" 
+        parent="menu_stock_root" action="action_gecafle_destockage" sequence="30"/>
+
+
+</odoo>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- 4 ACTIONS : 2 langues x 2 modes (groupé/simple) -->
+
+    <!-- FRANÇAIS - REGROUPÉ -->
+    <record id="action_report_bordereau_grouped_fr" model="ir.actions.report">
+        <field name="name">Bordereau Regroupé (FR)</field>
+        <field name="model">gecafle.reception.recap</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_gecafle_reception_extended.report_bordereau_grouped_fr</field>
+        <field name="report_file">adi_gecafle_reception_extended.report_bordereau_grouped_fr</field>
+        <field name="print_report_name">'Bordereau Regroupé - %s' % (object.name)</field>
+    </record>
+
+    <!-- FRANÇAIS - SIMPLE (non regroupé) -->
+    <record id="action_report_bordereau_simple_fr" model="ir.actions.report">
+        <field name="name">Bordereau Simple (FR)</field>
+        <field name="model">gecafle.reception.recap</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_gecafle_reception_extended.report_bordereau_simple_fr</field>
+        <field name="report_file">adi_gecafle_reception_extended.report_bordereau_simple_fr</field>
+        <field name="print_report_name">'Bordereau - %s' % (object.name)</field>
+    </record>
+
+    <!-- ARABE - REGROUPÉ -->
+    <record id="action_report_bordereau_grouped_ar" model="ir.actions.report">
+        <field name="name">كشف مجمّع</field>
+        <field name="model">gecafle.reception.recap</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_gecafle_reception_extended.report_bordereau_grouped_ar</field>
+        <field name="report_file">adi_gecafle_reception_extended.report_bordereau_grouped_ar</field>
+        <field name="print_report_name">'كشف مجمّع - %s' % (object.name)</field>
+    </record>
+
+    <!-- ARABE - SIMPLE (non regroupé) -->
+    <record id="action_report_bordereau_simple_ar" model="ir.actions.report">
+        <field name="name">كشف بسيط</field>
+        <field name="model">gecafle.reception.recap</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_gecafle_reception_extended.report_bordereau_simple_ar</field>
+        <field name="report_file">adi_gecafle_reception_extended.report_bordereau_simple_ar</field>
+        <field name="print_report_name">'كشف - %s' % (object.name)</field>
+    </record>
+
+
+
+
+
+</odoo>

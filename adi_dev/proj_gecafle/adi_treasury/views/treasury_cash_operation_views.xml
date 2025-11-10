@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue Tree pour les opérations de caisse -->
+    <record id="view_treasury_cash_operation_tree" model="ir.ui.view">
+        <field name="name">treasury.cash.operation.tree</field>
+        <field name="model">treasury.cash.operation</field>
+        <field name="arch" type="xml">
+            <tree string="Opérations de caisse"
+                  decoration-success="operation_type == 'in' and state == 'posted'"
+                  decoration-danger="operation_type == 'out' and state == 'posted'"
+                  decoration-muted="state == 'cancel'">
+                <field name="name"/>
+                <field name="date"/>
+                <field name="cash_id"/>
+                <field name="operation_type"/>
+                <field name="category_id"/>
+                <field name="amount" widget="monetary"/>
+                <field name="partner_id" optional="show"/>
+                <field name="observations" optional="hide"/>
+                <field name="currency_id" column_invisible="True"/>
+                <field name="reference" optional="show"/>
+                <field name="payment_id" optional="hide"/>
+                <field name="transfer_id" optional="hide"/>
+                <field name="closing_id" optional="show"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'draft'"
+                       decoration-success="state == 'posted'"
+                       decoration-muted="state == 'cancel'"/>
+                <field name="is_collected" string="Prélevé" widget="boolean_toggle" optional="show"/>
+                <field name="collected_date" optional="hide"/>
+                <field name="collected_by" widget="many2one_avatar_user" optional="hide"/>
+                <field name="user_id" widget="many2one_avatar_user" optional="show"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vue Form pour les opérations de caisse -->
+    <record id="view_treasury_cash_operation_form" model="ir.ui.view">
+        <field name="name">treasury.cash.operation.form</field>
+        <field name="model">treasury.cash.operation</field>
+        <field name="arch" type="xml">
+            <form string="Opération de caisse">
+                <header>
+                    <button name="action_post"
+                            string="Comptabiliser"
+                            type="object"
+                            class="oe_highlight"
+                            invisible="state != 'draft'"/>
+                    <button name="action_cancel"
+                            string="Annuler"
+                            type="object"
+                            invisible="state != 'draft' or closing_id"
+                            confirm="Êtes-vous sûr de vouloir annuler cette opération ?"/>
+                    <button name="action_draft"
+                            string="Remettre en brouillon"
+                            type="object"
+                            invisible="state != 'cancel'"/>
+                    <button name="action_mark_collected"
+                            string="Marquer comme prélevé"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="state != 'posted' or is_collected or closing_id"
+                            icon="fa-check-circle"/>
+                    <button name="action_unmark_collected"
+                            string="Retirer le marquage"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="not is_collected or (closing_id and closing_id.state == 'validated')"
+                            icon="fa-times-circle"
+                            confirm="Êtes-vous sûr de vouloir retirer le marquage de prélèvement ?"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,posted"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Annulé" bg_color="bg-danger" invisible="state != 'cancel'"/>
+                    <widget name="web_ribbon" title="Clôturé" bg_color="bg-info" invisible="not closing_id"/>
+
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_attachments"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-paperclip">
+                            <field name="attachment_count" widget="statinfo" string="Pièces jointes"/>
+                        </button>
+                    </div>
+
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group>
+                            <field name="cash_id"
+                                   options="{'no_create': True}"
+                                   readonly="state != 'draft' or payment_id"/>
+                            <field name="operation_type"
+                                   widget="radio"
+                                   options="{'horizontal': true}"
+                                   readonly="state != 'draft' or payment_id"/>
+                            <field name="category_id"
+                                   options="{'no_create': True}"
+                                   readonly="state != 'draft' or payment_id"/>
+                            <field name="date" readonly="state != 'draft'"/>
+                        </group>
+                        <group>
+                            <field name="partner_id"
+                                   options="{'no_create': False}"
+                                   readonly="state != 'draft'"/>
+                            <field name="observations"
+                                   placeholder="Observations..."
+                                   readonly="state != 'draft'"/>
+                        </group>
+                        <group>
+                            <field name="amount"
+                                   widget="monetary"
+                                   options="{'currency_field': 'currency_id'}"
+                                   readonly="state != 'draft' or payment_id"
+                                   class="oe_inline"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="reference"
+                                   placeholder="N° facture, bon..."
+                                   readonly="state != 'draft'"/>
+                            <field name="closing_id" invisible="1"/>
+                        </group>
+                    </group>
+
+                    <group string="Description">
+                        <field name="description"
+
+                               placeholder="Description de l'opération..."
+                               readonly="state != 'draft'"/>
+                    </group>
+
+                    <group string="Informations" col="4" invisible="not payment_id and not user_id">
+                        <field name="payment_id" readonly="1" invisible="not payment_id"/>
+                        <field name="transfer_id" readonly="1" invisible="not transfer_id"/>
+                        <field name="user_id" readonly="1" widget="many2one_avatar_user"/>
+                        <field name="company_id" groups="base.group_multi_company" readonly="1"/>
+                    </group>
+                    <group string="Prélèvement" invisible="not is_collected">
+                        <field name="is_collected" readonly="1"/>
+                        <field name="collected_date" readonly="1"/>
+                        <field name="collected_by" readonly="1" widget="many2one_avatar_user"/>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action serveur pour marquer plusieurs opérations comme prélevées -->
+    <record id="action_mark_operations_collected" model="ir.actions.server">
+        <field name="name">Marquer comme prélevé</field>
+        <field name="model_id" ref="model_treasury_cash_operation"/>
+        <field name="binding_model_id" ref="model_treasury_cash_operation"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">
+if records:
+    # Filtrer les opérations valides
+    valid_operations = records.filtered(lambda o: o.state == 'posted' and not o.is_collected and not
+    o.closing_id)
+    if not valid_operations:
+        raise UserError("Aucune opération valide à marquer comme prélevée.")
+    # Grouper par caisse
+    operations_by_cash = {}
+    for op in valid_operations:
+        if op.cash_id not in operations_by_cash:
+            operations_by_cash[op.cash_id] = []
+        operations_by_cash[op.cash_id].append(op)
+
+    # Créer ou trouver une clôture pour chaque caisse
+    today = fields.Date.today()
+    for cash, operations in operations_by_cash.items():
+        closing = env['treasury.cash.closing'].search([
+        ('cash_id', '=', cash.id),
+        ('state', 'in', ['draft', 'confirmed']),
+        ('closing_date', '=', today)
+        ], limit=1)
+        if not closing:
+            closing = env['treasury.cash.closing'].create({
+                'cash_id': cash.id,
+                'closing_date': today,
+                })
+
+        # Marquer les opérations
+        for op in operations:
+            op.action_mark_collected()
+    # Message de succès
+    msg = "%d opération(s) marquée(s) comme prélevée(s)" % len(valid_operations)
+
+    # Notification
+    action = {
+        'type': 'ir.actions.client',
+        'tag': 'display_notification',
+        'params': {
+        'title': 'Succès',
+        'message': msg,
+        'type': 'success',
+                    }
+        }
+    </field>
+
+    </record>
+
+
+    <!-- Vue Kanban pour les opérations -->
+    <record id="view_treasury_cash_operation_kanban" model="ir.ui.view">
+        <field name="name">treasury.cash.operation.kanban</field>
+        <field name="model">treasury.cash.operation</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="category_id" class="o_kanban_mobile" quick_create="false">
+                <field name="name"/>
+                <field name="cash_id"/>
+                <field name="operation_type"/>
+                <field name="category_id"/>
+                <field name="amount"/>
+                <field name="currency_id"/>
+                <field name="date"/>
+                <field name="state"/>
+                <field name="closing_id"/>
+                <progressbar field="state" colors='{"posted": "success", "cancel": "muted"}'/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="oe_kanban_card oe_kanban_global_click">
+                            <div class="o_kanban_record_top mb16">
+                                <div class="o_kanban_record_headings mt4">
+                                    <strong class="o_kanban_record_title">
+                                        <field name="name"/>
+                                    </strong>
+                                </div>
+                                <strong t-if="record.operation_type.raw_value == 'in'"
+                                        class="text-success">
+                                    +
+                                    <field name="amount" widget="monetary"/>
+                                </strong>
+                                <strong t-else="" class="text-danger">
+                                    -
+                                    <field name="amount" widget="monetary"/>
+                                </strong>
+                            </div>
+                            <div class="o_kanban_record_body">
+                                <div>
+                                    <field name="cash_id"/>
+                                </div>
+                                <div t-if="record.reference.raw_value">
+                                    <small class="text-muted">
+                                        Réf:
+                                        <field name="reference"/>
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="o_kanban_record_bottom">
+                                <div class="oe_kanban_bottom_left">
+                                    <field name="date" widget="date"/>
+                                </div>
+                                <div class="oe_kanban_bottom_right">
+                                    <field name="state" widget="badge"/>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Vue Search pour les opérations -->
+
+    <!-- Vue Search pour les opérations CORRIGÉE -->
+    <record id="view_treasury_cash_operation_search" model="ir.ui.view">
+        <field name="name">treasury.cash.operation.search</field>
+        <field name="model">treasury.cash.operation</field>
+        <field name="arch" type="xml">
+            <search string="Rechercher une opération">
+                <field name="name"/>
+                <field name="cash_id"/>
+                <field name="category_id"/>
+                <field name="reference"/>
+                <field name="description"/>
+                <separator/>
+                <filter string="Entrées" name="in" domain="[('operation_type', '=', 'in')]"/>
+                <filter string="Sorties" name="out" domain="[('operation_type', '=', 'out')]"/>
+                <separator/>
+                <filter string="Brouillon" name="draft" domain="[('state', '=', 'draft')]"/>
+                <filter string="Comptabilisé" name="posted" domain="[('state', '=', 'posted')]"/>
+                <filter string="Annulé" name="cancel" domain="[('state', '=', 'cancel')]"/>
+                <separator/>
+                <filter string="Non clôturé" name="not_closed" domain="[('closing_id', '=', False)]"/>
+                <filter string="Clôturé" name="closed" domain="[('closing_id', '!=', False)]"/>
+                <filter string="Transferts" name="transfers"
+                    domain="[('category_id.code', 'in', ['TRANSFER_IN', 'TRANSFER_OUT'])]"/>
+                <separator/>
+                <!-- Utiliser les dates du contexte Odoo -->
+                <filter string="Aujourd'hui" name="today" domain="[('is_today', '=', True)]"/>
+                <filter string="Cette semaine" name="week" domain="[('is_this_week', '=', True)]"/>
+                <filter string="Ce mois" name="month" domain="[('is_this_month', '=', True)]"/>
+
+
+                <separator/>
+                <group expand="0" string="Grouper par">
+                    <filter string="État" name="group_state" context="{'group_by': 'state'}"/>
+                    <filter string="Type" name="group_type" context="{'group_by': 'operation_type'}"/>
+                    <filter string="Catégorie" name="group_category" context="{'group_by': 'category_id'}"/>
+                    <filter string="Caisse" name="group_cash" context="{'group_by': 'cash_id'}"/>
+                    <filter string="Clôture" name="group_closing" context="{'group_by': 'closing_id'}"/>
+                    <filter string="Tiers" name="group_partner" context="{'group_by': 'partner_id'}"/>
+                    <filter string="Utilisateur" name="group_user" context="{'group_by': 'user_id'}"/>
+                    <filter string="Date" name="group_date" context="{'group_by': 'date:day'}"/>
+                    <filter string="Semaine" name="group_week" context="{'group_by': 'date:week'}"/>
+                    <filter string="Mois" name="group_month" context="{'group_by': 'date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+
+</odoo>

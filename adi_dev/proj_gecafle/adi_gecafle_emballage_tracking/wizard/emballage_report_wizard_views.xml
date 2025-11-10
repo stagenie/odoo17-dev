@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue formulaire du wizard de rapport -->
+    <record id="view_emballage_report_wizard_form" model="ir.ui.view">
+        <field name="name">gecafle.emballage.report.wizard.form</field>
+        <field name="model">gecafle.emballage.report.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group string="Type de rapport">
+                            <field name="report_type" widget="radio"/>
+                        </group>
+                        <group string="Période">
+                            <field name="date_debut"/>
+                            <field name="date_fin"/>
+                        </group>
+                    </group>
+
+                    <!-- Sélection des entités selon le type -->
+                    <group string="Sélection" col="4">
+                        <!-- Pour rapport CLIENT -->
+                        <group invisible="report_type != 'client'" colspan="2">
+                            <field name="client_id"
+                                   options="{'no_create': True}"
+                                   placeholder="Laisser vide pour tous les clients"/>
+                            <field name="client_ids"
+                                   widget="many2many_tags"
+                                   options="{'no_create': True}"
+                                   invisible="client_id"
+                                   placeholder="Sélectionner plusieurs clients"/>
+                        </group>
+
+                        <!-- Pour rapport PRODUCTEUR -->
+                        <group invisible="report_type != 'producteur'" colspan="2">
+                            <field name="producteur_id"
+                                   options="{'no_create': True}"
+                                   placeholder="Laisser vide pour tous les producteurs"/>
+                            <field name="producteur_ids"
+                                   widget="many2many_tags"
+                                   options="{'no_create': True}"
+                                   invisible="producteur_id"
+                                   placeholder="Sélectionner plusieurs producteurs"/>
+                        </group>
+                    </group>
+
+                    <!-- Sélection des emballages -->
+                    <group string="Emballages à inclure">
+                        <field name="emballage_ids"
+                               widget="many2many_tags"
+                               options="{'no_create': True}"
+                               placeholder="Laissez vide pour inclure tous les emballages trackés"/>
+                        <field name="include_non_returned"
+                               widget="boolean_toggle"/>
+                    </group>
+
+                    <!-- Options d'affichage -->
+                    <group string="Options d'affichage" col="4">
+                        <group colspan="2">
+                            <field name="group_by_date"/>
+                            <field name="group_by_reference"/>
+                        </group>
+                        <group colspan="2">
+                            <field name="show_details"/>
+                            <field name="show_summary_only"/>
+                        </group>
+                    </group>
+
+                    <!-- Format de sortie -->
+                    <group string="Format">
+                        <field name="output_format" widget="radio"/>
+                    </group>
+                </sheet>
+
+                <footer>
+                    <button name="action_print_report"
+                            string="Générer le rapport"
+                            type="object"
+                            class="btn-primary"
+                            icon="fa-print"/>
+                    <button string="Annuler"
+                            class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action pour ouvrir le wizard -->
+    <record id="action_emballage_report_wizard" model="ir.actions.act_window">
+        <field name="name">Générer un rapport d'emballages</field>
+        <field name="res_model">gecafle.emballage.report.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

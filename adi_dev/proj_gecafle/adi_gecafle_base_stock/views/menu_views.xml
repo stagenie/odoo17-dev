@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Action -->
+    <record id="action_gecafle_producteur" model="ir.actions.act_window">
+        <field name="name">Producteurs</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">gecafle.producteur</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_gecafle_producteur_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créez votre premier producteur !
+            </p>
+        </field>
+    </record>
+     <!-- Action -->
+
+    <record id="action_gecafle_fruits_legumest" model="ir.actions.act_window">
+        <field name="name">Fruits et Légumes</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">gecafle.fruits_legumes</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_gecafle_fruits_legumes_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créez votre premier Fruit/Légume !
+            </p>
+        </field>
+    </record>
+
+
+    <record id="action_gecafle_produit" model="ir.actions.act_window">
+        <field name="name">Produits</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">gecafle.produit</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_gecafle_produit_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créez votre premier produit !
+            </p>
+        </field>
+    </record>
+     <!-- Action -->
+    <record id="action_gecafle_qualite" model="ir.actions.act_window">
+        <field name="name">Qualités</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">gecafle.qualite</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_gecafle_qualite_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créez votre première qualité !
+            </p>
+        </field>
+    </record>
+     <!-- Action -->
+    <record id="action_gecafle_emballage" model="ir.actions.act_window">
+        <field name="name">Emballages</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">gecafle.emballage</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_gecafle_emballage_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créez votre premier emballage !
+             </p>
+        </field>
+    </record>
+
+    <!-- Menu principal de l'application Stock -->    
+    
+    <menuitem id="menu_gecafle_stock_root"
+        name="Stock"
+    action="action_gecafle_produit"
+        web_icon="adi_gecafle_base_stock,static/description/entrepot.png"
+        sequence="10"/>
+    
+    <!-- Menu des produits (vue par défaut comme demandé) -->
+    <menuitem id="menu_gecafle_produit"
+        name="Produits"
+        parent="menu_gecafle_stock_root"
+        action="action_gecafle_produit"
+        sequence="10"/>
+    
+    <!-- Menu des producteurs -->
+    <menuitem id="menu_gecafle_producteur"
+        name="Producteurs"
+        parent="menu_gecafle_stock_root"
+        action="action_gecafle_producteur"
+        sequence="20"/>
+    
+    <!-- Menu des qualités -->
+    <menuitem id="menu_gecafle_qualite"
+        name="Qualités"
+        parent="menu_gecafle_stock_root"
+        action="action_gecafle_qualite"
+        sequence="30"/>
+    
+    <!-- Menu des emballages -->
+    <menuitem id="menu_gecafle_emballage"
+        name="Emballages"
+        parent="menu_gecafle_stock_root"
+        action="action_gecafle_emballage"
+        sequence="40"/>
+    
+    <!-- Menu Configuration -->
+    <menuitem id="menu_gecafle_config"
+        name="Configuration"
+        parent="menu_gecafle_stock_root"
+        sequence="100"/>
+    
+    <!-- Sous-menu pour la configuration de l'entreprise -->
+    <menuitem id="menu_gecafle_company_config"
+        name="Société"
+        parent="menu_gecafle_config"
+        action="base.action_res_company_form"
+        sequence="10"/>
+     <!-- Menu des Fruits et Légumes (vue par défaut comme demandé)
+    parent="menu_gecafle_stock_root" -->
+    <menuitem id="menu_gecafle_fruits_legumes"
+        name="Fruits et Légumes"
+        parent="menu_gecafle_config"
+        action="action_gecafle_fruits_legumest"
+        sequence="60"/>
+</odoo>

@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_model_despenes_depnse,access.model.Despenes.depnse,model_depenses_depense,base.group_user,1,1,1,1
+access_model_categ_depnse,access.model.categ.Despe,model_depenses_categorie,base.group_user,1,1,1,1

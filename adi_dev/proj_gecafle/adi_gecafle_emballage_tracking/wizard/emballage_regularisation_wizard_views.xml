@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue formulaire du wizard de régularisation -->
+    <record id="view_emballage_regularisation_wizard_form" model="ir.ui.view">
+        <field name="name">gecafle.emballage.regularisation.wizard.form</field>
+        <field name="model">gecafle.emballage.regularisation.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group string="Emballage à régulariser">
+                            <field name="emballage_id"
+                                   options="{'no_create': True, 'no_open': True}"
+                                   required="1"/>
+                            <field name="type_regularisation"
+                                   widget="radio"
+                                   required="1"/>
+                            <field name="date_regularisation"/>
+                        </group>
+
+                        <group string="Informations de stock">
+                            <div class="alert alert-info" role="alert">
+                                <field name="stock_actuel" readonly="1" nolabel="1" class="oe_inline"/>
+                                <span> unités en stock actuellement</span>
+                            </div>
+
+                            <field name="quantite"
+                                   placeholder="Positif pour ajouter, négatif pour retirer"/>
+
+                            <div invisible="quantite == 0">
+                                <span class="text-muted">Stock après régularisation: </span>
+                                <field name="stock_apres"
+                                       readonly="1"
+                                       nolabel="1"
+                                       class="oe_inline"/>
+                            </div>
+                        </group>
+                    </group>
+
+                    <group string="Justification">
+                        <field name="motif"
+                               placeholder="Décrivez précisément le motif de cette régularisation..."
+                               required="1"
+                               nolabel="1"/>
+                    </group>
+
+                    <!-- Alertes conditionnelles -->
+                    <div class="alert alert-warning"
+                         role="alert"
+                         invisible="stock_apres >= 0">
+                        <i class="fa fa-exclamation-triangle"/>
+                        Attention : Cette régularisation rendra le stock négatif !
+                    </div>
+                </sheet>
+
+                <footer>
+                    <button name="action_regulariser"
+                            string="Valider la régularisation"
+                            type="object"
+                            class="btn-primary"
+                            icon="fa-check"
+                            confirm="Êtes-vous sûr de vouloir effectuer cette régularisation ? Cette action est irréversible."/>
+                    <button string="Annuler"
+                            class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action pour ouvrir le wizard de régularisation -->
+    <record id="action_emballage_regularisation_wizard" model="ir.actions.act_window">
+        <field name="name">Régularisation d'emballage</field>
+        <field name="res_model">gecafle.emballage.regularisation.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

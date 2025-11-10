@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>    
+        <template id="adi_custom_document_tax_totalt"  inherit_id="account.document_tax_totals">
+        
+             <xpath expr="//tr[@class='border-black o_total']" position="replace">
+                        <!--Total amount with all taxes-->
+                <tr class="border-black o_total">
+                    <td><strong>Total TTC</strong></td>
+                    <td class="text-end">
+                        <span t-esc="tax_totals['formatted_amount_total']"/>
+                    </td>
+                 </tr>
+                       
+             </xpath>
+              
+           </template>
+
+           <template id="adi_custom_groups_tax_totalt"  inherit_id="account.tax_groups_totals">
+               <xpath expr="//tr" position="replace">
+                  <tr>
+                    <t t-if="tax_totals['display_tax_base']">
+                        <td> 
+                            <strong>TVA</strong>
+                        </td>
+                           <!--
+                             <td> 
+                            <span t-esc="amount_by_group['tax_group_name']"/>
+                            <span class="text-nowrap"> on
+                                <t t-esc="amount_by_group['formatted_tax_group_base_amount']"/>
+                            </span>
+                        </td>
+                            
+                          -->
+                     
+                        <td class="text-end o_price_total">
+                            <span class="text-nowrap" t-esc="amount_by_group['formatted_tax_group_amount']"/>
+                        </td>
+                    </t>
+                    <t t-else="">
+                        <!--<td><span class="text-nowrap" t-esc="amount_by_group['tax_group_name']"/></td>-->
+                        <td> 
+                            <strong>TVA</strong>
+                        </td>
+
+                        <td class="text-end o_price_total">
+                            <span class="text-nowrap" t-esc="amount_by_group['formatted_tax_group_amount']" />
+                        </td>
+                    </t>
+                </tr>     
+                       
+              </xpath>
+              
+           </template>
+
+
+           
+
+        
+    </data>
+
+</odoo>

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<data noupdate="1">
+		<record id="fund_motif_1" model="fund.motif">
+			<field name="name">Encaissement</field>
+			<field name="type">in</field>
+			<field name="default_data">1</field>
+			<field name="account_analytic_account_id" ref="caisse.account_analytic_encais" />
+			<field name="fund_motif_family_id" ref="caisse.motif_family_encais" />
+		</record>
+
+		<record id="fund_motif_2" model="fund.motif">
+			<field name="name">Décaissement</field>
+			<field name="type">out</field>
+			<field name="default_data">1</field>
+			<field name="account_analytic_account_id" ref="caisse.account_analytic_decais" />
+			<field name="fund_motif_family_id" ref="caisse.motif_family_decais" />
+		</record>
+		<record id="fund_motif_3" model="fund.motif">
+			<field name="name">Avance</field>
+			<field name="type">out</field>
+			<field name="default_data">1</field>
+			<field name="avnc">True</field>
+			<field name="account_analytic_account_id" ref="caisse.account_analytic_avance" />
+			<field name="fund_motif_family_id" ref="caisse.motif_family_avance" />
+		</record>
+		<record id="fund_motif_4" model="fund.motif">
+			<field name="name">Complément d'avance</field>
+			<field name="type">out</field>
+			<field name="generated">True</field>
+			<field name="default_data">1</field>
+			<field name="avnc">True</field>
+			<field name="account_analytic_account_id" ref="caisse.account_analytic_avance" />
+			<field name="fund_motif_family_id" ref="caisse.motif_family_avance" />
+		</record>
+		<record id="fund_motif_5" model="fund.motif">
+			<field name="name">Retour d'avance</field>
+			<field name="type">in</field>
+			<field name="generated">True</field>
+			<field name="default_data">1</field>
+			<field name="avnc">True</field>
+			<field name="account_analytic_account_id" ref="caisse.account_analytic_avance" />
+			<field name="fund_motif_family_id" ref="caisse.motif_family_avance" />
+		</record>
+		<record id="fund_motif_cancel_avance" model="fund.motif">
+			<field name="name">Annulation d'avance</field>
+			<field name="type">in</field>
+			<field name="generated">True</field>
+			<field name="default_data">1</field>
+			<field name="avnc">True</field>
+			<field name="account_analytic_account_id" ref="caisse.account_analytic_cancel_avance" />
+			<field name="fund_motif_family_id" ref="caisse.motif_family_cancel_avance" />
+		</record>
+		<record id="fund_motif_customer_paiement" model="fund.motif">
+			<field name="name">Paiement client</field>
+			<field name="type">in</field>
+			<field name="default_data">1</field>
+			<field name="payment">1</field>
+			<field name="account_analytic_account_id" ref="caisse.account_analytic_customer_paiement" />
+			<field name="fund_motif_family_id" ref="caisse.motif_family_customer_paiement" />
+		</record>
+		<record id="fund_motif_customer_refund" model="fund.motif">
+			<field name="name">Remboursement client</field>
+			<field name="type">out</field>
+			<field name="default_data">1</field>
+			<field name="payment">1</field>
+			<field name="account_analytic_account_id" ref="caisse.account_analytic_customer_refund" />
+			<field name="fund_motif_family_id" ref="caisse.motif_family_customer_refund" />
+		</record>
+
+		<record id="fund_motif_supplier_paiement" model="fund.motif">
+			<field name="name">Paiement Fournisseur</field>
+			<field name="type">out</field>
+			<field name="default_data">1</field>
+			<field name="payment">1</field>
+			<field name="account_analytic_account_id" ref="caisse.account_analytic_supplier_paiement" />
+			<field name="fund_motif_family_id" ref="caisse.motif_family_supplier_paiement" />
+		</record>
+		<record id="fund_motif_supplier_refund" model="fund.motif">
+			<field name="name">Remboursement Fournisseur</field>
+			<field name="type">in</field>
+			<field name="default_data">1</field>
+			<field name="payment">1</field>
+			<field name="account_analytic_account_id" ref="caisse.account_analytic_supplier_refund" />
+			<field name="fund_motif_family_id" ref="caisse.motif_family_supplier_refund" />
+		</record>
+	</data>
+</odoo>

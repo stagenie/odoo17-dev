@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Inherit existing groups from adi_gecafle_ventes -->
+    <!-- No new groups needed, we'll use existing ones -->
+</odoo>

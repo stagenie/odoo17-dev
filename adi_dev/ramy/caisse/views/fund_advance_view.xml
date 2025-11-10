@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+   <!-- fund.advance tree view -->
+   <record id="fund_advance_view_tree" model="ir.ui.view">
+    <field name="name">motif caisse.view.tree</field>
+    <field name="model">fund.advance</field>
+    <field name="arch" type="xml">
+        <tree string="Motifs">
+            <!-- Add your fields here -->
+            <field name="company_id" invisible="1"/>
+            <field name="currency_id" invisible="1"/>
+            <field name="name"/>
+            <field name="res_partner_id"/>
+            <field name="date"/>
+            <field name="caisse"/>
+            <field name="amount"/>
+            <field name="total"/>
+            <field name="ecart" invisible="1"/>
+            <field name="ecart_show"/>
+            <field name="complement"/>
+            <field name="retour"/>
+            <field name="state"/>
+        </tree>
+    </field>
+   </record> 
+
+   
+   <!-- fund.advance form view -->
+   <record id="fund_advance_view_form" model="ir.ui.view">
+    <field name="name">fund.advance.view.form</field>
+    <field name="model">fund.advance</field>
+    <field name="arch" type="xml">
+        <form string="Demande encaissement">
+            <header>
+                <button name="action_confirm" string="Confirmer" type="object" class="oe_highlight o_expense_submit" invisible="state != 'draft'"/>
+                
+                <!-- Rapprochement avance -->
+                <button name="action_repproched" string="Solder" type="object" class="oe_highlight o_expense_submit" invisible="state != 'confirm'"/>
+                <button name="action_canceled" string="Annuler" type="object" class="oe_highlight o_expense_submit" invisible="state != 'confirm'"/>
+                <field name="state" widget="statusbar" statusbar_visible="draft,confirm,reproched,close"/> 
+            </header>
+            <sheet>
+                <div class="oe_title">
+                    <label for="name" class="oe_edit_only"/>
+                    <h1>
+                        <field name="name" placeholder="Référence de demande avance" readonly="1"/>
+                    </h1>
+                </div>             
+                <group>
+                    <group>
+                        <field name="res_partner_id" readonly="state != 'draft'" required="1"/>
+                        <field name="caisse" readonly="state != 'draft'" domain="[('state', '=', 'open')]" required="1"/> 
+                    </group>
+                    <group>
+                        <field name="date" required="1" readonly="state != 'draft'"/>
+                        <field name="amount" required="1" readonly="state != 'draft'"/>
+                        <field name="currency_id" invisible="1"/>
+                    </group>
+                </group>
+                <group>
+                    <field name="designation" readonly="state != 'draft'"/>
+                </group>
+
+                <notebook>
+                    <page string="Dépenses" name="fund_avance_expense" invisible="state in ('draft')">
+                        <field name="fund_expense_ids" readonly="state in ('reproched')">
+                        <tree string="Ligne de dépenses" editable="bottom">
+                                <field name="fund_motif_id" eval="True" required="1" options="{'no_open': True, 'no_create': True}"
+                                        domain="[('type', '=', 'out'), ('avnc', '=', False)]"/>
+                                <field name="date" eval="True" required="1"/>
+                                <field name="account_analytic_id" force_save="1" readonly="1"/>
+                                <field name="res_partner_id" required="0" options="{'no_open': True, 'no_create': True}"
+                                        domain="[('supplier_rank', '=', 1),('is_company', '=', True)]"/>
+                                <field name="demandeur_id"/>
+                                <field name="collaborator_id"/>
+                                <field name="ordonator_id"/>
+                                <field name="amount" eval="True"/>
+                                <field name="attachment" filename="attachment_filename"/>
+                                <field name="attachment_filename" invisible="1"/>
+                        </tree> 
+                        </field>
+                        <group class="oe_subtotal_footer oe_right" invisible="state in ('draft')">
+                            <field name="total"/>
+                            <div class="oe_subtotal_footer_separator oe_inline">
+                                <label for="ecart_show"/>
+                            </div>
+                            <field name="ecart_show" nolabel="1" class="oe_subtotal_footer_separator"/>
+                        </group>
+                    </page>
+                    <page string="Gestion écart d'avance" name="fund_avance_expense" invisible="state != 'reproched' or not advance_gap_ids">
+                        <field name="advance_gap_ids" readonly="1">
+                        <tree string="Ligne de dépenses" editable="bottom">
+                                <field name="fund_motif_id"/>
+                                <field name="date" eval="True"/>
+                                <field name="caisse"/>
+                                <field name="caisse" invisible="1"/>
+                                <field name="amount" eval="True"/>
+                                <field name="currency_id" invisible="1"/>
+                        </tree>  
+                        </field>
+                    </page>
+                </notebook>
+            </sheet>
+        </form>
+    </field>
+   </record>
+
+   <!-- fund.advance action window -->
+   <record id="fund_advance_action" model="ir.actions.act_window">
+        <field name="name">Avances</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">fund.advance</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">
+                Veuillez ajouter vos avances par ici..
+            </p>
+        </field>
+    </record>
+    
+    <menuitem id="menu_refund_advance"
+            name="Avances"
+            sequence="1"
+            action="fund_advance_action"
+            parent="menu_refund_management"/>
+</odoo>

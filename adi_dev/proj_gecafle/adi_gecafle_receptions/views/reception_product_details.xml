@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <!-- Extension de la vue formulaire de geCAFLE Réception -->
+        <record id="view_gecafle_reception_form_extended" model="ir.ui.view">
+            <field name="name">gecafle.reception.form.inherit.details</field>
+            <field name="model">gecafle.reception</field>
+            <field name="inherit_id" ref="adi_gecafle_receptions.view_gecafle_reception_form"/>
+            <field name="arch" type="xml">
+                <!-- On insère un notebook pour gérer les onglets -->
+                <xpath expr="//sheet" position="inside">
+                    <notebook>
+                        <page string="Détails de Réception">
+                            <field name="details_reception_ids" readonly="state not in ('brouillon')" nolabel="1">
+                                <tree editable="bottom" limit="200">
+                                    <field name="num_seq" string="N°"/>
+                                    <field name="designation_id" string="Désignation"/>
+                                    <field name="qte_colis_recue" string="Colis Reçus"/>
+                                    <field name="type_colis_id" string="Type de Colis"/>
+                                    <field name="qualite_id" string="Qualité"/>
+                                    <field name="qte_colis_destockes"  string="Qte DEST" optional="show"/>
+                                    <field name="qte_colis_vendus"  string="Qte VEND" optional="show"/>
+                                    <field name="qte_colis_disponibles"  string="Qte DISPO" optional="show"/>
+                                    <field name="observation" optional="hide"/>
+                                    <field name="producteur_id" optional="hide" invisible="1"/>
+                                </tree>
+                                <form>
+                                    <sheet>
+                                        <group>
+
+                                            <field name="num_seq" readonly="1"/>
+                                            <field name="designation_id"/>
+                                            <field name="qte_colis_recue"/>
+                                            <field name="type_colis_id"/>
+                                            <field name="qualite_id"/>
+                                            <field name="producteur_id"  invisible="1" optional="hide"/>
+
+                                        </group>
+                                        <group>
+                                            <field name="observation"/>
+                                        </group>
+                                    </sheet>
+                                </form>
+                            </field>
+
+                        </page>
+                        <!-- Nouvelle page Détails Emballage -->
+                        <page string="Détails Emballage">
+                            <field name="details_emballage_reception_ids" readonly="state not in ('brouillon')">
+                                <tree editable="bottom">
+                                    <field name="emballage_id"/>
+                                    <field name="qte_entrantes"/>
+                                    <field name="qte_sortantes"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Observations">
+                            <group>
+                                <field name="observations"/>
+                            </group>
+
+                        </page>
+                    </notebook>
+
+
+                </xpath>
+            </field>
+        </record>
+
+
+
+
+    </data>
+</odoo>

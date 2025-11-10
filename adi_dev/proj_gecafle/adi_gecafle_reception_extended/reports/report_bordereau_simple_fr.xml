@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_bordereau_simple_fr">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2 class="text-center">Bordereau Producteur</h2>
+
+                        <!-- Récupération des lignes triées SANS regroupement -->
+                        <t t-set="lines" t-value="o.get_lines_sorted_by_price_desc(grouped=False)"/>
+
+                        <!-- En-tête complet comme grouped -->
+                        <div class="row mt-4 mb-4">
+                            <div class="col-6">
+                                <strong>Producteur:</strong> <span t-field="o.producteur_id.name"/><br/>
+                                <strong>Téléphone:</strong> <span t-field="o.producteur_id.phone"/><br/>
+                                <strong>Adresse:</strong> <span t-field="o.producteur_id.address"/>
+                            </div>
+                            <div class="col-6">
+                                <strong>N° Réception:</strong> <span t-field="o.reception_id.name"/><br/>
+                                <strong>Date de Réception:</strong>
+                                <span t-field="o.reception_id.reception_date" t-options='{"widget": "date"}'/><br/>
+                                <strong>N° Récapitulatif:</strong> <span t-field="o.name"/><br/>
+                                <strong>État:</strong> <span t-field="o.state"/>
+                            </div>
+                        </div>
+
+                        <!-- Message d'information -->
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <div class="alert alert-info" role="alert">
+                                    <i class="fa fa-info-circle"/> Les produits sont triés par prix décroissant
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tableau des produits AVEC Commission toujours visible -->
+                        <table class="table table-sm table-bordered">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>#</th>
+                                    <th width="20%">Produit</th>
+                                    <th width="12%">Qualité</th>
+                                    <th width="12%">Type Colis</th>
+                                    <th class="text-center" width="8%">Nb Colis</th>
+                                    <th class="text-right" width="10%">Poids Net</th>
+                                    <th class="text-right" width="10%">Prix/kg</th>
+                                    <th class="text-right" width="12%">Montant</th>
+                                    <th class="text-center" width="6%">Taux %</th>
+                                    <th class="text-right" width="10%">Commission</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-set="line_number" t-value="1"/>
+                                <tr t-foreach="lines" t-as="line">
+                                    <td><t t-esc="line_number"/></td>
+                                    <t t-set="line_number" t-value="line_number + 1"/>
+                                    <td><t t-esc="line.get('produit_name', '')"/></td>
+                                    <td><t t-esc="line.get('qualite_name', '')"/></td>
+                                    <td><t t-esc="line.get('type_colis_name', '')"/></td>
+                                    <td class="text-center">
+                                        <t t-esc="line.get('nombre_colis', 0)"/>
+                                    </td>
+                                    <td class="text-right">
+                                        <t t-esc="'%.2f' % line.get('poids_net', 0)"/> kg
+                                    </td>
+                                    <td class="text-right font-weight-bold">
+                                        <t t-esc="'{:,.2f}'.format(line.get('prix_unitaire', 0))"/> DA
+                                    </td>
+                                    <td class="text-right">
+                                        <t t-esc="'{:,.2f}'.format(line.get('montant_vente', 0))"/>
+                                        <span t-field="o.currency_id.symbol"/>
+                                    </td>
+                                    <td class="text-center">
+                                        <t t-esc="'%.1f' % line.get('taux_commission', 0)"/>%
+                                    </td>
+                                    <td class="text-right">
+                                        <t t-esc="'{:,.2f}'.format(line.get('montant_commission', 0))"/>
+                                        <span t-field="o.currency_id.symbol"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr class="font-weight-bold table-info">
+                                    <td colspan="4">TOTAUX GÉNÉRAUX</td>
+                                    <td class="text-center">
+                                        <t t-esc="sum([l.get('nombre_colis', 0) for l in lines])"/>
+                                    </td>
+                                    <td class="text-right">
+                                        <t t-esc="'%.2f' % sum([l.get('poids_net', 0) for l in lines])"/> kg
+                                    </td>
+                                    <td></td>
+                                    <td class="text-right"><span t-field="o.total_ventes"/></td>
+                                    <td></td>
+                                    <td class="text-right"><span t-field="o.total_commission"/></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+
+                        <!-- Section Produits Destockés (si applicable) -->
+                        <t t-if="o.has_destockage">
+                            <h4 class="mt-4">Produits Destockés</h4>
+                            <table class="table table-sm table-bordered">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Produit</th>
+                                        <th>Qualité</th>
+                                        <th>Type Colis</th>
+                                        <th class="text-center">Quantité</th>
+                                        <th>Motif</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="o.destockage_line_ids" t-as="destockage">
+                                        <tr>
+                                            <td>
+                                                <span t-field="destockage.destockage_date" t-options='{"widget": "date"}'/>
+                                            </td>
+                                            <td>
+                                                <span t-field="destockage.detail_reception_id.designation_id.name"/>
+                                            </td>
+                                            <td>
+                                                <span t-field="destockage.detail_reception_id.qualite_id.name"/>
+                                            </td>
+                                            <td>
+                                                <span t-field="destockage.detail_reception_id.type_colis_id.name"/>
+                                            </td>
+                                            <td class="text-center">
+                                                <span t-field="destockage.qte_destockee"/>
+                                            </td>
+                                            <td>
+                                                <span t-field="destockage.observation"/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                                <tfoot>
+                                    <tr class="font-weight-bold">
+                                        <td colspan="4" class="text-right">Total destocké:</td>
+                                        <td class="text-center">
+                                            <t t-esc="sum(o.destockage_line_ids.mapped('qte_destockee'))"/>
+                                        </td>
+                                        <td></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </t>
+
+                        <!-- Section Emballages Achetés (si applicable) -->
+                        <t t-if="o.montant_total_emballage_achete and o.montant_total_emballage_achete > 0">
+                            <h4 class="mt-4">Emballages Achetés au Producteur</h4>
+                            <table class="table table-sm table-bordered">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>Type d'Emballage</th>
+                                        <th class="text-center">Quantité Achetée</th>
+                                        <th class="text-right">Prix Unitaire</th>
+                                        <th class="text-right">Montant Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="o.reception_id.details_emballage_reception_ids.filtered('is_achete')" t-as="emb">
+                                        <tr>
+                                            <td>
+                                                <i class="fa fa-box"/> <span t-field="emb.emballage_id.name"/>
+                                            </td>
+                                            <td class="text-center">
+                                                <span t-field="emb.qte_achetee"/>
+                                            </td>
+                                            <td class="text-right">
+                                                <t t-esc="'{:,.2f}'.format(emb.prix_unitaire_achat)"/> DA
+                                            </td>
+                                            <td class="text-right">
+                                                <span t-field="emb.montant_achat"/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                                <tfoot>
+                                    <tr class="font-weight-bold">
+                                        <td colspan="3" class="text-right">Total Emballages Achetés:</td>
+                                        <td class="text-right">
+                                            <span t-field="o.montant_total_emballage_achete"/>
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </t>
+
+
+                        <div style="page-break-inside: avoid; position: relative; min-height: 450px; padding-top: 35px;" class="keep-together">
+                        <!-- Tableau récapitulatif financier -->
+                        <div class="row mt-5">
+                            <div class="col-6">
+                                <!-- Informations complémentaires -->
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6>Informations Complémentaires</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <p><strong>Date de création:</strong> <span t-field="o.date_creation"/></p>
+                                        <p><strong>Créé par:</strong> <span t-field="o.create_uid.name"/></p>
+                                        <t t-if="o.observation">
+                                            <p><strong>Observations:</strong></p>
+                                            <p class="text-muted"><span t-field="o.observation"/></p>
+                                        </t>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-6">
+                                <table class="table table-sm table-bordered">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th colspan="2" class="text-center">CALCUL DU NET À PAYER</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="text-right"><strong>Total Ventes:</strong></td>
+                                            <td class="text-right">
+                                                <span t-field="o.total_ventes"/>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-right"><strong>Total Commission (-):</strong></td>
+                                            <td class="text-right text-danger">
+                                                - <span t-field="o.total_commission"/>
+                                            </td>
+                                        </tr>
+                                        <t t-if="o.reception_id and o.reception_id.avance_producteur">
+                                            <tr>
+                                                <td class="text-right"><strong>Avance Producteur (-):</strong></td>
+                                                <td class="text-right text-danger">
+                                                    - <span t-field="o.reception_id.avance_producteur"/>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                        <tr t-if="o.transport">
+                                            <td class="text-right"><strong>Transport (-):</strong></td>
+                                            <td class="text-right text-danger">
+                                                - <span t-field="o.transport"/>
+                                            </td>
+                                        </tr>
+                                        <tr t-if="o.montant_total_emballage_achete">
+                                            <td class="text-right"><strong>Emballages Achetés (+):</strong></td>
+                                            <td class="text-right text-success">
+                                                + <span t-field="o.montant_total_emballage_achete"/>
+                                            </td>
+                                        </tr>
+                                        <tr class="table-primary">
+                                            <td class="text-right"><strong>NET À PAYER:</strong></td>
+                                            <td class="text-right">
+                                                <strong style="font-size: 1.2em;">
+                                                    <span t-field="o.net_a_payer"/>
+                                                </strong>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Signatures -->
+                        <div class="row mt-5 pt-3">
+                            <div class="col-4 text-center">
+                                <div class="border-top pt-2">
+                                    <strong>Le Producteur</strong><br/>
+                                    <small>Signature et cachet</small>
+                                </div>
+                            </div>
+                            <div class="col-4 text-center">
+                                <div class="border-top pt-2">
+                                    <strong>Le Responsable</strong><br/>
+                                    <small>Signature et cachet</small>
+                                </div>
+                            </div>
+                            <div class="col-4 text-center">
+                                <div class="border-top pt-2">
+                                    <strong>Date:</strong><br/>
+                                    <span t-field="o.date_creation"/>
+                                </div>
+                            </div>
+                        </div>
+                        </div>
+
+
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

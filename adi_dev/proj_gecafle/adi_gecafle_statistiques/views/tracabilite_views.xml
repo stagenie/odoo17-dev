@@ -1,0 +1,369 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue Formulaire Mouvement de Stock Journalier pour Odoo 17 -->
+    <record id="view_gecafle_tracabilite_form" model="ir.ui.view">
+        <field name="name">gecafle.tracabilite.produits.form</field>
+        <field name="model">gecafle.tracabilite.produits</field>
+        <field name="arch" type="xml">
+            <form string="Mouvement de Stock Journalier">
+                <header>
+                    <button name="action_calculer"
+                            string="Calculer"
+                            type="object"
+                            class="btn-primary"
+                            icon="fa-calculator"
+                            invisible="state == 'calcule'"/>
+
+                    <button name="action_reset"
+                            string="Recalculer"
+                            type="object"
+                            invisible="state == 'brouillon'"/>
+
+                    <button name="%(action_report_tracabilite)d"
+                            string="Imprimer"
+                            type="action"
+                            class="btn-info"
+                            invisible="state == 'brouillon'"/>
+
+                    <field name="state" widget="statusbar" statusbar_visible="brouillon,calcule"/>
+                </header>
+
+                <sheet>
+                    <!-- Titre principal
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button"
+                                type="object"
+                                name="action_export_excel"
+                                icon="fa-file-excel-o"
+                                invisible="state == 'brouillon'">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_text">Export</span>
+                                <span class="o_stat_text">Excel</span>
+                            </div>
+                        </button>
+                    </div>
+                    -->
+
+
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                        <h2>
+                            <span class="text-muted">Mouvement de Stock Journalier</span>
+                        </h2>
+                    </div>
+
+                    <!-- Filtres de recherche -->
+                    <group col="4" string="Critères de recherche">
+                        <field name="date_debut" required="1"/>
+                        <field name="date_fin" required="1"/>
+                        <field name="producteur_id"
+                               placeholder="Tous les producteurs..."
+                               options="{'no_create': True, 'no_quick_create': True}"/>
+                        <field name="produit_id"
+                               placeholder="Tous les produits..."
+                               options="{'no_create': True, 'no_quick_create': True}"/>
+                    </group>
+
+                    <!-- Zone principale avec deux colonnes -->
+                    <div invisible="state == 'brouillon'">
+                        <separator string="Mouvements de Stock" class="mb-0"/>
+
+                        <!-- CSS inline pour l'affichage en deux colonnes -->
+                        <style>
+                            .o_tracabilite_container {
+                                display: flex;
+                                gap: 15px;
+                                margin-top: 20px;
+                            }
+                            .o_tracabilite_column {
+                                flex: 1;
+                                min-width: 0;
+                            }
+                            .o_tracabilite_header {
+                                padding: 10px;
+                                border-radius: 4px 4px 0 0;
+                                color: white;
+                                font-weight: bold;
+                                margin-bottom: 0;
+                            }
+                            .o_tracabilite_header.reception {
+                                background-color: #28a745;
+                            }
+                            .o_tracabilite_header.vente {
+                                background-color: #17a2b8;
+                            }
+                            .o_tracabilite_table {
+                                border: 1px solid #dee2e6;
+                                border-top: none;
+                            }
+                        </style>
+
+                        <div class="o_tracabilite_container">
+                            <!-- Colonne Réceptions -->
+                            <div class="o_tracabilite_column">
+                                <div class="o_tracabilite_header reception">
+                                    <i class="fa fa-download"/> Réceptions
+                                </div>
+                                <field name="reception_line_ids" nolabel="1" readonly="1">
+                                    <tree create="false" edit="false" delete="false"
+                                          class="o_tracabilite_table"
+                                          decoration-success="qte_entrante > 100"
+                                          decoration-warning="qte_entrante > 50 and qte_entrante &lt;= 100"
+                                          limit="200">
+                                        <field name="numero_reception" string="N° Réception" width="100px"/>
+                                        <field name="date" string="Date" widget="datetime"/>
+                                        <field name="producteur_id" string="Producteur"/>
+                                        <field name="produit_id" string="Désignation"/>
+                                        <field name="qualite_id" string="Qualité" optional="show"/>
+                                        <field name="type_colis_id" string="Type Colis"/>
+                                        <field name="qte_entrante" string="Nbre colis" sum="Total"/>
+                                    </tree>
+                                </field>
+                            </div>
+
+                            <!-- Colonne Ventes -->
+                            <div class="o_tracabilite_column">
+                                <div class="o_tracabilite_header vente">
+                                    <i class="fa fa-upload"/> Ventes
+                                </div>
+                                <field name="vente_line_ids" nolabel="1" readonly="1">
+                                    <tree create="false" edit="false" delete="false"
+                                          class="o_tracabilite_table"
+                                          decoration-info="qte_sortante > 0"
+                                          limit="200">
+                                        <field name="date" string="Date" widget="datetime"/>
+                                        <field name="numero_vente" string="N° Souche" width="100px"/>
+                                        <field name="client_id" string="Client"/>
+                                        <field name="produit_id" string="Désignation"/>
+                                        <field name="qualite_id" string="Qualité" optional="show"/>
+                                        <field name="type_colis_id" string="Type Colis"/>
+                                        <field name="qte_sortante" string="Nbre colis" sum="Total"/>
+                                    </tree>
+                                </field>
+                            </div>
+                        </div>
+
+                        <!-- Zone de synthèse en bas -->
+                        <group class="mt-4" col="4">
+                            <separator string="Synthèse des mouvements" colspan="4"/>
+                            <group col="2" colspan="2">
+                                <field name="producteur_id" readonly="1" invisible="not producteur_id"/>
+                                <field name="produit_id" readonly="1" invisible="not produit_id"/>
+                            </group>
+                            <group col="2" colspan="2">
+                                <label for="total_entrant" string="Quantité Entrante"/>
+                                <div class="o_row">
+                                    <field name="total_entrant" class="oe_inline text-success font-weight-bold"/>
+                                    <span class="oe_inline"> colis</span>
+                                </div>
+                                <label for="total_sortant" string="Quantité Sortante"/>
+                                <div class="o_row">
+                                    <field name="total_sortant" class="oe_inline text-info font-weight-bold"/>
+                                    <span class="oe_inline"> colis</span>
+                                </div>
+                                <label for="total_restant" string="Quantité Restante"/>
+                                <div class="o_row">
+                                    <field name="total_restant" class="oe_inline"
+                                           style="font-weight: bold; font-size: 1.2em;"
+                                           invisible="total_restant &lt; 0"/>
+                                    <field name="total_restant" class="oe_inline text-danger"
+                                           style="font-weight: bold; font-size: 1.2em;"
+                                           invisible="total_restant >= 0"/>
+                                    <span class="oe_inline"> colis</span>
+                                </div>
+                            </group>
+                        </group>
+                    </div>
+
+                    <!-- Message si pas encore calculé -->
+                    <div invisible="state != 'brouillon'" class="alert alert-info">
+                        <i class="fa fa-info-circle"/> Cliquez sur le bouton <strong>Calculer</strong> pour générer le mouvement de stock journalier.
+                    </div>
+                </sheet>
+
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vue Tree/Liste -->
+    <record id="view_gecafle_tracabilite_tree" model="ir.ui.view">
+        <field name="name">gecafle.tracabilite.produits.tree</field>
+        <field name="model">gecafle.tracabilite.produits</field>
+        <field name="arch" type="xml">
+            <tree decoration-success="state == 'calcule'"
+                  decoration-muted="state == 'brouillon'">
+                <field name="name" string="Référence"/>
+                <field name="date_debut"/>
+                <field name="date_fin"/>
+                <field name="producteur_id" optional="show"/>
+                <field name="produit_id" optional="show"/>
+                <field name="total_entrant" sum="Total" decoration-bf="1"/>
+                <field name="total_sortant" sum="Total" decoration-bf="1"/>
+                <field name="total_restant" sum="Total"
+                       decoration-success="total_restant == 0"
+                       decoration-danger="total_restant != 0"
+                       decoration-bf="1"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'calcule'"
+                       decoration-muted="state == 'brouillon'"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vue Kanban (optionnelle mais sympa) -->
+    <record id="view_gecafle_tracabilite_kanban" model="ir.ui.view">
+        <field name="name">gecafle.tracabilite.produits.kanban</field>
+        <field name="model">gecafle.tracabilite.produits</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_mobile">
+                <field name="name"/>
+                <field name="date_debut"/>
+                <field name="date_fin"/>
+                <field name="total_entrant"/>
+                <field name="total_sortant"/>
+                <field name="total_restant"/>
+                <field name="state"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_card oe_kanban_global_click">
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <strong><field name="name"/></strong>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-6">
+                                    <span class="text-muted">Période:</span>
+                                </div>
+                                <div class="col-6 text-right">
+                                    <field name="date_debut"/> - <field name="date_fin"/>
+                                </div>
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-4 text-center">
+                                    <small class="text-muted">Entrées</small><br/>
+                                    <span class="badge badge-success"><field name="total_entrant"/></span>
+                                </div>
+                                <div class="col-4 text-center">
+                                    <small class="text-muted">Sorties</small><br/>
+                                    <span class="badge badge-info"><field name="total_sortant"/></span>
+                                </div>
+                                <div class="col-4 text-center">
+                                    <small class="text-muted">Reste</small><br/>
+                                    <span t-att-class="'badge badge-' + (record.total_restant.raw_value == 0 ? 'success' : 'danger')">
+                                        <field name="total_restant"/>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Vue Recherche -->
+    <record id="view_gecafle_tracabilite_search" model="ir.ui.view">
+        <field name="name">gecafle.tracabilite.produits.search</field>
+        <field name="model">gecafle.tracabilite.produits</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name" string="Référence"/>
+                <field name="producteur_id" string="Producteur"/>
+                <field name="produit_id" string="Produit"/>
+
+                <filter string="Calculé" name="calcule" domain="[('state','=','calcule')]"/>
+                <filter string="Brouillon" name="brouillon" domain="[('state','=','brouillon')]"/>
+
+                <separator/>
+
+                <filter string="Aujourd'hui" name="today"
+                        domain="[('date_debut','&lt;=',context_today()),('date_fin','&gt;=',context_today())]"/>
+                <filter string="Cette semaine" name="this_week"
+                        domain="[('date_debut','&gt;=',(context_today() - datetime.timedelta(days=7)).strftime('%Y-%m-%d'))]"/>
+                <filter string="Ce mois" name="this_month"
+                        domain="[
+                            ('date_debut','&gt;=',context_today().strftime('%Y-%m-01')),
+                            ('date_fin','&lt;=',(context_today() + relativedelta(months=1,day=1,days=-1)).strftime('%Y-%m-%d'))
+                        ]"/>
+
+                <separator/>
+
+                <filter string="Stock épuisé" name="stock_zero"
+                        domain="[('total_restant','=',0),('state','=','calcule')]"/>
+                <filter string="Stock disponible" name="stock_available"
+                        domain="[('total_restant','&gt;',0),('state','=','calcule')]"/>
+
+                <group expand="0" string="Grouper par">
+                    <filter string="Producteur" name="group_producteur" context="{'group_by':'producteur_id'}"/>
+                    <filter string="Produit" name="group_produit" context="{'group_by':'produit_id'}"/>
+                    <filter string="État" name="group_state" context="{'group_by':'state'}"/>
+                    <filter string="Mois" name="group_month" context="{'group_by':'date_debut:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Vue Pivot pour analyses -->
+    <record id="view_gecafle_tracabilite_pivot" model="ir.ui.view">
+        <field name="name">gecafle.tracabilite.produits.pivot</field>
+        <field name="model">gecafle.tracabilite.produits</field>
+        <field name="arch" type="xml">
+            <pivot string="Analyse des mouvements">
+                <field name="date_debut" interval="month" type="col"/>
+                <field name="producteur_id" type="row"/>
+                <field name="produit_id" type="row"/>
+                <field name="total_entrant" type="measure"/>
+                <field name="total_sortant" type="measure"/>
+                <field name="total_restant" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Vue Graph -->
+    <record id="view_gecafle_tracabilite_graph" model="ir.ui.view">
+        <field name="name">gecafle.tracabilite.produits.graph</field>
+        <field name="model">gecafle.tracabilite.produits</field>
+        <field name="arch" type="xml">
+            <graph string="Graphique des mouvements" type="bar">
+                <field name="date_debut" interval="month"/>
+                <field name="total_entrant" type="measure"/>
+                <field name="total_sortant" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Action principale avec toutes les vues -->
+    <record id="action_gecafle_tracabilite" model="ir.actions.act_window">
+        <field name="name">Mouvement de Stock Journalier</field>
+        <field name="res_model">gecafle.tracabilite.produits</field>
+        <field name="view_mode">tree,kanban,form,pivot,graph</field>
+        <field name="context">{'search_default_this_month': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créer un nouveau mouvement de stock journalier
+            </p>
+            <p>
+                Ce module permet de suivre les entrées (réceptions) et sorties (ventes) de stock
+                pour une période donnée, avec possibilité de filtrer par producteur et produit.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu
+    <menuitem id="menu_tracabilite_produits"
+              name="📊 Mouvement Stock Journalier"
+              parent="menu_gecafle_statistiques_root"
+              action="action_gecafle_tracabilite"
+              sequence="5"/>
+    -->
+
+</odoo>

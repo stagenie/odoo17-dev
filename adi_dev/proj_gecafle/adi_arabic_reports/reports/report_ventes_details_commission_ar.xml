@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Template pour les détails des ventes avec marge en Arabe (CORRIGÉ) -->
+    <template id="report_reception_sale_details_with_commission_ar">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <t t-set="company" t-value="doc.company_id"/>
+
+                    <!-- Tri des lignes par date de vente et client -->
+                    <t t-set="sorted_sales"
+                       t-value="doc.sale_line_ids.sorted(lambda l: (l.date_vente or '', l.client_id.name or ''))"/>
+
+                    <!-- Marges du producteur -->
+                    <t t-set="fruit_margin" t-value="doc.producteur_id.fruit_margin"/>
+                    <t t-set="vegetable_margin" t-value="doc.producteur_id.vegetable_margin"/>
+
+                    <div class="page" dir="rtl">
+                        <!-- Titre et en-tête -->
+                        <h2 class="text-center mb-4">تفاصيل المبيعات حسب الاستلام (مع الهوامش)</h2>
+
+                        <div class="row mb-4">
+                            <div class="col-6 text-right">
+                                <strong>المنتج:</strong>
+                                <span t-field="doc.producteur_id.name"/>
+                                <br/>
+                                <strong>الاستلام:</strong>
+                                <span t-field="doc.reception_id.name"/>
+                            </div>
+                            <div class="col-6">
+                                <strong>التاريخ:</strong>
+                                <span t-field="doc.date_creation"/>
+                                <br/>
+                                <strong>المرجع:</strong>
+                                <span t-field="doc.name"/>
+                            </div>
+                        </div>
+
+                        <!-- Tableau des détails de ventes avec marges AVEC ORDRE INVERSÉ -->
+                        <table class="table table-sm table-bordered">
+                            <thead>
+                                <tr>
+                                    <!-- ORDRE INVERSÉ : De droite à gauche -->
+                                    <th>التاريخ</th>
+                                    <th>البيع</th>
+                                    <th>العميل</th>
+                                    <th>المنتج</th>
+                                    <th class="text-center">الجودة</th>
+                                    <th class="text-center">نوع العبوة</th>
+                                    <th class="text-center">العدد</th>
+                                    <th class="text-center">الوزن الصافي</th>
+                                    <th class="text-center">السعر/كغ</th>
+                                    <th class="text-center">النسبة</th>
+                                    <th class="text-right">العمولة</th>
+                                    <th class="text-right">المبلغ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="sorted_sales" t-as="line">
+                                    <!-- DONNÉES DANS LE MÊME ORDRE -->
+                                    <td>
+                                        <span t-field="line.date_vente"
+                                              t-options="{'widget': 'date'}"/>
+                                    </td>
+                                    <td>
+                                        <span t-field="line.vente_id.name"/>
+                                    </td>
+                                    <td>
+                                        <span t-field="line.client_id.name"/>
+                                    </td>
+                                    <td>
+                                        <span t-field="line.produit_id.name"/>
+                                    </td>
+                                    <td class="text-center">
+                                        <span t-field="line.qualite_id.name"/>
+                                    </td>
+                                    <td class="text-center">
+                                        <span t-field="line.type_colis_id.name"/>
+                                    </td>
+                                    <td class="text-center">
+                                        <span t-field="line.nombre_colis"/>
+                                    </td>
+                                    <td class="text-center">
+                                        <span t-field="line.poids_net"/>
+                                    </td>
+                                    <td class="text-center">
+                                        <span t-field="line.prix_unitaire"/>
+                                    </td>
+                                    <td class="text-center">
+                                        <span t-field="line.taux_commission"/>%
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-field="line.montant_commission"/>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-field="line.montant_net"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- Sommaire et marges AVEC ORDRE INVERSÉ -->
+                        <div class="row">
+                            <div class="col-7">
+                                <!-- Informations sur les marges -->
+                                <div class="mt-4">
+                                    <table class="table table-sm table-borderless">
+                                        <tr>
+                                            <td colspan="2">
+                                                <strong>الهوامش المطبقة:</strong>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-right">الفواكه:</td>
+                                            <td>
+                                                <t t-esc="fruit_margin"/> %
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-right">الخضروات:</td>
+                                            <td>
+                                                <t t-esc="vegetable_margin"/> %
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                                <!-- Statistiques -->
+                                <p>
+                                    <strong>إجمالي المبيعات:</strong>
+                                    <span t-esc="len(set(line.vente_id.id for line in doc.sale_line_ids))"/>
+                                    <br/>
+                                    <strong>إجمالي العملاء:</strong>
+                                    <span t-esc="len(set(line.client_id.id for line in doc.sale_line_ids))"/>
+                                </p>
+                            </div>
+
+                            <div class="col-5">
+                                <table class="table table-sm">
+                                    <tr>
+                                        <td class="text-right">
+                                            <strong>إجمالي المبيعات:</strong>
+                                        </td>
+                                        <td class="text-left">
+                                            <span t-field="doc.total_ventes"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-right">
+                                            <strong>إجمالي العمولة:</strong>
+                                        </td>
+                                        <td class="text-left">
+                                            <span t-field="doc.total_commission"/>
+                                        </td>
+                                    </tr>
+                                    <tr class="border-top">
+                                        <td class="text-right">
+                                            <strong>الصافي للدفع:</strong>
+                                        </td>
+                                        <td class="text-left">
+                                            <strong>
+                                                <span t-field="doc.net_a_payer"/>
+                                            </strong>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <!-- Définition du rapport -->
+    <record id="action_report_reception_sale_details_with_commission_ar" model="ir.actions.report">
+        <field name="name">تفاصيل المبيعات مع الهوامش</field>
+        <field name="model">gecafle.reception.recap</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_arabic_reports.report_reception_sale_details_with_commission_ar</field>
+        <field name="report_file">adi_arabic_reports.report_reception_sale_details_with_commission_ar</field>
+        <field name="print_report_name">'تفاصيل المبيعات مع الهوامش - %s' % object.name</field>
+        <field name="paperformat_id" ref="base.paperformat_euro"/>
+        <field name="binding_model_id" ref="adi_gecafle_ventes.model_gecafle_reception_recap"/>
+        <field name="binding_type">report</field>
+    </record>
+</odoo>

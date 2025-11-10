@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue formulaire -->
+    <record id="view_employee_advance_form" model="ir.ui.view">
+        <field name="name">employee.advance.form</field>
+        <field name="model">employee.advance</field>
+        <field name="arch" type="xml">
+            <form string="Avance Employé">
+                <header>
+                    <button name="action_validate"
+                            string="Valider et créer facture"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'draft'"
+                            confirm="Confirmer la validation ? Une facture fournisseur sera créée."/>
+                    <button name="action_cancel"
+                            string="Annuler"
+                            type="object"
+                            invisible="state not in ('draft','validated')"
+                            confirm="Êtes-vous sûr de vouloir annuler cette avance ?"/>
+                    <button name="action_print_receipt"
+                            string="Imprimer reçu"
+                            type="object"
+                            invisible="state not in ('validated','paid','processed')"/>
+
+                    <field name="state" widget="statusbar" statusbar_visible="draft,validated,paid,processed"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_invoice"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-file-text-o"
+                                invisible="not invoice_id">
+                            <div class="o_stat_info">
+                                <field name="invoice_state" widget="badge"
+                                       decoration-success="invoice_state == 'posted'"
+                                       decoration-warning="invoice_state == 'draft'"/>
+                                <span class="o_stat_text">Facture</span>
+                            </div>
+                        </button>
+
+                        <!-- Bouton Paiement -->
+                        <button name="action_view_payments"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-money"
+                                invisible="not invoice_id">
+                            <div class="o_stat_info">
+                                <field name="invoice_payment_state"
+                                       widget="badge"
+                                       decoration-success="invoice_payment_state in ('paid', 'in_payment')"
+                                       decoration-warning="invoice_payment_state == 'partial'"
+                                       decoration-danger="invoice_payment_state == 'not_paid'"/>
+                                <span class="o_stat_text">Paiement</span>
+                            </div>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="employee_id"
+                                   options="{'no_create': True, 'no_create_edit': True}"
+                                   readonly="state in ('validated', 'paid')"/>
+                            <field name="employee_name" invisible="1"/>
+                            <field name="job_id"/>
+                            <field name="department_id"/>
+                        </group>
+                        <group>
+                            <field name="date" readonly="state in ('validated', 'paid')"/>
+                            <field name="amount" widget="monetary" readonly="state in ('validated', 'paid')"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="observation"
+                               placeholder="Ajouter des observations..."
+                               readonly="state in ('validated', 'paid')"/>
+                    </group>
+                    <group string="Informations de traitement" invisible="state == 'draft'">
+                        <group>
+                            <field name="invoice_id" readonly="1"/>
+                            <field name="is_processed" readonly="1"/>
+                        </group>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="activity_ids" widget="mail_activity"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vue arbre -->
+    <record id="view_employee_advance_tree" model="ir.ui.view">
+        <field name="name">employee.advance.tree</field>
+        <field name="model">employee.advance</field>
+        <field name="arch" type="xml">
+            <tree string="Avances Employés"
+                  decoration-info="state == 'draft'"
+                  decoration-success="state == 'paid'"
+                  decoration-muted="state == 'cancelled'">
+                <field name="name"/>
+                <field name="employee_id"/>
+                <field name="job_id" optional="show"/>
+                <field name="date"/>
+                <field name="amount" sum="Total"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'draft'"
+                       decoration-warning="state == 'validated'"
+                       decoration-success="state == 'paid'"
+                       decoration-muted="state == 'cancelled'"/>
+                <field name="is_processed" widget="boolean_toggle" readonly="1"/>
+                <field name="invoice_id" optional="show"/>
+                <field name="invoice_payment_state"
+                       optional="show"
+                       widget="badge"
+                       decoration-success="invoice_payment_state == 'paid'"
+                       decoration-warning="invoice_payment_state == 'partial'"
+                       decoration-danger="invoice_payment_state == 'not_paid'"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vue recherche -->
+    <record id="view_employee_advance_search" model="ir.ui.view">
+        <field name="name">employee.advance.search</field>
+        <field name="model">employee.advance</field>
+        <field name="arch" type="xml">
+            <search string="Rechercher avance">
+                <field name="name"/>
+                <field name="employee_id"/>
+                <field name="date"/>
+                <field name="amount"/>
+                <separator/>
+                <filter name="draft" string="Brouillon" domain="[('state', '=', 'draft')]"/>
+                <filter name="validated" string="Validées" domain="[('state', '=', 'validated')]"/>
+                <filter name="paid" string="Payées" domain="[('state', '=', 'paid')]"/>
+                <filter name="not_processed" string="Non traitées" domain="[('is_processed', '=', False)]"/>
+                <separator/>
+                <filter name="this_month" string="Ce mois"
+                        domain="[('date', '&gt;=', (context_today() - relativedelta(day=1)).strftime('%Y-%m-%d')),
+                                ('date', '&lt;', (context_today() + relativedelta(months=1, day=1)).strftime('%Y-%m-%d'))]"/>
+                <group expand="0" string="Grouper par">
+                    <filter name="group_by_employee" string="Employé" context="{'group_by': 'employee_id'}"/>
+                    <filter name="group_by_month" string="Mois" context="{'group_by': 'date:month'}"/>
+                    <filter name="group_by_state" string="État" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_employee_advance" model="ir.actions.act_window">
+        <field name="name">Avances Employés</field>
+        <field name="res_model">employee.advance</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{'default_state': 'draft'}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créer une nouvelle avance employé
+            </p>
+            <p>
+                Gérez les avances sur salaire de vos employés.
+                Une facture fournisseur sera automatiquement créée lors de la validation.
+            </p>
+        </field>
+    </record>
+
+    <!-- Séquence -->
+    <record id="sequence_employee_advance" model="ir.sequence">
+        <field name="name">Avance Employé</field>
+        <field name="code">employee.advance</field>
+        <field name="prefix">ADV/%(year)s/</field>
+        <field name="padding">4</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+    <!-- Vue spéciale pour configurer le produit avance -->
+    <record id="view_advance_product_config" model="ir.ui.view">
+        <field name="name">advance.product.config</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_normal_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='default_code']" position="after">
+                <div class="alert alert-info"
+                     invisible="default_code != 'ADVANCE_SALARY'">
+                    <strong>Article automatique pour les avances employés</strong>
+                    <br/>Cet article est utilisé automatiquement lors de la création des factures d'avances.
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Action pour voir/configurer le produit avance -->
+    <record id="action_view_advance_product" model="ir.actions.act_window">
+        <field name="name">Configurer article avance</field>
+        <field name="res_model">product.product</field>
+        <field name="view_mode">form</field>
+        <field name="domain">[('default_code', '=', 'ADVANCE_SALARY')]</field>
+        <field name="context">{'default_default_code': 'ADVANCE_SALARY', 'default_name': 'Avance sur salaire'}</field>
+    </record>
+</odoo>

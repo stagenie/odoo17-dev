@@ -1,0 +1,29 @@
+
+[options]
+admin_passwd = *****
+db_host = False
+db_port = False
+db_user = stadev
+db_password = *****
+addons_path = /home/stadev/odoo17-dev/addons,
+    /home/stadev/odoo17-dev/adi_dev/proj_gecafle,
+    /home/stadev/odoo17-dev/adi_dev/rh,
+    /home/stadev/odoo17-dev/adi_dev/ramy,
+    /home/stadev/odoo17-dev/adi_dev/adi_dev1,
+    /home/stadev/odoo17-dev/adi_dev/adi_dev2,
+    /home/stadev/odoo17-dev/adi_dev/adi_dev3,
+    /home/stadev/odoo17-dev/adi_dev/adi_dev4,
+    /home/stadev/odoo17-dev/adi_dev/adi_dev5,
+    /home/stadev/odoo17-dev/adi_dev/ai_modules,
+    /home/stadev/odoo17-dev/adi_premium/adi_premium1,
+    /home/stadev/odoo17-dev/adi_premium/adi_premium2,
+    /home/stadev/odoo17-dev/adi_premium/adi_premium3,
+    /home/stadev/odoo17-dev/adi_premium/adi_premium4,
+    /home/stadev/odoo17-dev/adi_premium/adi_premium5,
+    /home/stadev/odoo17-dev/adi_third_party/adi_third_party1,
+    /home/stadev/odoo17-dev/adi_third_party/adi_third_party2,
+    /home/stadev/odoo17-dev/adi_third_party/adi_third_party3,
+    /home/stadev/odoo17-dev/adi_third_party/adi_third_party4,
+    /home/stadev/odoo17-dev/adi_third_party/adi_third_party5,
+xmlrpc_port = 8017
+dbfilter = ^o17_

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="res_config_settings_view_form_caisse" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.caisse</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="25"/>
+        <field name="inherit_id" ref="account.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <!-- <xpath expr="//div[hasclass('settings')]" position="inside"> -->
+            <app name="account" position="inside">
+                 <div class="app_settings_block" data-string="caisse" string="Caisse" data-key="caisse" groups="base.group_system" > <!--groups="caisse.group_caisse_manager" -->
+                    <h2>Caisse</h2>
+                    <div class="row mt16 o_settings_container" name="invoicing_settings_container">
+                        <div class="col-12 col-lg-6 o_setting_box" id="fund_close" title="This default value is applied to any new cach. This can be changed in the cash detail form.">
+                            <div class="o_setting_left_pane"/>
+                            <div class="o_setting_right_pane">
+                                <label for="default_type_c"/>
+                                <div class="text-muted">
+                                    Type de cloture de la caisse
+                                </div>
+                                <div class="content-group">
+                                    <div class="mt16">
+                                        <field name="default_type_c" class="o_light_label" widget="radio"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-6 o_setting_box" id="automatic_lock_confirmed_orders">
+                            <div class="o_setting_left_pane">
+                                <field name="default_precedent_cash"/>
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label for="default_precedent_cash"/>
+                                <div class="text-muted">
+                                    La caisse précédente sera obligatoire
+                                </div>
+                            </div>
+                            <div class="o_setting_left_pane">
+                                <field name="default_get_balance_end_real"/>
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label for="default_get_balance_end_real"/>
+                                <div class="text-muted">
+                                    Réintroduire le Solde Physique (Réel)
+                                </div>
+                            </div>
+                            <!-- <div class="o_setting_left_pane">
+                                <field name="default_get_impact_caisse_ecart" readonly="1"/>
+                            </div>
+                            <div class="o_setting_right_pane" attrs="{'invisible': [('default_get_balance_end_real','!=',False)]}">
+                                <label for="default_get_impact_caisse_ecart"/>
+                                <div class="text-muted">
+                                    Impact des écarts sur la caisse
+                                </div>
+                            </div> -->
+                            <div class="o_setting_left_pane">
+                                <field name="default_show_confg_initial_balance"/>
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label for="default_show_confg_initial_balance"/>
+                                <div class="text-muted">
+                                    Configuration de la balance initiale
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+
+                </div>
+            </app>
+        </field>
+    </record>
+
+    <record id="action_caisse_configuration" model="ir.actions.act_window">
+        <field name="name">Settings</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+        <field name="context">{'module' : 'caisse', 'bin_size': False}</field>
+    </record>
+
+    
+
+</odoo>

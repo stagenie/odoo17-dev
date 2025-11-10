@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue principale du wizard de transfert -->
+    <record id="view_mrp_bom_transfer_wizard_form" model="ir.ui.view">
+        <field name="name">mrp.bom.transfer.wizard.form</field>
+        <field name="model">mrp.bom.transfer.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Assistant de Transfert Matières Premières → Production">
+                <sheet>
+                    <!-- Header avec titre et statistiques -->
+                    <div class="oe_title">
+                        <label for="bom_id" string="Nomenclature"/>
+                        <h1>
+                            <field name="bom_id" readonly="1" class="oe_inline"/>
+                        </h1>
+                        <div class="o_row">
+                            <label for="product_id"/>
+                            <field name="product_id" readonly="1" class="oe_inline"/>
+                        </div>
+                    </div>
+                    
+                    <!-- Badges statistiques -->
+                    <div class="row mb-3 text-center">
+                        <div class="col-4">
+                            <div class="badge badge-info p-2" style="font-size: 1.2em;">
+                                <field name="total_lines" class="oe_inline"/> articles
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="badge badge-success p-2" style="font-size: 1.2em;">
+                                <field name="total_to_transfer" class="oe_inline"/> à transférer
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="badge badge-warning p-2" style="font-size: 1.2em;"
+                                 invisible="has_missing_items == False">
+                                Articles manquants !
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Alertes conditionnelles -->
+                    <div class="alert alert-info" role="alert" 
+                         invisible="transfer_mode != 'missing_only'">
+                        <i class="fa fa-info-circle"/> Mode actuel : Transférer uniquement les quantités manquantes dans l'entrepôt de production
+                    </div>
+                    
+                    <div class="alert alert-warning" role="alert" 
+                         invisible="has_missing_items == False or total_to_transfer == 0">
+                        <i class="fa fa-exclamation-triangle"/> 
+                        Attention : Certains articles ne sont pas disponibles en quantité suffisante dans l'entrepôt source.
+                        Les quantités seront ajustées automatiquement.
+                    </div>
+                    
+                    <!-- Résumé HTML automatique -->
+                    <separator string="Résumé de la situation"/>
+                    <field name="summary_html" nolabel="1" readonly="1"/>
+                    
+                    <!-- Configuration principale -->
+                    <group col="4">
+                        <group colspan="2" string="Paramètres de production">
+                            <label for="qty_to_produce" string="Quantité à produire"/>
+                            <div class="o_row">
+                                <field name="qty_to_produce" class="oe_inline" style="width: 100px;"/>
+                                <span class="oe_inline"> unité(s)</span>
+                            </div>
+                        </group>
+                        <group colspan="2" string="Entrepôts">
+                            <field name="source_warehouse_id" 
+                                   placeholder="Sélectionner l'entrepôt source"
+                                   options="{'no_create': True, 'no_open': True}"
+                                   domain="[('warehouse_type', '=', 'raw_material')]"/>
+                            <field name="dest_warehouse_id" 
+                                   placeholder="Sélectionner l'entrepôt destination"
+                                   options="{'no_create': True, 'no_open': True}"
+                                   domain="[('warehouse_type', '=', 'production')]"/>
+                        </group>
+                    </group>
+                    
+                    <!-- Mode de transfert avec descriptions -->
+                    <separator string="Mode de transfert"/>
+                    <field name="transfer_mode" widget="radio"/>
+                    <div class="text-muted" style="margin-left: 20px;">
+                        <p invisible="transfer_mode != 'missing_only'">
+                            → Transfère uniquement ce qui manque dans l'entrepôt de production pour atteindre la quantité requise
+                        </p>
+                        <p invisible="transfer_mode != 'full_qty'">
+                            → Transfère la quantité totale nécessaire pour la production (si disponible)
+                        </p>
+                        <p invisible="transfer_mode != 'available_only'">
+                            → Transfère tout ce qui est disponible dans l'entrepôt source (jusqu'au besoin maximum)
+                        </p>
+                    </div>
+                    
+                    <!-- Tableau détaillé des articles -->
+                    <separator string="Détail des articles à transférer"/>
+                    <div class="row mb-2">
+                        <div class="col-12">
+                            <span class="text-muted">
+                                <i class="fa fa-info-circle"/> Les quantités sont calculées automatiquement. 
+                                Vous pouvez ajuster manuellement la colonne "À transférer" si nécessaire.
+                            </span>
+                        </div>
+                    </div>
+                    
+                     <!-- Dans la vue principale du wizard -->
+<field name="transfer_line_ids" nolabel="1" mode="tree">
+    <tree editable="bottom"
+          create="0"
+          delete="0"
+          decoration-success="status == 'ok'"
+          decoration-warning="status == 'partial'"
+          decoration-danger="status == 'missing'"
+          default_order="is_available desc, qty_to_transfer desc, product_id">
+
+        <!-- Colonnes du tableau -->
+        <field name="product_id"
+               string="Article"
+               readonly="1"
+               force_save="1"
+               width="250px"/>
+
+        <field name="qty_per_unit"
+               string="Qté/unité"
+               readonly="1"
+               optional="hide"/>
+
+        <field name="qty_total_needed"
+               string="Besoin total"
+               readonly="1"
+               sum="Total requis"
+               widget="float"
+               digits="[12,3]"
+               decoration-bf="1"/>
+
+        <field name="qty_in_dest"
+               string="Stock Production"
+               readonly="1"
+               sum="Total en prod."
+               widget="float"
+               digits="[12,3]"
+               decoration-info="qty_in_dest >= qty_total_needed"/>
+
+        <field name="qty_in_source"
+               string="Stock MP"
+               readonly="1"
+               sum="Total en MP"
+               widget="float"
+               digits="[12,3]"
+               decoration-danger="qty_in_source == 0"
+               decoration-warning="qty_in_source > 0 and qty_in_source &lt; qty_missing_in_dest"/>
+
+        <field name="qty_missing_in_dest"
+               string="Manquant"
+               readonly="1"
+               optional="show"
+               widget="float"
+               digits="[12,3]"/>
+
+        <field name="qty_to_transfer"
+               string="À transférer"
+               sum="TOTAL À TRANSFÉRER"
+               widget="float"
+               digits="[12,3]"
+               decoration-bf="qty_to_transfer > 0"
+               bg_color="lightyellow:qty_to_transfer > 0"/>
+
+        <field name="product_uom_id"
+               string="UdM"
+               readonly="1"
+               force_save="1"
+               optional="show"
+               width="60px"/>
+
+        <field name="status"
+               widget="badge"
+               string="Statut"
+               optional="show"
+               decoration-success="status == 'ok'"
+               decoration-warning="status == 'partial'"
+               decoration-danger="status == 'missing'"/>
+
+        <!-- Champ nécessaire pour le tri et la logique mais caché -->
+        <field name="is_available" invisible="1"/>
+    </tree>
+</field>
+
+                    <!-- Champs cachés nécessaires -->
+                    <group invisible="1">
+                        <field name="has_missing_items"/>
+                        <field name="total_lines"/>
+                        <field name="total_to_transfer"/>
+                    </group>
+                    
+                    <!-- Notes additionnelles -->
+                    <group string="Informations" class="mt-3">
+                        <div class="text-muted">
+                            <p><i class="fa fa-lightbulb-o"/> <strong>Conseils :</strong></p>
+                            <ul>
+                                <li>Les quantités sont recalculées automatiquement lors du changement de mode ou de quantité à produire</li>
+                                <li>Les articles avec stock insuffisant sont marqués en orange/rouge</li>
+                                <li>Vous pouvez modifier manuellement les quantités à transférer si nécessaire</li>
+                                <li>Le transfert créé devra être validé manuellement sauf si la validation automatique est activée</li>
+                            </ul>
+                        </div>
+                    </group>
+                </sheet>
+                
+                <!-- Pied de page avec boutons d'action -->
+                <footer>
+                    <button name="action_create_transfer" 
+                            string="Créer le transfert" 
+                            type="object" 
+                            class="btn-primary"
+                            icon="fa-check-circle"
+                            data-hotkey="q"
+                            confirm="Êtes-vous sûr de vouloir créer ce transfert ?"
+                            invisible="total_to_transfer == 0"/>
+                    
+                    <button string="Aucun article à transférer"
+                            class="btn-secondary"
+                            disabled="1"
+                            invisible="total_to_transfer > 0"/>
+                    
+                    <button string="Fermer" 
+                            class="btn-secondary" 
+                            special="cancel"
+                            data-hotkey="z"/>
+                    
+                    <button string="Aide" 
+                            class="btn-link float-right"
+                            icon="fa-question-circle"
+                            type="action"
+                            name="%(base.action_view_base_module_upgrade)d"
+                            invisible="1"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    
+    <!-- Action window pour ouvrir le wizard -->
+    <record id="action_mrp_bom_transfer_wizard" model="ir.actions.act_window">
+        <field name="name">Générer un transfert MP → Production</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">mrp.bom.transfer.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_mrp_bom_transfer_wizard_form"/>
+        <field name="target">new</field>
+        <field name="context">{
+            'dialog_size': 'extra-large',
+        }</field>
+    </record>
+    
+    <!-- Vue tree pour les lignes (si ouverture séparée) -->
+    <!-- Vue tree pour les lignes (si ouverture séparée) -->
+<record id="view_mrp_bom_transfer_wizard_line_tree" model="ir.ui.view">
+    <field name="name">mrp.bom.transfer.wizard.line.tree</field>
+    <field name="model">mrp.bom.transfer.wizard.line</field>
+    <field name="arch" type="xml">
+        <tree string="Lignes de transfert"
+              create="0"
+              edit="1"
+              decoration-success="is_available"
+              decoration-danger="not is_available">
+            <field name="product_id"/>
+            <field name="qty_total_needed" sum="Total"/>
+            <field name="qty_in_source" sum="Total"/>
+            <field name="qty_in_dest" sum="Total"/>
+            <field name="qty_to_transfer" sum="Total"/>
+            <field name="product_uom_id"/>
+            <field name="status" widget="badge"/>
+            <!-- Champ nécessaire pour la décoration mais caché -->
+            <field name="is_available" invisible="1"/>
+        </tree>
+    </field>
+</record>
+
+    
+    <!-- Vue formulaire pour les lignes -->
+    <record id="view_mrp_bom_transfer_wizard_line_form" model="ir.ui.view">
+        <field name="name">mrp.bom.transfer.wizard.line.form</field>
+        <field name="model">mrp.bom.transfer.wizard.line</field>
+        <field name="arch" type="xml">
+            <form string="Ligne de transfert">
+                <sheet>
+                    <group>
+                        <group string="Article">
+                            <field name="product_id" readonly="1"/>
+                            <field name="product_uom_id" readonly="1"/>
+                        </group>
+                        <group string="Quantités">
+                            <field name="qty_per_unit" readonly="1"/>
+                            <field name="qty_total_needed" readonly="1"/>
+                            <field name="qty_in_source" readonly="1"/>
+                            <field name="qty_in_dest" readonly="1"/>
+                            <field name="qty_missing_in_dest" readonly="1"/>
+                            <field name="qty_to_transfer"/>
+                            <field name="is_available" readonly="1"/>
+                            <field name="status" widget="badge"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

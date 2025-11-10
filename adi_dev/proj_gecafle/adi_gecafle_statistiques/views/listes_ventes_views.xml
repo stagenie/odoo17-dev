@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ============== LISTE DES VENTES TOTAL ============== -->
+
+    <!-- Vue Tree pour Liste des Ventes Total -->
+    <record id="view_liste_ventes_total_tree" model="ir.ui.view">
+        <field name="name">gecafle.vente.liste.total.tree</field>
+        <field name="model">gecafle.vente</field>
+        <field name="priority">50</field>
+        <field name="arch" type="xml">
+            <tree string="Liste des Ventes - Total" create="false" edit="false" delete="false">
+                <field name="date_vente" string="Date"/>
+                <field name="name" string="N° de souche"/>
+                <field name="client_id" string="Client"/>
+                <field name="montant_total_a_payer" string="Montant Vente" sum="Total Ventes" widget="monetary"/>
+                <field name="amount_paid" string="Payé" sum="Total Payé" widget="monetary"/>
+                <field name="amount_residual_signed" string="Reste" sum="Total Reste" widget="monetary"
+                       decoration-danger="amount_residual_signed > 0"
+                       decoration-success="amount_residual_signed == 0"/>
+                <field name="payment_state" string="État" widget="badge"
+                       decoration-success="payment_state == 'paid'"
+                       decoration-warning="payment_state == 'partial'"
+                       decoration-danger="payment_state == 'not_paid'"/>
+                <field name="currency_id" invisible="1" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Action pour Liste des Ventes Total -->
+    <record id="action_liste_ventes_total" model="ir.actions.act_window">
+        <field name="name">Liste des Ventes - Total</field>
+        <field name="res_model">gecafle.vente</field>
+        <field name="view_mode">tree</field>
+        <field name="view_id" ref="view_liste_ventes_total_tree"/>
+        <field name="domain">[('state', '=', 'valide')]</field>
+        <field name="context">{
+            'search_default_today': 1,
+            'create': False,
+            'edit': False,
+            'delete': False
+            }
+        </field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Aucune vente trouvée pour cette période
+            </p>
+        </field>
+    </record>
+
+    <!-- ============== LISTE DES VENTES PAYÉES ============== -->
+
+    <!-- Vue Tree pour Ventes Payées -->
+    <record id="view_liste_ventes_payees_tree" model="ir.ui.view">
+        <field name="name">gecafle.vente.liste.payees.tree</field>
+        <field name="model">gecafle.vente</field>
+        <field name="priority">51</field>
+        <field name="arch" type="xml">
+            <tree string="Liste des Ventes Payées Totalement" create="false" edit="false" delete="false"
+                  decoration-success="payment_state == 'paid'">
+                <field name="date_vente" string="Date"/>
+                <field name="name" string="N° de souche"/>
+                <field name="client_id" string="Client"/>
+                <field name="montant_total_a_payer" string="Montant Vente" sum="Total" widget="monetary"/>
+                <field name="payment_state" invisible="1"/>
+                <field name="currency_id" invisible="1" optional="hide"/>
+                <button name="action_imprimer_bon_vente"
+                        string=""
+                        type="object"
+                        icon="fa-print"
+                        title="Imprimer le bon de vente"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Action pour Ventes Payées -->
+    <record id="action_liste_ventes_payees" model="ir.actions.act_window">
+        <field name="name">Liste des Ventes Payées Totalement</field>
+        <field name="res_model">gecafle.vente</field>
+        <field name="view_mode">tree</field>
+        <field name="view_id" ref="view_liste_ventes_payees_tree"/>
+        <field name="domain">[
+            ('state', '=', 'valide'),
+            ('payment_state', '=', 'paid')
+            ]
+        </field>
+        <field name="context">{
+            'search_default_today': 1,
+            'create': False,
+            'edit': False,
+            'delete': False
+            }
+        </field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Aucune vente payée totalement pour cette période
+            </p>
+        </field>
+    </record>
+
+    <!-- ============== LISTE DES VENTES CRÉDIT ============== -->
+
+    <!-- Vue Tree pour Ventes Crédit -->
+    <record id="view_liste_ventes_credit_tree" model="ir.ui.view">
+        <field name="name">gecafle.vente.liste.credit.tree</field>
+        <field name="model">gecafle.vente</field>
+        <field name="priority">52</field>
+        <field name="arch" type="xml">
+            <tree string="Liste des Ventes Crédit" create="false" edit="false" delete="false"
+                  decoration-danger="amount_residual_signed > 0">
+                <field name="date_vente" string="Date"/>
+                <field name="name" string="N° de souche"/>
+                <field name="client_id" string="Client"/>
+                <field name="amount_residual_signed" string="Reste à payer" sum="Total Crédit" widget="monetary"
+                       decoration-danger="amount_residual_signed > 0"/>
+                <field name="currency_id" invisible="1" optional="hide"/>
+                <field name="payment_state" string="État" widget="badge"
+                       decoration-warning="payment_state == 'partial'"
+                       decoration-danger="payment_state == 'not_paid'"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Action pour Ventes Crédit -->
+    <record id="action_liste_ventes_credit" model="ir.actions.act_window">
+        <field name="name">Liste des Ventes Crédit</field>
+        <field name="res_model">gecafle.vente</field>
+        <field name="view_mode">tree</field>
+        <field name="view_id" ref="view_liste_ventes_credit_tree"/>
+        <field name="domain">[
+            ('state', '=', 'valide'),
+            ('payment_state', 'in', ('partial', 'not_paid'))
+            ]
+        </field>
+
+        <field name="context">{
+            'search_default_today': 1,
+            'create': False,
+            'edit': False,
+            'delete': False
+            }
+        </field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Aucune vente crédit pour cette période
+            </p>
+        </field>
+    </record>
+
+    <!-- ============== VUE RECHERCHE COMMUNE ============== -->
+
+    <!-- Vue Search avec filtres de période -->
+    <record id="view_liste_ventes_search" model="ir.ui.view">
+        <field name="name">gecafle.vente.liste.search</field>
+        <field name="model">gecafle.vente</field>
+        <field name="priority">100</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name" string="N° de souche"/>
+                <field name="client_id" string="Client"/>
+                <field name="date_vente" string="Date"/>
+
+                <!-- Filtres de période -->
+                <filter string="Aujourd'hui" name="today"
+                        domain="[('date_vente', '=', context_today())]"/>
+
+                <filter string="Cette semaine" name="this_week"
+                        date="date_vente"
+                        default_period="this_week"/>
+                <filter string="Ce mois ci" name="this_month"
+                        date="date_vente"
+                        default_period="this_month"/>
+
+                <separator/>
+
+                <!-- Filtres par état de paiement -->
+                <filter string="Payé" name="filter_paid"
+                        domain="[('payment_state', '=', 'paid')]"/>
+                <filter string="Partiellement payé" name="filter_partial"
+                        domain="[('payment_state', '=', 'partial')]"/>
+                <filter string="Non payé" name="filter_not_paid"
+                        domain="[('payment_state', '=', 'not_paid')]"/>
+
+                <separator/>
+
+                <!-- Groupements -->
+                <group expand="0" string="Grouper par">
+                    <filter string="Client" name="group_client"
+                            context="{'group_by': 'client_id'}"/>
+                    <filter string="Date" name="group_date"
+                            context="{'group_by': 'date_vente:day'}"/>
+                    <filter string="État paiement" name="group_payment"
+                            context="{'group_by': 'payment_state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+</odoo>

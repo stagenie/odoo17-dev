@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue pour masquer les boutons sur les factures GECAFLE -->
+    <record id="view_move_form_inherit_hide_buttons" model="ir.ui.view">
+        <field name="name">account.move.form.inherit.hide.buttons</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+
+            <!-- NOUVEAU : Masquer le bouton "Créer" en mode édition pour les factures GECAFLE -->
+            <xpath expr="//form" position="attributes">
+                <attribute name="create">not is_protected_gecafle</attribute>
+                <attribute name="duplicate">not is_protected_gecafle</attribute>
+            </xpath>
+
+            <!-- Masquer le bouton "Remettre en brouillon" pour les factures GECAFLE -->
+            <xpath expr="//button[@name='button_draft']" position="attributes">
+                <attribute name="invisible">is_protected_gecafle</attribute>
+            </xpath>
+
+            <!-- Masquer le bouton "Annuler" pour les factures GECAFLE -->
+            <xpath expr="//button[@name='button_cancel']" position="attributes">
+                <attribute name="invisible">is_protected_gecafle</attribute>
+            </xpath>
+
+            <!-- Masquer le bouton "Créer un avoir" / "Add Credit Note" -->
+            <xpath expr="//button[@name='action_reverse']" position="attributes">
+                <attribute name="invisible">is_protected_gecafle</attribute>
+            </xpath>
+
+            <!-- Message d'information pour les factures protégées -->
+            <xpath expr="//sheet" position="before">
+                <div class="alert alert-info text-center" invisible="not is_protected_gecafle">
+                    <i class="fa fa-lock"/>
+                    <strong>Facture protégée GECAFLE</strong>
+                    <br/>
+                    <small>Cette facture ne peut pas être modifiée directement.
+                    Utilisez les fonctions disponibles dans le bon de vente source.</small>
+                </div>
+            </xpath>
+
+            <!-- Bouton pour aller au bon de vente source -->
+            <xpath expr="//header" position="inside">
+                <button name="action_view_gecafle_vente"
+                        string="↗ Voir le bon de vente"
+                        type="object"
+                        class="btn-link"
+                        icon="fa-external-link"
+                        invisible="not is_protected_gecafle"
+                        help="Ouvrir le bon de vente source pour effectuer des modifications"/>
+            </xpath>
+
+        </field>
+    </record>
+
+
+</odoo>

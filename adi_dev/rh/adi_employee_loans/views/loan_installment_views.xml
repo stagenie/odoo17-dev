@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue arbre des échéances -->
+    <record id="view_loan_installment_tree" model="ir.ui.view">
+        <field name="name">loan.installment.tree</field>
+        <field name="model">loan.installment</field>
+        <field name="arch" type="xml">
+            <tree string="Échéances de prêt"
+                  decoration-success="state == 'paid'"
+                  decoration-warning="state == 'partial'"
+                  decoration-info="state == 'pending'">
+                <field name="employee_name"/>
+                <field name="loan_id"/>
+                <field name="sequence" string="N°"/>
+                <field name="date"/>
+                <field name="amount" widget="monetary" sum="Total"/>
+                <field name="amount_paid" widget="monetary" sum="Total payé"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'paid'"
+                       decoration-warning="state == 'partial'"
+                       decoration-info="state == 'pending'"/>
+                <field name="is_processed" widget="boolean_toggle"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vue formulaire échéance -->
+    <record id="view_loan_installment_form" model="ir.ui.view">
+        <field name="name">loan.installment.form</field>
+        <field name="model">loan.installment</field>
+        <field name="arch" type="xml">
+            <form string="Échéance de prêt">
+                <header>
+<!--                    <button name="action_pay"-->
+<!--                            string="Marquer comme payée"-->
+<!--                            type="object"-->
+<!--                            class="btn-primary"-->
+<!--                            invisible="state == 'paid'"/>-->
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="loan_id" readonly="1"/>
+                            <field name="employee_name" readonly="1"/>
+                            <field name="sequence" readonly="1"/>
+                            <field name="date" readonly="state == 'paid'"/>
+                        </group>
+                        <group>
+                            <field name="amount" widget="monetary" readonly="1"/>
+                            <field name="amount_paid" widget="monetary" readonly="state == 'paid'"/>
+                            <field name="payment_date" readonly="state != 'paid'"/>
+                            <field name="is_processed" readonly="1"/>
+                        </group>
+                    </group>
+                    <group string="Référence paie" invisible="not payroll_ref">
+                        <field name="payroll_ref" readonly="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vue recherche échéances -->
+    <record id="view_loan_installment_search" model="ir.ui.view">
+        <field name="name">loan.installment.search</field>
+        <field name="model">loan.installment</field>
+        <field name="arch" type="xml">
+            <search string="Rechercher échéance">
+                <field name="employee_name"/>
+                <field name="loan_id"/>
+                <field name="date"/>
+                <separator/>
+                <filter name="pending" string="En attente" domain="[('state', '=', 'pending')]"/>
+                <filter name="paid" string="Payées" domain="[('state', '=', 'paid')]"/>
+                <filter name="partial" string="Partielles" domain="[('state', '=', 'partial')]"/>
+                <separator/>
+                <filter name="due_this_month" string="Échues ce mois"
+                        domain="[('date', '&gt;=', (context_today() - relativedelta(day=1)).strftime('%Y-%m-%d')),
+                                ('date', '&lt;=', (context_today() + relativedelta(day=31)).strftime('%Y-%m-%d')),
+                                ('state', '!=', 'paid')]"/>
+                <filter name="overdue" string="En retard"
+                        domain="[('date', '&lt;', context_today()),
+                                ('state', '!=', 'paid')]"/>
+                <group expand="0" string="Grouper par">
+                    <filter name="group_by_employee" string="Employé" context="{'group_by': 'employee_id'}"/>
+                    <filter name="group_by_loan" string="Prêt" context="{'group_by': 'loan_id'}"/>
+                    <filter name="group_by_state" string="État" context="{'group_by': 'state'}"/>
+                    <filter name="group_by_month" string="Mois" context="{'group_by': 'date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action pour voir toutes les échéances -->
+    <record id="action_loan_installment" model="ir.actions.act_window">
+        <field name="name">Toutes les échéances</field>
+        <field name="res_model">loan.installment</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('state', '!=', 'paid')]</field>
+        <field name="context">{'search_default_due_this_month': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Aucune échéance en attente
+            </p>
+            <p>
+                Les échéances de prêts apparaîtront ici une fois les prêts approuvés.
+            </p>
+        </field>
+    </record>
+
+</odoo>

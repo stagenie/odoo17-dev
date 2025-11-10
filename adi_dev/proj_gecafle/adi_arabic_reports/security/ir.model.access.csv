@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_gecafle_producteur_manager,gecafle.producteur manager,model_gecafle_producteur,,1,1,1,1
+access_gecafle_produit_manager,gecafle.produit manager,model_gecafle_produit,,1,1,1,1
+access_gecafle.fruits_legumes_manager,gecafle.fruits_legumes manager,model_gecafle_fruits_legumes,,1,1,1,1
+access_gecafle_qualite_manager,gecafle.qualite manager,model_gecafle_qualite,,1,1,1,1
+access_gecafle_emballage_manager,gecafle.emballage manager,model_gecafle_emballage,,1,1,1,1

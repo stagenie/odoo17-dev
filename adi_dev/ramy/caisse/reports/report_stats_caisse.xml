@@ -1,0 +1,197 @@
+<?xml version='1.0' encoding='utf-8'?>
+<odoo>
+  <data>
+    <record id="action_print_report_caisse" model="ir.actions.report">
+      <field name="name">Etat de la Caisse</field>
+      <field name="model">caisse</field>
+      <field name="report_type">qweb-pdf</field>
+      <field name="report_name">caisse.report_caisse</field>
+      <field name="report_file">caisse.report_caisse</field>
+      <field name="print_report_name">'Rapport - %s' % (object.name)</field>
+      <field name="binding_model_id" ref="model_caisse"/>
+      <field name="binding_type">report</field>
+    </record>
+    
+    <template id="report_caisse">
+      <t t-call="web.html_container">
+        <t t-call="web.external_layout">
+          <t t-foreach="docs" t-as="o">
+
+            <div class="page">
+              <h3 class="text-center font-italic">
+                <span style="color:black;">Caisse: <span style="color:black;" t-field="o.name"/>
+                </span>
+              </h3>
+              <br/>
+              <div class="row">
+                <div class="col-9">
+                  <h5 style="color:black;">Solde d'ouverture: <span style="color:black;" t-field="o.solde_ouvr"
+                    t-options="{'widget': 'monetary', 'display_currency': env['res.currency'].search([('name', '=', 'DZD')])}"/>
+                  </h5>
+                  <!-- <h5 style="color:black;">Ecart caisse precedente (s): <span style="color:black;" t-field="o.prec_ecart"
+                    t-options="{'widget': 'monetary', 'display_currency': env['res.currency'].search([('name', '=', 'DZD')])}"/>
+                  </h5> -->
+                  <h5 style="color:black;">Transactions: <span style="color:black;"/>
+                  </h5>
+                </div>
+                <div class="col-3"></div>
+              </div>
+              <table class="table table-sm o_main_table table-bordered" name="caisse_line_table">
+                <thead>
+                  <tr class="text-center">
+                    <th name="th_num">
+                      <span>Date</span>
+                    </th>
+                    <th name="th_description">
+                      <span>Libelle</span>
+                    </th>
+                    <th name="th_quantity">
+                      <span>Depense/Recette</span>
+                    </th>
+                    <th name="th_subtotal">
+                      <span>Montant</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <t t-foreach="o.caisse_line_ids" t-as="l">
+                    <tr style="color:black;" class="text-center">
+
+                      <td>
+                        <span t-field="l.date" />
+                      </td>
+                      <td>
+                        <span t-field="l.name" />
+                      </td>
+                      <td>
+                        <span t-field="l.type_entre" />
+                      </td>                   
+                      <td >
+                        <span t-field="l.montant" />
+                      </td>
+
+                    </tr> 
+                  </t>
+                </tbody>
+              </table>             
+              <br/>
+              <div class="row">
+                <div class="col-9">
+                  <h5 style="color:black;">Solde Theorique: <span style="color:black;" t-field="o.total"
+                    t-options="{'widget': 'monetary', 'display_currency': env['res.currency'].search([('name', '=', 'DZD')])}"/>
+                  </h5>
+                  <h5 style="color:black;">Solde Physique: <span style="color:black;" t-field="o.balance_end_real"
+                    t-options="{'widget': 'monetary', 'display_currency': env['res.currency'].search([('name', '=', 'DZD')])}"/>
+                  </h5>
+                  <h5 style="color:black;">Ecart Sur Caisse: <span style="color:black;" t-field="o.end_ecart"
+                    t-options="{'widget': 'monetary', 'display_currency': env['res.currency'].search([('name', '=', 'DZD')])}"/>
+                  </h5>
+                </div>
+                <div class="col-3"></div>
+              </div>
+              <br/>
+              <div class="row footer" style="color:black;">
+                <div class="col-6 "></div>
+                <div class="col-6 float-right" style="color:black;font-size:16px">
+                  <h5>Le :<span t-esc="o.create_date.strftime('%d-%m-%Y')" />
+                  </h5>
+                </div>
+              </div>
+                  <h3 class="text-center font-italic">
+                    <span style="color:black;">Décompte: <span style="color:black;"/>
+                    </span>
+                  </h3>
+                  <br/>
+
+                  <h5 class="text-center font-italic">
+                    <span style="color:black;">Billets: <span style="color:black;"/>
+                    </span>
+                  </h5>
+                  <table class="table table-sm o_main_table table-bordered" name="cashbox_lines_ids">
+                    <thead>
+                      <tr class="text-center">
+                        <th name="th_num">
+                          <span>Nombre de billets</span>
+                        </th>
+                        <th name="th_description">
+                          <span>Valeur de billets</span>
+                        </th>
+                        <th name="th_quantity">
+                          <span>Sous-total</span>
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <t t-foreach="o.cashbox_caisse_end_id.cashbox_lines_ids.filtered(lambda x:x.number!=0)" t-as="l">
+                        <tr style="color:black;" class="text-center">
+    
+                          <td>
+                            <span t-field="l.number" />
+                          </td>
+                          <td>
+                            <span t-field="l.coin_value" />
+                          </td>
+                          <td>
+                            <span t-field="l.subtotal" />
+                          </td>                     
+                        </tr> 
+                      </t>
+                    </tbody>
+                  </table>
+                  
+                  <h5 class="text-center font-italic">
+                    <span style="color:black;">Pièces: <span style="color:black;"/>
+                    </span>
+                  </h5>
+                  <table class="table table-sm o_main_table table-bordered" name="cashbox_lines_ids">
+                    <thead>
+                      <tr class="text-center">
+                        <th name="th_num">
+                          <span>Nombre de pièces</span>
+                        </th>
+                        <th name="th_description">
+                          <span>Valeur de pièces</span>
+                        </th>
+                        <th name="th_quantity">
+                          <span>Sous-total</span>
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <t t-foreach="o.cashbox_caisse_end_id.cashbox_lines_coin_ids.filtered(lambda x:x.number!=0)" t-as="l">
+                        <tr style="color:black;" class="text-center">
+    
+                          <td>
+                            <span t-field="l.number" />
+                          </td>
+                          <td>
+                            <span t-field="l.coin_value" />
+                          </td>
+                          <td>
+                            <span t-field="l.subtotal" />
+                          </td>                     
+                        </tr> 
+                      </t>
+                    </tbody>
+                  </table>
+                  <!-- <div class="row">
+                    <div class="col-8"></div>
+                    <div class="col-4">
+
+                      <h5 style="color:black;">Total: <span style="color:black;" t-field="o.balance_end_real"
+                        t-options="{'widget': 'monetary', 'display_currency': env['res.currency'].search([('name', '=', 'DZD')])}"/>
+                      </h5>
+                    </div>
+                    
+                  </div> -->
+            </div>
+
+        </t>
+      </t>
+    </t>
+  </template>
+
+
+
+</data>
+</odoo>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Menu principal sous Ventes -->
+    <menuitem id="menu_gecafle_consignes"
+              name="Consignes"
+              parent="adi_gecafle_ventes.menu_adi_gecafle_ventes"
+              sequence="60"/>
+
+    <!-- Sous-menu Retours de consigne -->
+    <menuitem id="menu_gecafle_consigne_retour"
+              name="Retours de Consigne"
+              parent="menu_gecafle_consignes"
+              action="action_gecafle_consigne_retour"
+              sequence="10"/>
+</odoo>

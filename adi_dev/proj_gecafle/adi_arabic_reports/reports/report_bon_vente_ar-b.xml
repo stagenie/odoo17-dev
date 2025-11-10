@@ -1,0 +1,399 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Template de contenu partagé pour le bon de vente -->
+    <template id="report_bon_vente_content_ar">
+        <div class="page" dir="rtl">
+            <!-- Section DUPLICATA : utilise la variable is_duplicata définie dans les wrappers -->
+            <div t-if="is_duplicata" class="alert alert-info text-center mb-3">
+                <strong style="font-size: 18px;">نسخة مكررة</strong>
+            </div>
+
+            <!-- Section états : fonctionne directement -->
+            <div t-if="o.state == 'annule'" class="alert alert-danger text-center mb-3">
+                <strong style="font-size: 18px;">بيع ملغى</strong>
+            </div>
+
+            <div t-if="o.state == 'brouillon'" class="alert alert-warning text-center mb-3">
+                <strong style="font-size: 18px;">مسودة</strong>
+            </div>
+
+            <div class="row mb-4">
+                <div t-att-class="'col-9' if not o.client_id.est_fidel else 'col-12'">
+                    <h2 class="text-center">وصل البيع</h2>
+                    <div class="row mt-4">
+                        <div class="col-6 text-right">
+                            <strong>رقم وصل البيع:</strong>
+                            <span t-field="o.name"/>
+                        </div>
+                        <div class="col-6">
+                            <strong>التاريخ/الوقت:</strong>
+                            <span t-field="o.date_vente" t-options='{"widget": "datetime"}'/>
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-8 text-right">
+                            <strong>العميل:</strong>
+                            <span t-field="o.client_id.name"/>
+                        </div>
+                        <div class="col-4">
+                            <strong>الهاتف:</strong>
+                            <span t-field="o.tel_mob_client"/>
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-6 text-right">
+                            <strong>البائع:</strong>
+                            <span t-field="o.user_id.name"/>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section Consigne -->
+                <div t-if="not o.client_id.est_fidel" class="col-3 consigne-section">
+                    <div class="text-center mb-2">
+                        <h5>الأمانة</h5>
+                        <div class="border-bottom border-dark mb-2" style="border-style: dashed !important;"></div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6 text-right">
+                            <strong>رقم الأصل:</strong>
+                        </div>
+                        <div class="col-6">
+                            <span t-field="o.name"/>
+                        </div>
+                    </div>
+                    <!-- Section Consigne (APRÈS) -->
+                    <div class="row mt-1">
+                        <div class="col-6 text-right">
+                            <strong>العبوة:</strong>
+                        </div>
+                        <div class="col-6">
+                            <!-- FIX: Forcer LTR pour l'affichage correct des emballages -->
+                            <span dir="ltr" style="display: inline-block; text-align: left;">
+                                <span t-field="o.emballages_consigne_desc"/>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="row mt-1">
+                        <div class="col-6 text-right">
+                            <strong>المبلغ:</strong>
+                        </div>
+                        <div class="col-6">
+                            <!-- FIX: Formatage correct avec LTR forcé -->
+                            <span dir="ltr" style="display: inline-block;">
+                                <span t-esc="'{:,.2f}'.format(o.montant_total_consigne).replace(',', ' ')"/>
+                                <span t-field="o.currency_id.symbol"/>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tableau des produits avec ordre inversé -->
+            <table class="table table-sm table-bordered">
+                <thead>
+                    <tr style="background-color: #f0f0f0;">
+                        <th class="text-center">رقم الاستلام</th>
+                        <th class="text-center">المنتج</th>
+                        <th class="text-center">عدد العبوات</th>
+                        <th class="text-center">التسمية</th>
+                        <th class="text-center">وزن الوحدة</th>
+                        <th class="text-center">نوع العبوة</th>
+                        <th class="text-center">الجودة</th>
+                        <th class="text-center">الوزن الإجمالي</th>
+                        <th class="text-center">وزن العبوات</th>
+                        <th class="text-center">الوزن الصافي</th>
+                        <th class="text-center">سعر الوحدة</th>
+                        <th class="text-center" style="white-space: nowrap;">الإجمالي</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr t-foreach="o.detail_vente_ids" t-as="line">
+                        <td class="text-center">
+                            <span t-field="line.reception_id.name"/>
+                        </td>
+                        <td>
+                            <span t-field="line.producteur_id.name"/>
+                        </td>
+                        <td class="text-center">
+                            <span t-field="line.nombre_colis"/>
+                        </td>
+                        <td>
+                            <span t-field="line.produit_id.name"/>
+                        </td>
+                        <td class="text-center">
+                            <span t-esc="'%.2f' % line.poids_brut_un_colis"/>
+                        </td>
+                        <td class="text-center">
+                            <span t-field="line.type_colis_id.name"/>
+                        </td>
+                        <td class="text-center">
+                            <span t-field="line.qualite_id.name"/>
+                        </td>
+                        <td class="text-right">
+                            <span t-esc="'%.2f' % line.poids_brut"/>
+                        </td>
+                        <td class="text-right">
+                            <span t-esc="'%.2f' % line.poids_colis"/>
+                        </td>
+                        <td class="text-right">
+                            <span t-esc="'%.2f' % line.poids_net"/>
+                        </td>
+                        <td class="text-right" style="white-space: nowrap;">
+                            <!-- FIX: Prix unitaire avec LTR -->
+                            <span dir="ltr" style="display: inline-block;">
+                                <span t-esc="'{:,.2f}'.format(line.prix_unitaire).replace(',', ' ')"/>
+                            </span>
+                        </td>
+                        <td class="text-right" style="white-space: nowrap;">
+                            <!-- FIX: Montant total avec LTR -->
+                            <span dir="ltr" style="display: inline-block;">
+                                <span t-esc="'{:,.2f}'.format(line.montant_net).replace(',', ' ')"/>
+                                <span t-field="o.currency_id.symbol"/>
+                            </span>
+                        </td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr class="font-weight-bold">
+                        <td colspan="2" class="text-right">
+                            <strong>المجاميع</strong>
+                        </td>
+                        <td class="text-center">
+                            <span t-esc="sum(o.detail_vente_ids.mapped('nombre_colis'))"/>
+                        </td>
+                        <td colspan="4"></td>
+                        <td class="text-right">
+                            <span t-esc="'%.2f' % sum(o.detail_vente_ids.mapped('poids_brut'))"/>
+                        </td>
+                        <td class="text-right">
+                            <span t-esc="'%.2f' % sum(o.detail_vente_ids.mapped('poids_colis'))"/>
+                        </td>
+                        <td class="text-right">
+                            <span t-esc="'%.2f' % sum(o.detail_vente_ids.mapped('poids_net'))"/>
+                        </td>
+                        <td></td>
+                        <td class="text-right" style="white-space: nowrap;">
+                            <!-- FIX: Total avec LTR -->
+                            <span dir="ltr" style="display: inline-block;">
+                                <span t-esc="'{:,.2f}'.format(o.montant_total_net).replace(',', ' ')"/>
+                                <span t-field="o.currency_id.symbol"/>
+                            </span>
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+
+            <!-- Section du bas -->
+            <div class="row mt-5">
+                <div class="col-6">
+                    <div t-if="o.notes">
+                        <h5>الشروط العامة</h5>
+                        <p t-field="o.notes"/>
+                    </div>
+                    <div t-if="o.observation" class="mt-3">
+                        <h5>ملاحظات</h5>
+                        <p t-field="o.observation"/>
+                    </div>
+                </div>
+
+                <div class="col-6">
+                    <table class="table table-sm">
+                        <!-- FIX: Tous les montants avec LTR forcé -->
+                        <tr>
+                            <td class="text-right">
+                                <strong>مبلغ العبوات:</strong>
+                            </td>
+                            <td class="text-left" style="white-space: nowrap;">
+                                <span dir="ltr" style="display: inline-block;">
+                                    <span t-esc="'{:,.2f}'.format(o.montant_total_emballages).replace(',', ' ')"/>
+                                    <span t-field="o.currency_id.symbol"/>
+                                </span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-right">
+                                <strong>المبلغ الصافي:</strong>
+                            </td>
+                            <td class="text-left" style="white-space: nowrap;">
+                                <span dir="ltr" style="display: inline-block;">
+                                    <span t-esc="'{:,.2f}'.format(o.montant_total_net).replace(',', ' ')"/>
+                                    <span t-field="o.currency_id.symbol"/>
+                                </span>
+                            </td>
+                        </tr>
+                        <tr t-if="o.montant_remise_globale > 0">
+                            <td class="text-right">
+                                <strong>الخصم:</strong>
+                            </td>
+                            <td class="text-left" style="white-space: nowrap;">
+                                <span dir="ltr" style="display: inline-block;">
+                                    <span t-esc="'{:,.2f}'.format(o.montant_remise_globale).replace(',', ' ')"/>
+                                    <span t-field="o.currency_id.symbol"/>
+                                </span>
+                            </td>
+                        </tr>
+                        <tr class="border-top">
+                            <td class="text-right">
+                                <strong>المبلغ الإجمالي:</strong>
+                            </td>
+                            <td class="text-left" style="white-space: nowrap;">
+                                <strong>
+                                    <span dir="ltr" style="display: inline-block;">
+                                        <span t-esc="'{:,.2f}'.format(o.montant_total_a_payer).replace(',', ' ')"/>
+                                        <span t-field="o.currency_id.symbol"/>
+                                    </span>
+                                </strong>
+                            </td>
+                        </tr>
+
+                        <!-- Section paiements (si facture existe et vente validée) -->
+                        <t t-if="o.invoice_id and o.state == 'valide'">
+                            <!-- Total Payé -->
+                            <tr>
+                                <td class="text-right">
+                                    <strong>المبلغ المدفوع:</strong>
+                                </td>
+                                <td class="text-left text-success" style="white-space: nowrap;">
+                                    <span dir="ltr" style="display: inline-block;">
+                                        <span t-esc="'{:,.2f}'.format(o.amount_paid).replace(',', ' ')"/>
+                                        <span t-field="o.currency_id.symbol"/>
+                                    </span>
+                                </td>
+                            </tr>
+
+                            <!-- Total Reste -->
+                            <tr>
+                                <td class="text-right">
+                                    <strong>المبلغ المتبقي:</strong>
+                                </td>
+                                <td class="text-left" style="white-space: nowrap;">
+                                    <span t-attf-class="#{o.amount_residual_signed > 0 and 'text-danger' or 'text-success'}">
+                                        <span dir="ltr" style="display: inline-block;">
+                                            <span t-esc="'{:,.2f}'.format(o.amount_residual_signed).replace(',', ' ')"/>
+                                            <span t-field="o.currency_id.symbol"/>
+                                        </span>
+                                    </span>
+                                </td>
+                            </tr>
+
+                            <!-- Badge état de paiement -->
+                            <tr>
+                                <td colspan="2" class="text-center pt-2">
+                                    <t t-if="o.payment_state == 'paid'">
+                                        <span class="badge badge-success">مدفوع بالكامل</span>
+                                    </t>
+                                    <t t-elif="o.payment_state == 'partial'">
+                                        <span class="badge badge-warning">مدفوع جزئياً</span>
+                                    </t>
+                                    <t t-else="">
+                                        <span class="badge badge-danger">غير مدفوع</span>
+                                    </t>
+                                </td>
+                            </tr>
+                        </t>
+                    </table>
+
+                    <!-- Détails des paiements (si activé et si paiements existent) -->
+                    <div t-if="o.show_payment_details and o.payment_ids and o.payment_count > 0" class="mt-3">
+                        <h6>تفاصيل المدفوعات:</h6>
+                        <table class="table table-sm table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>التاريخ</th>
+                                    <th>المرجع</th>
+                                    <th>الطريقة</th>
+                                    <th class="text-right" style="min-width: 120px;">المبلغ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="o.payment_ids" t-as="payment">
+                                    <td>
+                                        <span t-field="payment.date" t-options='{"widget": "date"}'/>
+                                    </td>
+                                    <td>
+                                        <span t-field="payment.name"/>
+                                    </td>
+                                    <td>
+                                        <span t-field="payment.journal_id.name"/>
+                                    </td>
+                                    <td class="text-right" style="white-space: nowrap;">
+                                        <span dir="ltr" style="display: inline-block;">
+                                            <span t-esc="'{:,.2f}'.format(payment.amount).replace(',', ' ')"/>
+                                            <span t-field="payment.currency_id.symbol"/>
+                                        </span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="3" class="text-right">
+                                        <strong>إجمالي المدفوع:</strong>
+                                    </td>
+                                    <td class="text-right" style="white-space: nowrap;">
+                                        <strong>
+                                            <span dir="ltr" style="display: inline-block;">
+                                                <span t-esc="'{:,.2f}'.format(o.amount_paid).replace(',', ' ')"/>
+                                                <span t-field="o.currency_id.symbol"/>
+                                            </span>
+                                        </strong>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Template wrapper pour le rapport normal (reste inchangé) -->
+    <template id="report_bon_vente_normal_ar">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <t t-set="company" t-value="o.company_id or env.company"/>
+                    <t t-set="is_duplicata" t-value="False"/>
+                    <t t-call="adi_arabic_reports.report_bon_vente_content_ar"/>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <!-- Template wrapper pour le duplicata (reste inchangé) -->
+    <template id="report_bon_vente_duplicata_ar">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <t t-set="company" t-value="o.company_id or env.company"/>
+                    <t t-set="is_duplicata" t-value="True"/>
+                    <t t-call="adi_arabic_reports.report_bon_vente_content_ar"/>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <!-- Actions pour les rapports (restent inchangées) -->
+    <record id="action_report_bon_vente_ar" model="ir.actions.report">
+        <field name="name">وصل البيع</field>
+        <field name="model">gecafle.vente</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_arabic_reports.report_bon_vente_normal_ar</field>
+        <field name="report_file">adi_arabic_reports.report_bon_vente_ar</field>
+        <field name="binding_model_id" ref="adi_gecafle_ventes.model_gecafle_vente"/>
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="base.paperformat_euro"/>
+        <field name="print_report_name">'وصل البيع - %s' % (object.name)</field>
+    </record>
+
+    <record id="action_report_bon_vente_duplicata_ar" model="ir.actions.report">
+        <field name="name">وصل البيع - نسخة مكررة</field>
+        <field name="model">gecafle.vente</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_arabic_reports.report_bon_vente_duplicata_ar</field>
+        <field name="report_file">adi_arabic_reports.report_bon_vente_duplicata_ar</field>
+        <field name="paperformat_id" ref="base.paperformat_euro"/>
+        <field name="print_report_name">'نسخة مكررة - وصل البيع - %s' % (object.name)</field>
+    </record>
+</odoo>

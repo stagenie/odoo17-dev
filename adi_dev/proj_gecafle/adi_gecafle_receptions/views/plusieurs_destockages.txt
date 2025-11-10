@@ -1,0 +1,140 @@
+Solution pour Destocker Plusieurs Lignes Simultanément dans Odoo
+Pour permettre à l'utilisateur de destocker plusieurs lignes en même temps, je vais adapter votre code existant. Voici la solution complète :
+1. Modification de l'action serveur
+xml
+
+
+<record id="action_stock_destockage" model="ir.actions.server">
+    <field name="name">Destockage</field>
+    <field name="model_id" ref="model_gecafle_stock"/>
+    <field name="binding_model_id" ref="model_gecafle_stock"/>
+    <field name="state">code</field>
+    <field name="code">
+        ctx = dict(env.context)
+        active_ids = ctx.get('active_ids', [])
+        action = {
+            'type': 'ir.actions.act_window',
+            'res_model': 'gecafle.destockage.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': dict(ctx, default_stock_ids=active_ids),
+        }
+    </field>
+</record>
+2. Adaptation du modèle Python du wizard
+python
+
+
+from odoo import api, fields, models, _
+from odoo.exceptions import ValidationError
+
+class GecafleDestockageWizard(models.TransientModel):
+    _name = 'gecafle.destockage.wizard'
+    _description = 'Assistant de destockage multiple'
+
+    stock_ids = fields.Many2many('gecafle.stock', string='Stocks à destocker')
+    destockage_date = fields.Date(string='Date de destockage', default=fields.Date.context_today)
+    observation = fields.Text(string='Observation')
+    line_ids = fields.One2many('gecafle.destockage.wizard.line', 'wizard_id', string='Lignes de destockage')
+
+    @api.model
+    def default_get(self, fields_list):
+        res = super(GecafleDestockageWizard, self).default_get(fields_list)
+        stock_ids = self.env.context.get('default_stock_ids', [])
+        if stock_ids:
+            stocks = self.env['gecafle.stock'].browse(stock_ids)
+            lines = [(0, 0, {
+                'stock_id': stock.id,
+                'qte_disponible': stock.qte_dispo,
+                'qte_destockee': 0,
+            }) for stock in stocks]
+            res.update({'line_ids': lines})
+        return res
+
+    def action_destock(self):
+        for line in self.line_ids:
+            if line.qte_destockee <= 0:
+                raise ValidationError(_("La quantité destockée doit être supérieure à zéro."))
+            if line.qte_destockee > line.qte_disponible:
+                raise ValidationError(_("La quantité destockée ne peut pas dépasser la quantité disponible."))
+
+            # Créer une entrée de destockage
+            self.env['gecafle.destockage'].create({
+                'stock_id': line.stock_id.id,
+                'reception_id': line.stock_id.reception_id.id,
+                'reception_date': line.stock_id.reception_date,
+                'producteur_id': line.stock_id.producteur_id.id,
+                'designation_id': line.stock_id.designation_id.id,
+                'qualite_id': line.stock_id.qualite_id.id,
+                'emballage_id': line.stock_id.emballage_id.id,
+                'qte_destockee': line.qte_destockee,
+                'destockage_date': self.destockage_date,
+                'observation': line.observation or self.observation,
+            })
+
+            # Mise à jour de la quantité disponible dans le stock
+            line.stock_id.write({
+                'qte_dispo': line.stock_id.qte_dispo - line.qte_destockee
+            })
+
+        return {'type': 'ir.actions.act_window_close'}
+
+class GecafleDestockageWizardLine(models.TransientModel):
+    _name = 'gecafle.destockage.wizard.line'
+    _description = 'Ligne d\'assistant de destockage'
+
+    wizard_id = fields.Many2one('gecafle.destockage.wizard', string='Wizard', required=True)
+    stock_id = fields.Many2one('gecafle.stock', string='Stock', required=True)
+    qte_disponible = fields.Float(string='Quantité disponible', readonly=True)
+    qte_destockee = fields.Float(string='Quantité à destocker', required=True)
+    observation = fields.Text(string='Observation spécifique')
+
+    # Champs en lecture seule pour information
+    producteur_id = fields.Many2one(related='stock_id.producteur_id', string='Producteur', readonly=True)
+    designation_id = fields.Many2one(related='stock_id.designation_id', string='Désignation', readonly=True)
+    qualite_id = fields.Many2one(related='stock_id.qualite_id', string='Qualité', readonly=True)
+3. Vue du wizard modifiée
+xml
+
+
+<record id="view_gecafle_destockage_wizard_form" model="ir.ui.view">
+    <field name="name">gecafle.destockage.wizard.form</field>
+    <field name="model">gecafle.destockage.wizard</field>
+    <field name="arch" type="xml">
+        <form string="Destockage multiple">
+            <group>
+                <field name="destockage_date"/>
+                <field name="observation" placeholder="Observation globale pour toutes les lignes"/>
+            </group>
+            <field name="line_ids" nolabel="1">
+                <tree editable="bottom">
+                    <field name="stock_id" readonly="1"/>
+                    <field name="producteur_id" readonly="1"/>
+                    <field name="designation_id" readonly="1"/>
+                    <field name="qualite_id" readonly="1"/>
+                    <field name="qte_disponible"/>
+                    <field name="qte_destockee"/>
+                    <field name="observation" placeholder="Observation spécifique à cette ligne"/>
+                </tree>
+            </field>
+            <footer>
+                <button string="Valider" type="object" name="action_destock" class="btn-primary"/>
+                <button string="Annuler" class="btn-secondary" special="cancel"/>
+            </footer>
+        </form>
+    </field>
+</record>
+Explications des modifications
+Action serveur
+Transmets tous les IDs sélectionnés via default_stock_ids au lieu d'un seul
+Modèle du wizard
+Création d'un modèle principal et d'un modèle de ligne pour gérer plusieurs lignes
+Méthode default_get qui prépare automatiquement les lignes basées sur les stocks sélectionnés
+La méthode action_destock traite chaque ligne séparément
+Vue du wizard
+Affiche une liste éditable des lignes à destocker
+Permet une observation globale et des observations par ligne
+Affiche des informations utiles (producteur, désignation) pour faciliter l'identification
+Cette solution permet à l'utilisateur de sélectionner plusieurs lignes de stock,
+de spécifier les quantités à destocker pour chacune, et de valider en une seule opération,
+tout en gardant  la possibilité d'avoir des observations spécifiques par ligne si nécessaire.

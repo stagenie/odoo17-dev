@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Héritage de la vue formulaire du récapitulatif -->
+    <record id="view_gecafle_reception_recap_form_inherit_extended" model="ir.ui.view">
+        <field name="name">gecafle.reception.recap.form.inherit.extended</field>
+        <field name="model">gecafle.reception.recap</field>
+        <field name="inherit_id" ref="adi_gecafle_ventes.view_gecafle_reception_recap_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Ajouter les montants transport et emballages après net_a_payer -->
+            <xpath expr="//field[@name='net_a_payer']" position="after">
+                <field name="transport"
+                       widget="monetary"
+                       readonly="1"
+                       invisible="not transport"/>
+                <field name="montant_total_emballage_achete"
+                       widget="monetary"
+                       readonly="1"
+                       invisible="not montant_total_emballage_achete"/>
+            </xpath>
+
+            <!-- Ajouter le bouton dans le header -->
+            <xpath expr="//header" position="inside">
+                <button name="%(adi_gecafle_reception_extended.action_bordereau_print_wizard)d"
+                        string="Imprimer Bordereau Avancé"
+                        type="action"
+                        class="btn-info"
+                        icon="fa-print"
+                        invisible="state != 'valide'"
+                        context="{'default_recap_id': id}"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

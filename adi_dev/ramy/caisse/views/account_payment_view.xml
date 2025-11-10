@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+	<data>
+		<record id="view_account_payment_register_form_inherit_cash" model="ir.ui.view">
+			<field name="name">caisse payment register</field>
+			<field name="model">account.payment.register</field>
+			<field name="inherit_id" ref='account.view_account_payment_register_form'></field>
+			<field name="arch" type="xml">
+				<data>
+					<xpath expr="//field[@name='journal_id']" position="after">                     
+						<field name="type_methode" invisible="1"/>
+						<field name="caisse" domain="[('state', '=', 'open')]" required="type_methode == 'cash'"/><!--  , 'invisible': [('type_methode', '!=', 'cash')] -->
+					</xpath>
+				</data>
+			</field>
+		</record>
+
+		<record id="view_account_payment_form_inherit_cash" model="ir.ui.view">
+			<field name="name">caisse payment</field>
+			<field name="model">account.payment</field>
+			<field name="inherit_id" ref='account.view_account_payment_form'></field>
+			<field name="arch" type="xml">
+				<data>
+					<xpath expr="//field[@name='journal_id']" position="after">                     
+						<field name="type_methode" invisible="1"/>
+						<field name="caisse" domain="[('state', '=', 'open')]" required="type_methode == 'cash'" readonly="state != 'draft'"/>
+					</xpath>
+				</data>
+			</field>
+		</record>
+
+	</data>
+</odoo>

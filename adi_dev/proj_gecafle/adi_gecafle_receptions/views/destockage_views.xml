@@ -1,0 +1,99 @@
+<odoo>
+    <!-- Wizard Destockage -->
+    <record id="view_gecafle_destockage_wizard_form" model="ir.ui.view">
+        <field name="name">gecafle.destockage.wizard.form</field>
+        <field name="model">gecafle.destockage.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Destockage">
+                <group>
+                    <!-- On affiche en lecture seule la ligne de stock sélectionnée -->
+                    <field name="stock_id" readonly="1" invisible="1"/>
+                    <field name="reception_id" readonly="1"/>
+                    <field name="reception_date" readonly="1"/>
+                    <field name="producteur_id" readonly="1"/>
+                    <field name="designation_id" readonly="1"/>
+                    <field name="qualite_id" readonly="1"/>
+                    <field name="emballage_id" readonly="1"/>
+                    <field name="destockage_date"/>
+                    <field name="qte_disponible"/>
+                    <field name="qte_destockee"/>
+                    <field name="observation"/>
+                </group>
+                <footer>
+                    <button string="Valider" type="object" name="action_destock" class="btn-primary"/>
+                    <button string="Annuler" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Extension de la vue de liste de Stock  -->
+    <record id="view_gecafle_stock_tree_destockage" model="ir.ui.view">
+        <field name="name">gecafle.destockage.tree</field>
+        <field name="model">gecafle.destockage</field>
+        <field name="arch" type="xml">
+            <tree create="false" edit="false" delete="false" >
+                <field name="reception_id"/>
+                <field name="reception_date"/>
+                <field name="producteur_id"/>
+                <field name="designation_id"/>
+                <field name="qualite_id"/>
+                <field name="emballage_id"/>
+                <field name="qte_destockee"/>
+                <field name="destockage_date"/>
+                <field name="observation"/>
+
+            </tree>
+        </field>
+    </record>
+
+
+
+
+<record id="action_stock_destockage" model="ir.actions.server">
+    <field name="name">Destockage</field>
+    <field name="model_id" ref="model_gecafle_stock"/>
+    <field name="binding_model_id" ref="model_gecafle_stock"/>
+    <field name="state">code</field>
+    <field name="code">
+ctx = dict(env.context)
+default_stock_id = (ctx.get('active_ids') or [False])[0]
+action = {
+'type': 'ir.actions.act_window',
+'res_model': 'gecafle.destockage.wizard',
+'view_mode': 'form',
+'target': 'new',
+'context': dict(ctx, default_stock_id=default_stock_id),
+}
+    </field>
+</record>
+
+
+
+
+    <record id="action_gecafle_destockage_history" model="ir.actions.act_window">
+        <field name="name">Historique Destockage</field>
+        <field name="res_model">gecafle.destockage</field>
+        <field name="view_mode">tree</field>
+        <field name="view_id" ref="view_gecafle_stock_tree_destockage"/>
+        <field name="context">{'default_readonly': True, 'no_create': True, 'no_edit': True}</field>
+
+    </record>
+
+
+
+    <menuitem id="menu_gecafle_destockage"
+              name="Historique Destockage"
+              parent="menu_gecafle_stock_journal_de_stock"
+              action="action_gecafle_destockage_history"
+              sequence="2"/>
+
+
+
+        <menuitem id="menu_gecafle_destockage_stock"
+              name="Historique Destockage"
+              parent="menu_gecafle_stock_journal_de_stock_stock"
+              action="action_gecafle_destockage_history"
+              sequence="3"/>
+
+</odoo>

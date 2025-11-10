@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="module_category_gecafle" model="ir.module.category">
+        <field name="name">GECAFLE</field>
+        <field name="sequence">100</field>
+    </record>
+
+    <!-- Groupe utilisateur normal -->
+    <record id="group_gecafle_user" model="res.groups">
+        <field name="name">Utilisateur</field>
+        <field name="category_id" ref="module_category_gecafle"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <!-- Groupe responsable -->
+    <record id="group_gecafle_manager" model="res.groups">
+        <field name="name">Responsable</field>
+        <field name="category_id" ref="module_category_gecafle"/>
+        <field name="implied_ids" eval="[(4, ref('group_gecafle_user'))]"/>
+        <field name="users" eval="[(4, ref('base.user_admin'))]"/>
+    </record>
+
+    <!-- Groupe direction (peut voir les marges) -->
+    <record id="group_gecafle_direction" model="res.groups">
+        <field name="name">Direction</field>
+        <field name="category_id" ref="module_category_gecafle"/>
+        <field name="implied_ids" eval="[(4, ref('group_gecafle_manager'))]"/>
+        <field name="users" eval="[(4, ref('base.user_admin'))]"/>
+    </record>
+</odoo>

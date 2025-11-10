@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Héritage de la vue formulaire des ventes pour ajouter le bouton express
+    <record id="view_gecafle_vente_form_inherit_automation" model="ir.ui.view">
+        <field name="name">gecafle.vente.form.inherit.automation</field>
+        <field name="model">gecafle.vente</field>
+        <field name="inherit_id" ref="adi_gecafle_ventes.view_gecafle_vente_form"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//button[@name='action_create_avoir']" position="after">
+                <button name="action_create_avoir_express"
+                        string="⚡ Avoir Express"
+                        type="object"
+                        class="btn-success"
+                        icon="fa-bolt"
+                        invisible="state != 'valide'"
+                        help="Crée et comptabilise automatiquement l'avoir en un clic"
+                        groups="adi_gecafle_ventes.group_gecafle_user"/>
+            </xpath>
+
+
+
+        </field>
+    </record>
+
+    -->
+
+
+    <!-- Vue formulaire des avoirs avec indicateur d'automatisation -->
+    <record id="view_gecafle_avoir_client_form_inherit_automation" model="ir.ui.view">
+        <field name="name">gecafle.avoir.client.form.inherit.automation</field>
+        <field name="model">gecafle.avoir.client</field>
+        <field name="inherit_id" ref="adi_gecafle_ventes.view_gecafle_avoir_client_form"/>
+        <field name="arch" type="xml">
+            <!-- Ajouter un badge pour les avoirs automatisés -->
+            <xpath expr="//sheet" position="before">
+                <header invisible="not is_automated">
+                    <div class="alert alert-success text-center">
+                        <i class="fa fa-bolt"/> Avoir créé et traité automatiquement
+                    </div>
+                </header>
+            </xpath>
+
+            <!-- Ajouter le champ is_automated invisible -->
+            <xpath expr="//field[@name='state']" position="after">
+                <field name="is_automated" invisible="1"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

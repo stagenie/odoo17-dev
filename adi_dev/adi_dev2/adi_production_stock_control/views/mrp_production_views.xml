@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue formulaire pour ajouter les champs de contrôle -->
+    <record id="mrp_production_form_view_inherit_stock_control" model="ir.ui.view">
+        <field name="name">mrp.production.form.inherit.stock.control</field>
+        <field name="model">mrp.production</field>
+        <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
+        <field name="arch" type="xml">
+            <!-- Ajouter les champs de contrôle -->
+            <xpath expr="//group[@name='group_extra_info']" position="inside">
+                <group string="Contrôles de Stock" col="2">
+                    <field name="require_full_availability"
+                           widget="boolean_toggle"
+                           help="Si activé, tous les composants doivent être disponibles avant de pouvoir produire"/>
+                    <field name="allow_overconsumption"
+                           widget="boolean_toggle"
+                           help="Si activé, permet de consommer plus que les quantités prévues"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>

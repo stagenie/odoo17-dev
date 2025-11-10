@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue formulaire pour ajouter les boutons d'annulation -->
+    <record id="view_gecafle_reception_recap_form_inherit_control" model="ir.ui.view">
+        <field name="name">gecafle.reception.recap.form.inherit.control</field>
+        <field name="model">gecafle.reception.recap</field>
+        <field name="inherit_id" ref="adi_gecafle_ventes.view_gecafle_reception_recap_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Ajouter les champs invisibles -->
+            <xpath expr="//field[@name='state']" position="after">
+                <field name="can_cancel" invisible="1"/>
+                <field name="can_reset_to_draft" invisible="1"/>
+            </xpath>
+
+            <!-- Ajouter les boutons dans le header -->
+            <xpath expr="//header" position="inside">
+                <!-- Bouton Annuler -->
+                <button name="action_cancel"
+                        string="Annuler"
+                        type="object"
+                        class="btn-warning"
+                        invisible="not can_cancel"
+                        confirm="Êtes-vous sûr de vouloir annuler ce récapitulatif ? Cette action peut être inversée."
+                        groups="adi_gecafle_vente_control.group_vente_control_manager"/>
+
+                <!-- Bouton Remettre en brouillon -->
+                <button name="action_reset_to_draft"
+                        string="Remettre en brouillon"
+                        type="object"
+                        class="btn-info"
+                        invisible="not can_reset_to_draft"
+                        confirm="Voulez-vous remettre ce récapitulatif en brouillon ? Les lignes seront régénérées si nécessaire."
+                        groups="adi_gecafle_vente_control.group_vente_control_manager"/>
+            </xpath>
+
+            <!-- Modifier l'affichage de l'état pour inclure annulé -->
+            <xpath expr="//field[@name='state']" position="attributes">
+                <attribute name="statusbar_visible">brouillon,valide,facture,annule</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Ajouter l'état annulé dans la vue liste -->
+    <record id="view_gecafle_reception_recap_tree_inherit_control" model="ir.ui.view">
+        <field name="name">gecafle.reception.recap.tree.inherit.control</field>
+        <field name="model">gecafle.reception.recap</field>
+        <field name="inherit_id" ref="adi_gecafle_ventes.view_gecafle_reception_recap_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//tree" position="attributes">
+                <attribute name="decoration-muted">state == 'annule'</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Ajouter un filtre pour les récaps annulés -->
+    <record id="view_gecafle_reception_recap_search_inherit_control" model="ir.ui.view">
+        <field name="name">gecafle.reception.recap.search.inherit.control</field>
+        <field name="model">gecafle.reception.recap</field>
+        <field name="inherit_id" ref="adi_gecafle_ventes.view_gecafle_reception_recap_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='invoiced']" position="after">
+                <filter string="Annulé"
+                        name="cancelled"
+                        domain="[('state','=','annule')]"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

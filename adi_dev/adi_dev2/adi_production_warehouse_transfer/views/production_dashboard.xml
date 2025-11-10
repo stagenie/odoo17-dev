@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue tableau de bord simplifiée -->
+    <record id="production_transfer_dashboard_view" model="ir.ui.view">
+        <field name="name">production.transfer.dashboard</field>
+        <field name="model">production.transfer.dashboard</field>
+        <field name="arch" type="xml">
+            <form string="Tableau de bord Transferts Production" edit="0" create="0">
+                <sheet>
+                    <!-- KPIs principaux -->
+                    <group col="4">
+                        <group string="Transferts aujourd'hui" class="bg-info">
+                            <field name="transfers_today" nolabel="1" class="text-center h2"/>
+                        </group>
+                        <group string="En attente" class="bg-warning">
+                            <field name="transfers_pending" nolabel="1" class="text-center h2"/>
+                        </group>
+                        <group string="Complétés (7j)" class="bg-success">
+                            <field name="transfers_completed" nolabel="1" class="text-center h2"/>
+                        </group>
+                        <group string="Produits en rupture" class="bg-danger">
+                            <field name="products_shortage" nolabel="1" class="text-center h2"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <!-- Statistiques -->
+                        <page string="Statistiques">
+                            <group col="2">
+                                <group string="Transferts par mois">
+                                    <field name="transfer_stats" nolabel="1">
+                                        <tree>
+                                            <field name="month"/>
+                                            <field name="count"/>
+                                        </tree>
+                                    </field>
+                                </group>
+                                <group string="Répartition par entrepôt">
+                                    <field name="warehouse_stats" nolabel="1">
+                                        <tree>
+                                            <field name="warehouse_id"/>
+                                            <field name="transfer_count"/>
+                                        </tree>
+                                    </field>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- Alertes -->
+                        <page string="Alertes Stock" name="alerts">
+                            <field name="stock_alerts" nolabel="1">
+                                <tree decoration-danger="qty_available &lt;= 0">
+                                    <field name="product_id"/>
+                                    <field name="warehouse_id"/>
+                                    <field name="qty_available" widget="badge"/>
+                                    <field name="qty_needed"/>
+                                </tree>
+                            </field>
+                        </page>
+
+                        <!-- Transferts récents -->
+                        <page string="Transferts récents">
+                            <field name="recent_transfers" nolabel="1">
+                                <tree>
+                                    <field name="name"/>
+                                    <field name="state" widget="badge"
+                                           decoration-info="state == 'draft'"
+                                           decoration-warning="state in ('waiting', 'confirmed', 'assigned')"
+                                           decoration-success="state == 'done'"/>
+                                    <field name="scheduled_date" widget="date"/>
+                                    <field name="location_id"/>
+                                    <field name="location_dest_id"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+
+                    <!-- Boutons d'action -->
+                    <footer>
+                        <button name="action_create_transfer"
+                                string="Nouveau Transfert"
+                                type="object"
+                                class="btn-primary"/>
+                        <button name="action_view_all_transfers"
+                                string="Voir tous les transferts"
+                                type="object"
+                                class="btn-secondary"/>
+                        <button name="action_refresh"
+                                string="Actualiser"
+                                type="object"
+                                class="btn-info"
+                                icon="fa-refresh"/>
+                    </footer>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action du tableau de bord -->
+    <record id="action_production_transfer_dashboard" model="ir.actions.act_window">
+        <field name="name">Tableau de bord Transferts</field>
+        <field name="res_model">production.transfer.dashboard</field>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+    </record>
+
+    <!-- Menu principal -->
+    <menuitem id="menu_production_transfers_root"
+              name="Transferts Production"
+              parent="mrp.menu_mrp_root"
+              sequence="45"/>
+
+    <!-- Sous-menus -->
+    <menuitem id="menu_production_transfer_dashboard"
+              name="Tableau de bord"
+              action="action_production_transfer_dashboard"
+              parent="menu_production_transfers_root"
+              sequence="1"/>
+
+    <menuitem id="menu_production_transfers"
+              name="Transferts"
+              action="action_production_transfers"
+              parent="menu_production_transfers_root"
+              sequence="10"/>
+
+    <!-- Configuration -->
+    <menuitem id="menu_production_transfer_config"
+              name="Configuration"
+              parent="menu_production_transfers_root"
+              sequence="100"/>
+
+    <menuitem id="menu_warehouse_config"
+              name="Entrepôts"
+              action="stock.action_warehouse_form"
+              parent="menu_production_transfer_config"
+              sequence="10"/>
+</odoo>

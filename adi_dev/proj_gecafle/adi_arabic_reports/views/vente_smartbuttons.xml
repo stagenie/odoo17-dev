@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- ============ SMART BUTTONS POUR LE FORMULAIRE DE VENTE ============ -->
+
+    <record id="view_gecafle_vente_form_inherit_arabic_reports" model="ir.ui.view">
+        <field name="name">gecafle.vente.form.inherit.arabic.reports</field>
+        <field name="model">gecafle.vente</field>
+        <field name="inherit_id" ref="adi_gecafle_ventes.view_gecafle_vente_form"/>
+        <field name="arch" type="xml">
+            <!-- Ajouter les boutons après le bouton "Bon de Pesé" -->
+            <xpath expr="//button[@name='action_print_bon_pese']" position="after">
+
+                <!-- Bouton Bon de Vente en Arabe -->
+                <button name="action_print_bon_vente_ar"
+                        string="وصل البيع"
+                        type="object"
+                        class="btn-primary"
+                        icon="fa-print"
+                        invisible="state != 'valide'"/>
+
+                <!-- Bouton Duplicata Vente en Arabe -->
+                <button name="action_print_bon_vente_duplicata_ar"
+                        string="نسخة مكررة"
+                        type="object"
+                        class="btn-warning"
+                        icon="fa-copy"
+                        invisible="state != 'valide' or not est_imprimee"/>
+
+
+            </xpath>
+            <xpath expr="//field[@name='state']" position="before">
+                <!-- Bouton De pesé en Arabe -->
+                <button name="action_print_bon_de_pese_ar"
+                        string="وصل الوزن"
+                        type="object"
+                        class="btn-warning"
+                        icon="fa-fa-balance-scale"
+                        invisible="state != 'valide'"/>
+            </xpath>
+        </field>
+
+    </record>
+
+    <!-- ============ SMART BUTTONS POUR LE FORMULAIRE DE FACTURE CLIENT ============ -->
+
+    <record id="view_account_move_form_inherit_arabic_reports" model="ir.ui.view">
+        <field name="name">account.move.form.inherit.arabic.reports</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="adi_gecafle_vente_invoices.view_move_form_inherit_gecafle_vente"/>
+        <field name="arch" type="xml">
+            <!-- Ajouter les boutons dans la button_box -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+
+                <!-- Bouton Bon de Vente en Arabe -->
+                <button name="action_print_bon_vente_ar"
+                        string="وصل البيع"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-file-text-o"
+                        invisible="not gecafle_vente_id"
+                        groups="base.group_user">
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_text">وصل</span>
+                        <span class="o_stat_text">البيع</span>
+                    </div>
+                </button>
+
+                <!-- Bouton Duplicata en Arabe -->
+                <button name="action_print_bon_vente_duplicata_ar"
+                        string="نسخة مكررة"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-copy"
+                        invisible="not gecafle_vente_id or not gecafle_vente_id.est_imprimee"
+                        groups="base.group_user">
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_text">نسخة</span>
+                        <span class="o_stat_text">مكررة</span>
+                    </div>
+                </button>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ============ SMART BUTTONS POUR LE FORMULAIRE DE RÉCEPTION ============ -->
+
+    <record id="view_gecafle_reception_form_inherit_arabic_reports" model="ir.ui.view">
+        <field name="name">gecafle.reception.form.inherit.arabic.reports</field>
+        <field name="model">gecafle.reception</field>
+        <field name="inherit_id" ref="adi_gecafle_receptions.view_gecafle_reception_form"/>
+        <field name="arch" type="xml">
+            <!-- Ajouter les boutons dans le header après les boutons existants -->
+            <xpath expr="//header/button[@name='action_print_duplicata']" position="after">
+
+                <!-- Bouton Bon de Réception en Arabe -->
+                <button name="action_print_bon_reception_ar"
+                        string="وصل الاستلام"
+                        type="object"
+                        class="btn-info"
+                        icon="fa-print"
+                        invisible="state not in ('confirmee')"
+                        groups="base.group_user"/>
+
+                <!-- Bouton Duplicata Réception en Arabe -->
+                <button name="action_print_bon_reception_duplicata_ar"
+                        string="نسخة مكررة"
+                        type="object"
+                        class="btn-warning"
+                        icon="fa-copy"
+                        invisible="state not in ('confirmee') or not est_imprimee"
+                        groups="base.group_user"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

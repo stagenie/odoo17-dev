@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_account_cashbox,account.bank.statement.cashbox,model_account_bank_statement_cashbox,account.group_account_user,1,1,1,1
+access_account_cashbox_line,account.bank.statement.cashbox.line,model_account_cashbox_line,account.group_account_user,1,1,1,1

@@ -1,0 +1,406 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue Tree pour les clôtures -->
+    <record id="view_treasury_cash_closing_tree" model="ir.ui.view">
+        <field name="name">treasury.cash.closing.tree</field>
+        <field name="model">treasury.cash.closing</field>
+        <field name="arch" type="xml">
+            <tree string="Clôtures de caisse"
+                  decoration-info="state == 'draft'"
+                  decoration-warning="state == 'confirmed'"
+                  decoration-success="state == 'validated'"
+                  decoration-muted="state == 'cancel'">
+                <field name="name"/>
+                <field name="cash_id"/>
+                <field name="closing_date"/>
+                <field name="closing_number"/>
+                <field name="balance_start" widget="monetary"/>
+                <field name="total_in" widget="monetary" optional="show"/>
+                <field name="total_out" widget="monetary" optional="show"/>
+                <field name="balance_end_theoretical" widget="monetary"/>
+                <field name="balance_end_real" widget="monetary"/>
+                <field name="difference" widget="monetary"
+                       decoration-danger="difference != 0"/>
+                <field name="currency_id" column_invisible="True"/>
+                <field name="state" widget="badge"/>
+                <field name="user_id" widget="many2one_avatar_user" optional="show"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vue Form pour les clôtures -->
+    <record id="view_treasury_cash_closing_form" model="ir.ui.view">
+        <field name="name">treasury.cash.closing.form</field>
+        <field name="model">treasury.cash.closing</field>
+        <field name="arch" type="xml">
+            <form string="Clôture de caisse">
+                <header>
+                    <!-- Bouton remettre en brouillon -->
+                    <button name="action_back_to_draft"
+                            string="Remettre en brouillon"
+                            type="object"
+                            invisible="state == 'draft'"
+                            confirm="Êtes-vous sûr de vouloir remettre cette clôture en brouillon ? Le solde réel sera re-synchronisé automatiquement."
+                            groups="adi_treasury.group_treasury_manager"/>
+
+                    <button name="action_load_operations"
+                            string="Recharger les opérations"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="state != 'draft'"
+                            help="Recharger toutes les opérations de la journée"/>
+
+                    <button name="action_create_manual_operation"
+                            string="Ajouter une opération"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="state != 'draft'"
+                            icon="fa-plus"/>
+
+                    <button name="action_confirm"
+                            string="Confirmer"
+                            type="object"
+                            class="oe_highlight"
+                            invisible="state != 'draft'"/>
+
+                    <button name="action_validate"
+                            string="Valider la clôture"
+                            type="object"
+                            class="oe_highlight"
+                            invisible="state != 'confirmed'"
+                            confirm="Cette action est irréversible. Un ajustement sera créé si nécessaire. Continuer ?"/>
+
+                    <!-- Bouton imprimer -->
+                    <button name="action_print_report"
+                            string="Imprimer"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="state == 'draft'"
+                            icon="fa-print"/>
+
+                    <!-- Bouton annuler -->
+                    <button name="action_cancel"
+                            string="Annuler"
+                            type="object"
+                            invisible="state in ('draft', 'cancel')"
+                            confirm="Êtes-vous sûr de vouloir annuler cette clôture ? Cette action est irréversible."
+                            groups="adi_treasury.group_treasury_manager"/>
+
+                    <div class="oe_button_box" name="button_box">
+                        <!-- Bouton Opérations manuelles -->
+                        <button name="action_view_manual_operations"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-hand-o-up">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_value">
+                                    <field name="manual_operation_count"/>
+                                    <span invisible="draft_manual_operation_count == 0">
+                                        (
+                                        <field name="draft_manual_operation_count" class="text-danger"/>
+                                        en brouillon)
+                                    </span>
+                                </span>
+                                <span class="o_stat_text">Opérations manuelles</span>
+                            </div>
+                        </button>
+
+                        <!-- Bouton Opérations automatiques -->
+                        <button name="action_view_automatic_operations"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-money">
+                            <field name="automatic_operation_count" widget="statinfo" string="Paiements auto"/>
+                        </button>
+                    </div>
+
+                    <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,validated"/>
+                </header>
+                <sheet>
+
+                    <!-- Ribbon pour l'état annulé -->
+                    <widget name="web_ribbon" title="Annulé" bg_color="bg-danger" invisible="state != 'cancel'"/>
+
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group>
+                            <field name="cash_id"
+                                   options="{'no_create': True}"
+                                   readonly="state != 'draft'"/>
+                            <field name="closing_date"
+                                   readonly="state != 'draft'"
+                                   widget="date"/>
+                            <field name="closing_number" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="user_id" readonly="1" widget="many2one_avatar_user"/>
+                            <field name="validated_by"
+                                   readonly="1"
+                                   widget="many2one_avatar_user"
+                                   invisible="not validated_by"/>
+                            <field name="company_id" groups="base.group_multi_company" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <!-- Information sur la période calculée -->
+                    <group string="Période de clôture" col="4" invisible="not period_start">
+                        <field name="period_start" readonly="1" widget="datetime"/>
+                        <field name="period_end" readonly="1" widget="datetime"/>
+                    </group>
+
+                    <!-- Tableau récapitulatif -->
+                    <group string="Récapitulatif" col="2">
+                        <group>
+                            <field name="balance_start" readonly="1"/>
+                            <label for="total_in" string="(+) Total entrées"/>
+                            <field name="total_in" nolabel="1" readonly="1" class="text-success"/>
+                            <label for="total_out" string="(-) Total sorties"/>
+                            <field name="total_out" nolabel="1" readonly="1" class="text-danger"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="balance_end_theoretical" readonly="1" class="font-weight-bold"/>
+
+                            <!-- NOUVEAUX ÉLÉMENTS pour le solde réel -->
+                            <field name="balance_end_real_manual" invisible="1"/>
+
+
+
+                            <!-- Champ solde réel avec indication -->
+                            <field name="balance_end_real"
+                                   readonly="state != 'draft'"
+                                   class="font-weight-bold"
+                                   required="state == 'confirmed'"
+                                   placeholder="Automatiquement synchronisé avec le solde théorique"
+                                   help="IMPORTANT : Ce montant est automatiquement égal au solde théorique. Modifiez-le seulement si le montant physiquement compté est différent."/>
+
+                            <!-- Badge indiquant si modifié manuellement -->
+                            <div invisible="not balance_end_real_manual or state == 'draft'">
+                                <span class="badge badge-warning">
+                                    <i class="fa fa-edit"/> Modifié manuellement
+                                </span>
+                            </div>
+
+                            <field name="difference"
+                                   readonly="1"
+                                   decoration-danger="difference != 0"
+                                   decoration-success="difference == 0"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Toutes les opérations" name="all_operations">
+                            <field name="line_ids" readonly="1">
+                                <tree create="false" delete="false" editable="false"
+                                      decoration-info="operation_type == 'initial'"
+                                      decoration-success="operation_type == 'in'"
+                                      decoration-danger="operation_type == 'out'"
+                                      decoration-muted="operation_id and operation_id.state == 'cancel'">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="date" widget="datetime"/>
+
+                                    <!-- Type d'opération avec badge -->
+                                    <field name="operation_type" widget="badge" string="Type"/>
+
+                                    <!-- Origine de l'opération -->
+                                    <field name="operation_id" column_invisible="True"/>
+                                    <field name="partner_id" string="Tiers"/>
+                                    <field name="category_id" string="Catégorie"/>
+                                    <field name="description" string="Description"/>
+                                    <field name="reference" string="Référence" optional="show"/>
+
+                                    <!-- Montants avec couleurs -->
+                                    <field name="amount_in" string="Entrée (+)"
+                                           widget="monetary"
+                                           decoration-success="amount_in &gt; 0"/>
+                                    <field name="amount_out" string="Sortie (-)"
+                                           widget="monetary"
+                                           decoration-danger="amount_out &gt; 0"/>
+
+                                    <!-- Solde cumulé avec style -->
+                                    <field name="cumulative_balance"
+                                           string="Solde cumulé"
+                                           class="font-weight-bold"
+                                           widget="monetary"
+                                           decoration-success="cumulative_balance &gt; 0"
+                                           decoration-danger="cumulative_balance &lt; 0"/>
+
+                                    <field name="currency_id" column_invisible="True"/>
+                                </tree>
+                            </field>
+
+                            <!-- Résumé par catégorie -->
+                            <group string="Résumé par catégorie" col="1">
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Catégorie</th>
+                                                <th class="text-right">Nb opérations</th>
+                                                <th class="text-right">Total entrées</th>
+                                                <th class="text-right">Total sorties</th>
+                                                <th class="text-right">Solde net</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- Ce tableau sera rempli par un widget personnalisé ou une vue calculée -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </group>
+                        </page>
+
+                        <page string="Notes" name="notes">
+                            <field name="notes"
+                                   placeholder="Notes sur la clôture..."
+                                   readonly="state == 'validated'"/>
+                        </page>
+
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vue Kanban pour les clôtures -->
+    <record id="view_treasury_cash_closing_kanban" model="ir.ui.view">
+        <field name="name">treasury.cash.closing.kanban</field>
+        <field name="model">treasury.cash.closing</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state" class="o_kanban_dashboard" quick_create="false">
+                <field name="name"/>
+                <field name="cash_id"/>
+                <field name="closing_date"/>
+                <field name="closing_number"/>
+                <field name="period_start"/>
+                <field name="period_end"/>
+                <field name="balance_end_real"/>
+                <field name="balance_end_real_manual"/>
+                <field name="difference"/>
+                <field name="currency_id"/>
+                <field name="state"/>
+                <progressbar field="state" colors='{"validated": "success", "cancel": "danger"}'/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="oe_kanban_global_click">
+                            <div class="o_kanban_card_header">
+                                <div class="o_kanban_card_header_title">
+                                    <div class="o_primary">
+                                        <strong>
+                                            <field name="name"/>
+                                        </strong>
+                                    </div>
+                                    <div class="o_secondary">
+                                        <field name="cash_id"/>
+                                        <!-- Badge si modifié manuellement -->
+                                        <t t-if="record.balance_end_real_manual.raw_value">
+                                            <span class="badge badge-warning ml-1">
+                                                <i class="fa fa-edit"/> Manuel
+                                            </span>
+                                        </t>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="container o_kanban_card_content">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <strong>Date :</strong>
+                                        <br/>
+                                        <field name="closing_date" widget="date"/>
+                                        <br/>
+                                        <small>Clôture n°
+                                            <field name="closing_number"/>
+                                        </small>
+                                        <br/>
+                                        <small class="text-muted">
+                                            <field name="period_start" widget="time"/>
+                                            -
+                                            <field name="period_end" widget="time"/>
+                                        </small>
+                                    </div>
+                                    <div class="col-6 text-right">
+                                        <strong>Solde final :</strong>
+                                        <br/>
+                                        <h3 class="mb-0">
+                                            <field name="balance_end_real" widget="monetary"/>
+                                        </h3>
+                                        <div t-if="record.difference.raw_value != 0"
+                                             class="text-danger">
+                                            Écart :
+                                            <field name="difference" widget="monetary"/>
+                                        </div>
+                                        <!-- Indicateur de synchronisation automatique -->
+                                        <div t-if="!record.balance_end_real_manual.raw_value and record.state.raw_value == 'draft'"
+                                             class="text-info">
+                                            <small>
+                                                <i class="fa fa-sync"/> Auto-synchronisé
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Vue Search pour les clôtures -->
+    <record id="view_treasury_cash_closing_search" model="ir.ui.view">
+        <field name="name">treasury.cash.closing.search</field>
+        <field name="model">treasury.cash.closing</field>
+        <field name="arch" type="xml">
+            <search string="Rechercher une clôture">
+                <field name="name"/>
+                <field name="cash_id"/>
+                <field name="closing_date"/>
+                <separator/>
+                <filter string="Brouillon" name="draft" domain="[('state', '=', 'draft')]"/>
+                <filter string="Confirmé" name="confirmed" domain="[('state', '=', 'confirmed')]"/>
+                <filter string="Validé" name="validated" domain="[('state', '=', 'validated')]"/>
+                <filter string="Annulé" name="cancel" domain="[('state', '=', 'cancel')]"/>
+                <separator/>
+                <filter string="Avec écart" name="with_difference" domain="[('difference', '!=', 0)]"/>
+                <filter string="Sans écart" name="no_difference" domain="[('difference', '=', 0)]"/>
+                <separator/>
+                <!-- NOUVEAU : Filtres de synchronisation -->
+                <filter string="Auto-synchronisé" name="auto_sync"
+                        domain="[('balance_end_real_manual', '=', False)]"/>
+                <filter string="Modifié manuellement" name="manual_sync"
+                        domain="[('balance_end_real_manual', '=', True)]"/>
+                <separator/>
+                <filter string="En cours" name="pending"
+                        domain="[('state', 'not in', ['validated', 'cancel'])]"
+                        help="Clôtures non finalisées"/>
+                <separator/>
+                <filter string="Aujourd'hui" name="today"
+                        domain="[('closing_date', '=', context_today())]"/>
+                <filter string="Cette semaine" name="week"
+                        domain="[('closing_date', '&gt;=', (context_today() - datetime.timedelta(days=context_today().weekday())).strftime('%Y-%m-%d'))]"/>
+                <filter string="Ce mois" name="month"
+                        domain="[('closing_date', '&gt;=', context_today().strftime('%Y-%m-01'))]"/>
+                <filter string="Mois dernier" name="last_month"
+                        domain="[
+                        ('closing_date', '&gt;=', (context_today() - relativedelta(months=1)).strftime('%Y-%m-01')),
+                        ('closing_date', '&lt;', context_today().strftime('%Y-%m-01'))
+                    ]"/>
+                <group expand="0" string="Grouper par">
+                    <filter string="État" name="group_state" context="{'group_by': 'state'}"/>
+                    <filter string="Caisse" name="group_cash" context="{'group_by': 'cash_id'}"/>
+                    <filter string="Date" name="group_date" context="{'group_by': 'closing_date'}"/>
+                    <filter string="Utilisateur" name="group_user" context="{'group_by': 'user_id'}"/>
+                    <filter string="Type de saisie" name="group_manual" context="{'group_by': 'balance_end_real_manual'}"/>
+                    <filter string="Mois" name="group_month" context="{'group_by': 'closing_date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+</odoo>

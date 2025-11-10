@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Vue héritée pour ajouter le bouton dans les lignes de vente -->
+    <record id="view_gecafle_vente_form_inherit_reception_button" model="ir.ui.view">
+        <field name="name">gecafle.vente.form.inherit.reception.button</field>
+        <field name="model">gecafle.vente</field>
+        <field name="inherit_id" ref="adi_gecafle_ventes.view_gecafle_vente_form"/>
+        <field name="arch" type="xml">
+            <!-- Localiser le tree des lignes de vente et modifier -->
+
+                <!-- Bouton avec icône
+                <xpath expr="//field[@name='detail_vente_ids']/tree/field[@name='reception_id']" position="after">
+                <button name="action_view_reception_popup"
+                        type="object"
+                        string=""
+                        icon="fa-eye"
+                        class="oe_link"
+                        title="Voir la réception"
+                        help="Cliquez pour ouvrir la réception dans une nouvelle fenêtre"/>
+                                    </xpath>
+                -->
+
+
+
+            <!-- Alternative : Si vous préférez modifier la colonne reception_id pour qu'elle soit cliquable -->
+            <xpath expr="//field[@name='detail_vente_ids']/tree/field[@name='reception_id']" position="attributes">
+                <attribute name="options">{'no_create': True}</attribute>
+                <attribute name="widget">many2one_button</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Alternative avec un bouton texte plus visible -->
+    <record id="view_gecafle_vente_form_inherit_reception_button_alt" model="ir.ui.view">
+        <field name="name">gecafle.vente.form.inherit.reception.button.alt</field>
+        <field name="model">gecafle.vente</field>
+        <field name="inherit_id" ref="adi_gecafle_ventes.view_gecafle_vente_form"/>
+        <field name="priority">20</field>
+        <field name="arch" type="xml">
+            <!-- Version avec un bouton texte si vous préférez -->
+            <xpath expr="//field[@name='detail_vente_ids']/tree" position="inside">
+                <button name="action_view_reception_popup"
+                        type="object"
+                        string="Voir Réception"
+                        class="btn-link btn-sm"
+                        icon="fa-external-link"
+                        help="Ouvrir la réception dans une fenêtre popup"/>
+            </xpath>
+        </field>
+    </record>
+    <!-- Héritage de la vue formulaire des ventes -->
+    <record id="view_gecafle_vente_form_inherit_invoice" model="ir.ui.view">
+        <field name="name">gecafle.vente.form.inherit.invoice</field>
+        <field name="model">gecafle.vente</field>
+        <field name="inherit_id" ref="adi_gecafle_ventes.view_gecafle_vente_form"/>
+        <field name="arch" type="xml">
+            <!-- Ajout du compteur de factures (invisible) -->
+            <xpath expr="//field[@name='state']" position="after">
+                <field name="invoice_count" invisible="1"/>
+            </xpath>
+
+            <!-- Ajouter le bouton dans le header après le bouton de validation -->
+            <xpath expr="//header/field[@name='state']" position="before">
+                <!-- Bouton pour créer la facture manuellement -->
+                <button name="action_create_invoice"
+                        string="Créer Facture"
+                        type="object"
+                        class="btn-success"
+                        icon="fa-file-invoice-dollar"
+                        invisible="state != 'valide' or invoice_count > 0"
+                        confirm="Voulez-vous créer une facture pour cette vente ?"/>
+
+                <field name="emballage_client_count" invisible="1"/>
+
+                <!-- Bouton pour créer une opération emballage -->
+                <button name="action_create_emballage_client"
+                        string="Créer Op Emball Client"
+                        type="object"
+                        class="btn-secondary"
+                        icon="fa-truck"
+                        invisible="state != 'valide'"
+                        help="Créer une opération emballage client basée sur cette vente"/>
+            </xpath>
+
+
+            <!-- Créer le button_box après le header et avant le contenu du sheet -->
+            <xpath expr="//sheet/*[1]" position="before">
+                <div class="oe_button_box" name="button_box">
+                    <button name="action_view_invoice" type="object"
+                            class="oe_stat_button" icon="fa-file-invoice-dollar"
+                            invisible="invoice_count == 0">
+                        <field name="invoice_count" widget="statinfo" string="Facture(s)"/>
+                    </button>
+                    <button name="action_view_avoirs"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-file-text-o"
+                            invisible="avoir_count == 0">
+                        <field name="avoir_count" widget="statinfo" string="Avoir(s)"/>
+                    </button>
+
+                    <button name="action_view_emballage_client"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-truck"
+                            invisible="emballage_client_count == 0">
+                        <field name="emballage_client_count" widget="statinfo" string="Op. Emballage"/>
+                    </button>
+
+                    <button name="action_print_bon_pese"
+                        string="Bon de Pesé"
+                        type="object"
+                        class="btn-info"
+                        invisible="state != 'valide'"
+                        icon="fa-weight"/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

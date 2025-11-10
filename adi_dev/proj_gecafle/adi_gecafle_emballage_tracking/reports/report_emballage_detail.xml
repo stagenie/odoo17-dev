@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Template Rapport Détaillé TOTALEMENT CORRIGÉ -->
+    <template id="report_emballage_detail_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="wizard">
+                <t t-set="report_data" t-value="wizard._prepare_report_data()"/>
+
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2 class="text-center">Détail des Mouvements par Emballage</h2>
+
+                        <div class="row mb-3">
+                            <div class="col-12 text-center">
+                                <strong>Période:</strong>
+                                Du <span t-field="wizard.date_debut"/>
+                                au <span t-field="wizard.date_fin"/>
+                            </div>
+                        </div>
+
+                        <!-- Pour chaque emballage -->
+                        <t t-if="report_data.get('emballages_detail')">
+                            <t t-foreach="report_data.get('emballages_detail', [])" t-as="emb_detail">
+                                <h4 class="mt-4">
+                                    <i class="fa fa-cube"/>
+                                    <!-- CORRECTION : emballage est maintenant un string -->
+                                    <t t-esc="emb_detail.get('emballage', 'Emballage non défini')"/>
+                                </h4>
+
+                                <!-- Résumé de l'emballage -->
+                                <div class="row mb-2">
+                                    <div class="col-3">
+                                        <strong>Solde initial:</strong>
+                                        <t t-esc="emb_detail.get('solde_initial', 0)"/>
+                                    </div>
+                                    <div class="col-3">
+                                        <strong>Total entrées:</strong>
+                                        <span class="text-success">
+                                            <t t-esc="emb_detail.get('total_entrees', 0)"/>
+                                        </span>
+                                    </div>
+                                    <div class="col-3">
+                                        <strong>Total sorties:</strong>
+                                        <span class="text-danger">
+                                            <t t-esc="emb_detail.get('total_sorties', 0)"/>
+                                        </span>
+                                    </div>
+                                    <div class="col-3">
+                                        <strong>Solde final:</strong>
+                                        <span t-attf-class="#{emb_detail.get('solde_final', 0) &lt; 0 and 'text-danger' or 'text-success'}">
+                                            <t t-esc="emb_detail.get('solde_final', 0)"/>
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- Tableau des mouvements -->
+                                <table class="table table-sm table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Référence</th>
+                                            <th>Type</th>
+                                            <th>Client/Producteur</th>
+                                            <th class="text-center">Quantité</th>
+                                            <th class="text-center">Sens</th>
+                                            <th>Notes</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-if="emb_detail.get('mouvements')">
+                                            <t t-foreach="emb_detail.get('mouvements', [])" t-as="mouv">
+                                                <tr>
+                                                    <!-- Toutes les données sont maintenant des strings -->
+                                                    <td><t t-esc="mouv.get('date', '')"/></td>
+                                                    <td><t t-esc="mouv.get('reference', '')"/></td>
+                                                    <td><small><t t-esc="mouv.get('type', '')"/></small></td>
+                                                    <td>
+                                                        <t t-if="mouv.get('client')">
+                                                            <t t-esc="mouv.get('client', '')"/>
+                                                        </t>
+                                                        <t t-elif="mouv.get('producteur')">
+                                                            <t t-esc="mouv.get('producteur', '')"/>
+                                                        </t>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <t t-esc="mouv.get('quantite', 0)"/>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <t t-if="mouv.get('sens') == 'entree'">
+                                                            <span class="badge badge-success">Entrée</span>
+                                                        </t>
+                                                        <t t-elif="mouv.get('sens') == 'sortie'">
+                                                            <span class="badge badge-danger">Sortie</span>
+                                                        </t>
+                                                    </td>
+                                                    <td>
+                                                        <small>
+                                                            <t t-if="mouv.get('notes')">
+                                                                <t t-esc="mouv.get('notes', '')[:30]"/>
+                                                            </t>
+                                                        </small>
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                        </t>
+                                        <t t-else="">
+                                            <tr>
+                                                <td colspan="7" class="text-center text-muted">
+                                                    Aucun mouvement pour cet emballage
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </t>
+                        </t>
+                        <t t-else="">
+                            <div class="alert alert-warning text-center">
+                                <h4>Aucune donnée trouvée pour cette période</h4>
+                            </div>
+                        </t>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

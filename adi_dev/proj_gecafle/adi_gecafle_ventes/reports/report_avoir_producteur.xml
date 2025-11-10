@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Template du rapport -->
+    <template id="report_avoir_producteur_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2 class="text-center">AVOIR PRODUCTEUR</h2>
+
+                        <div class="row mt-4">
+                            <div class="col-6">
+                                <strong>Producteur:</strong> <span t-field="o.producteur_id.name"/><br/>
+                                <strong>Tél:</strong> <span t-field="o.producteur_id.phone"/><br/>
+                            </div>
+                            <div class="col-6 text-right">
+                                <strong>N° Avoir:</strong> <span t-field="o.name"/><br/>
+                                <strong>Date:</strong> <span t-field="o.date"/><br/>
+                                <strong>Type:</strong> <span t-field="o.type_avoir"/>
+                            </div>
+                        </div>
+
+                        <div t-if="o.reception_id" class="mt-3">
+                            <strong>Réception réf:</strong> <span t-field="o.reception_id.name"/>
+                        </div>
+
+                        <div t-if="o.vente_id" class="mt-3">
+                            <strong>Vente réf:</strong> <span t-field="o.vente_id.name"/>
+                        </div>
+
+                        <!-- État -->
+                        <div t-if="o.state == 'annule'" class="alert alert-danger text-center mt-3">
+                            <strong>AVOIR ANNULÉ</strong>
+                        </div>
+
+                        <!-- Détails -->
+                        <div class="mt-4">
+                            <table class="table table-bordered">
+                                <tr>
+                                    <td><strong>Description:</strong></td>
+                                    <td><span t-field="o.description"/></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Montant:</strong></td>
+                                    <td class="text-right">
+                                        <strong><span t-field="o.montant_total"/></strong>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <!-- État de paiement -->
+                        <div t-if="o.credit_note_id" class="mt-4">
+                            <h5>État de paiement</h5>
+                            <table class="table table-sm table-bordered">
+                                <tr>
+                                    <td>Note de crédit:</td>
+                                    <td><span t-field="o.credit_note_id.name"/></td>
+                                </tr>
+                                <tr>
+                                    <td>État:</td>
+                                    <td>
+                                        <span t-if="o.credit_note_payment_state == 'paid'" class="badge badge-success">Payé</span>
+                                        <span t-elif="o.credit_note_payment_state == 'partial'" class="badge badge-warning">Partiellement payé</span>
+                                        <span t-else="" class="badge badge-danger">Non payé</span>
+                                    </td>
+                                </tr>
+                                <tr t-if="o.credit_note_payment_state != 'paid'">
+                                    <td>Montant restant:</td>
+                                    <td><span t-field="o.credit_note_amount_residual"/></td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <!-- Notes -->
+                        <div t-if="o.notes" class="mt-4">
+                            <strong>Notes:</strong>
+                            <p t-field="o.notes"/>
+                        </div>
+
+                        <!-- Signatures -->
+                        <div class="row mt-5">
+                            <div class="col-6">
+                                <p>Le Producteur:<br/><br/>_____________________</p>
+                            </div>
+                            <div class="col-6 text-right">
+                                <p>Le Responsable:<br/><br/>_____________________</p>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <!-- Définition du rapport -->
+    <record id="action_report_avoir_producteur" model="ir.actions.report">
+        <field name="name">Avoir Producteur</field>
+        <field name="model">gecafle.avoir.producteur</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_gecafle_ventes.report_avoir_producteur_document</field>
+        <field name="report_file">adi_gecafle_ventes.report_avoir_producteur</field>
+        <field name="print_report_name">'Avoir Producteur - %s' % (object.name)</field>
+        <field name="paperformat_id" ref="base.paperformat_euro"/>
+        <field name="binding_model_id" ref="model_gecafle_avoir_producteur"/>
+        <field name="binding_type">report</field>
+    </record>
+</odoo>

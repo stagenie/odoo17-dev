@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="view_gecafle_emballage_client_list" model="ir.ui.view">
+            <field name="name">gecafle.emballage.client.list</field>
+            <field name="model">gecafle.emballage.client</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="name"/>
+                    <field name="date_heure_operation"/>
+                    <field name="client_id"/>
+                    <field name="vente_id" optional="show"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_gecafle_emballage_client_form" model="ir.ui.view">
+            <field name="name">gecafle.emballage.client.form</field>
+            <field name="model">gecafle.emballage.client</field>
+            <field name="arch" type="xml">
+                <form string="Opération Emballage Client">
+                    <header>
+                        <!-- Boutons d'action éventuels -->
+                    </header>
+                    <sheet>
+                        <group>
+                            <field name="name" readonly="1"/>
+                            <field name="date_heure_operation"/>
+                            <field name="client_id"/>
+                            <field name="vente_id" readonly="1" invisible="not vente_id"/>
+                        </group>
+
+                        <notebook>
+                            <page string="Détails des Opérations">
+                                <field name="client_emb_operations_ids">
+                                    <tree editable="bottom">
+                                        <field name="emballage_id"/>
+                                        <field name="quantite_entrante"/>
+                                        <field name="quantite_sortante"/>
+                                        <field name="remarque" optional="hide"/>
+                                    </tree>
+                                    <!-- Optionnel : définir également une vue formulaire pour les lignes -->
+                                    <form string="Détail Opération Emballage">
+                                        <sheet>
+                                            <group>
+                                                <field name="emballage_id"/>
+                                                <field name="quantite_entrante"/>
+                                                <field name="quantite_sortante"/>
+                                            </group>
+                                            <group>
+                                                <field name="remarque"/>
+                                            </group>
+                                        </sheet>
+                                    </form>
+                                </field>
+                            </page>
+                            <page string="Observations">
+                                <group>
+                                    <field name="observation"/>
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <!-- Chatter pour la traçabilité -->
+                    <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="activity_ids" widget="mail_activity"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_gecafle_emballage_client_search" model="ir.ui.view">
+            <field name="name">gecafle.emballage.client.search</field>
+            <field name="model">gecafle.emballage.client</field>
+            <field name="arch" type="xml">
+                <search string="Recherche Opérations Emballage Client">
+                    <field name="name"/>
+                    <field name="date_heure_operation"/>
+                    <field name="client_id"/>
+                </search>
+            </field>
+        </record>
+    </data>
+</odoo>

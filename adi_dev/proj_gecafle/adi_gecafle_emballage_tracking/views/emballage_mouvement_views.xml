@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue formulaire Mouvement -->
+    <record id="view_emballage_mouvement_form" model="ir.ui.view">
+        <field name="name">gecafle.emballage.mouvement.form</field>
+        <field name="model">gecafle.emballage.mouvement</field>
+        <field name="arch" type="xml">
+            <form create="false">
+                <sheet>
+                    <widget name="web_ribbon"
+                            title="Annulation"
+                            invisible="not is_cancelled"/>
+
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group>
+                            <field name="emballage_id" readonly="1"/>
+                            <field name="date" readonly="1"/>
+                            <field name="type_mouvement" readonly="1"/>
+                            <field name="sens" widget="badge" readonly="1"/>
+                            <field name="quantite" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="client_id" readonly="1" invisible="not client_id"/>
+                            <field name="producteur_id" readonly="1" invisible="not producteur_id"/>
+                            <field name="vente_id" readonly="1" invisible="not vente_id"/>
+                            <field name="reception_id" readonly="1" invisible="not reception_id"/>
+                            <!-- LIGNE SUPPRIMÉE : consigne_retour_id n'existe pas -->
+                        </group>
+                    </group>
+
+                    <group string="Informations supplémentaires">
+                        <field name="is_cancelled" readonly="1"/>
+                        <field name="cancel_reason" readonly="1" invisible="not is_cancelled"/>
+                        <field name="notes" readonly="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vue liste Mouvement -->
+    <record id="view_emballage_mouvement_list" model="ir.ui.view">
+        <field name="name">gecafle.emballage.mouvement.list</field>
+        <field name="model">gecafle.emballage.mouvement</field>
+        <field name="arch" type="xml">
+            <tree create="false"
+                  decoration-muted="is_cancelled"
+                  decoration-danger="type_mouvement == 'regularisation'"
+                  decoration-success="sens == 'entree'"
+                  decoration-warning="sens == 'sortie'">
+                <field name="date"/>
+                <field name="emballage_id"/>
+                <field name="type_mouvement"/>
+                <field name="quantite" sum="Total"/>
+                <field name="sens" widget="badge"/>
+                <field name="client_id" optional="show"/>
+                <field name="producteur_id" optional="show"/>
+                <field name="reference"/>
+                <field name="is_cancelled" invisible="1"/>
+                <field name="notes" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vue recherche Mouvement -->
+    <record id="view_emballage_mouvement_search" model="ir.ui.view">
+        <field name="name">gecafle.emballage.mouvement.search</field>
+        <field name="model">gecafle.emballage.mouvement</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="emballage_id"/>
+                <field name="reference"/>
+                <field name="client_id"/>
+                <field name="producteur_id"/>
+
+                <filter string="Entrées" name="entrees"
+                        domain="[('sens', '=', 'entree')]"/>
+                <filter string="Sorties" name="sorties"
+                        domain="[('sens', '=', 'sortie')]"/>
+                <separator/>
+                <filter string="Ventes" name="ventes"
+                        domain="[('type_mouvement', 'in', ['sortie_vente', 'retour_client'])]"/>
+                <filter string="Réceptions" name="receptions"
+                        domain="[('type_mouvement', 'in', ['entree_reception', 'sortie_producteur'])]"/>
+                <filter string="Régularisations" name="regularisations"
+                        domain="[('type_mouvement', '=', 'regularisation')]"/>
+                <filter string="Retours Consigne" name="consignes"
+                        domain="[('type_mouvement', '=', 'consigne')]"/>
+                <separator/>
+                <filter string="Aujourd'hui" name="today"
+                        domain="[('date', '>=', context_today())]"/>
+                <filter string="Cette semaine" name="this_week"
+                        domain="[('date', '>=', (context_today() - relativedelta(weeks=1)).strftime('%%Y-%%m-%%d'))]"/>
+
+                <group expand="0" string="Grouper par">
+                    <filter string="Emballage" name="group_emballage"
+                            context="{'group_by': 'emballage_id'}"/>
+                    <filter string="Type" name="group_type"
+                            context="{'group_by': 'type_mouvement'}"/>
+                    <filter string="Client" name="group_client"
+                            context="{'group_by': 'client_id'}"/>
+                    <filter string="Producteur" name="group_producteur"
+                            context="{'group_by': 'producteur_id'}"/>
+                    <filter string="Date" name="group_date"
+                            context="{'group_by': 'date:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action pour les mouvements -->
+    <record id="action_emballage_mouvement" model="ir.actions.act_window">
+        <field name="name">Mouvements d'emballages</field>
+        <field name="res_model">gecafle.emballage.mouvement</field>
+        <field name="view_mode">tree,form,pivot,graph</field>
+        <field name="context">{'search_default_today': 1}</field>
+    </record>
+</odoo>

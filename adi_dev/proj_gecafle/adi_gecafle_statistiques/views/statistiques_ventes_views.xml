@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue Graphique par Produit -->
+    <record id="view_statistiques_graph_produit" model="ir.ui.view">
+        <field name="name">gecafle.statistiques.graph.produit</field>
+        <field name="model">gecafle.statistiques.ventes</field>
+        <field name="arch" type="xml">
+            <graph string="Ventes par Produit" type="bar" stacked="False">
+                <field name="produit_id" type="row"/>
+                <field name="montant_total" type="measure"/>
+                <field name="poids_total" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Vue Graphique par Producteur -->
+    <record id="view_statistiques_graph_producteur" model="ir.ui.view">
+        <field name="name">gecafle.statistiques.graph.producteur</field>
+        <field name="model">gecafle.statistiques.ventes</field>
+        <field name="arch" type="xml">
+            <graph string="Ventes par Producteur" type="pie">
+                <field name="producteur_id"/>
+                <field name="montant_total" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Vue Pivot -->
+    <record id="view_statistiques_pivot" model="ir.ui.view">
+        <field name="name">gecafle.statistiques.pivot</field>
+        <field name="model">gecafle.statistiques.ventes</field>
+        <field name="arch" type="xml">
+            <pivot string="Analyse Pivot">
+                <field name="date_vente" interval="month" type="col"/>
+                <field name="producteur_id" type="row"/>
+                <field name="produit_id" type="row"/>
+                <field name="montant_total" type="measure"/>
+                <field name="poids_total" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Vue Liste -->
+    <record id="view_statistiques_tree" model="ir.ui.view">
+        <field name="name">gecafle.statistiques.tree</field>
+        <field name="model">gecafle.statistiques.ventes</field>
+        <field name="arch" type="xml">
+            <tree string="Statistiques Ventes">
+                <field name="date_vente"/>
+                <field name="producteur_id"/>
+                <field name="produit_id"/>
+                <field name="nombre_colis" sum="Total"/>
+                <field name="poids_total" sum="Total"/>
+                <field name="montant_total" sum="Total" widget="monetary"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Actions -->
+    <record id="action_statistiques_ventes" model="ir.actions.act_window">
+        <field name="name">Statistiques des Ventes</field>
+        <field name="res_model">gecafle.statistiques.ventes</field>
+        <field name="view_mode">graph,pivot,tree</field>
+        <field name="context">{'search_default_this_month': 1}</field>
+    </record>
+
+    <record id="action_statistiques_produits" model="ir.actions.act_window">
+        <field name="name">Analyse par Produit</field>
+        <field name="res_model">gecafle.statistiques.ventes</field>
+        <field name="view_mode">graph,pivot,tree</field>
+        <field name="view_id" ref="view_statistiques_graph_produit"/>
+        <field name="context">{'search_default_group_produit': 1}</field>
+    </record>
+
+    <record id="action_statistiques_producteurs" model="ir.actions.act_window">
+        <field name="name">Analyse par Producteur</field>
+        <field name="res_model">gecafle.statistiques.ventes</field>
+        <field name="view_mode">graph,pivot,tree</field>
+        <field name="view_id" ref="view_statistiques_graph_producteur"/>
+        <field name="context">{'search_default_group_producteur': 1}</field>
+    </record>
+</odoo>

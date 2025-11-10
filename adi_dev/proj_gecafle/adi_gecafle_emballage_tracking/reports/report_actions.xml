@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="paperformat_emballage_tracking" model="report.paperformat">
+        <field name="name">Rapports Emballage Tracking  A4</field>
+        <field name="default" eval="False"/>
+        <field name="format">A4</field>
+        <field name="page_height">0</field>
+        <field name="page_width">0</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">30</field>
+        <field name="margin_bottom">15</field>
+        <field name="margin_left">5</field>
+        <field name="margin_right">5</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">25</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <!-- Action Rapport Client -->
+    <record id="action_report_emballage_client" model="ir.actions.report">
+        <field name="name">Récap Emballage Client</field>
+        <field name="model">gecafle.emballage.report.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_gecafle_emballage_tracking.report_emballage_client_document</field>
+        <field name="report_file">RecapEmballageClient</field>
+        <field name="print_report_name">'RecapEmballageClient_%s_%s' % (object.client_id.name if object.client_id else 'Tous', object.date_fin.strftime('%Y%m%d'))</field>
+<!--        <field name="paperformat_id" ref="base.paperformat_euro"/>-->
+        <field name="paperformat_id" ref="adi_gecafle_emballage_tracking.paperformat_emballage_tracking"/>
+    </record>
+
+    <!-- Action Rapport Producteur -->
+    <record id="action_report_emballage_producteur" model="ir.actions.report">
+        <field name="name">Récap Emballage Producteur</field>
+        <field name="model">gecafle.emballage.report.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_gecafle_emballage_tracking.report_emballage_producteur_document</field>
+        <field name="report_file">RecapEmballageProducteur</field>
+        <field name="print_report_name">'RecapEmballageProducteur_%s_%s' % (object.producteur_id.name if object.producteur_id else 'Tous', object.date_fin.strftime('%Y%m%d'))</field>
+<!--        <field name="paperformat_id" ref="base.paperformat_euro"/>-->
+        <field name="paperformat_id" ref="adi_gecafle_emballage_tracking.paperformat_emballage_tracking"/>
+    </record>
+
+    <!-- Action Rapport Global -->
+    <record id="action_report_emballage_global" model="ir.actions.report">
+        <field name="name">État Global Emballages</field>
+        <field name="model">gecafle.emballage.report.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_gecafle_emballage_tracking.report_emballage_global_document</field>
+        <field name="report_file">EtatGlobalEmballages</field>
+        <field name="print_report_name">'EtatGlobalEmballages_%s' % (object.date_fin.strftime('%Y%m%d'))</field>
+<!--        <field name="paperformat_id" ref="base.paperformat_euro"/>-->
+        <field name="paperformat_id" ref="adi_gecafle_emballage_tracking.paperformat_emballage_tracking"/>
+    </record>
+
+
+    <!-- Action Rapport Détail - CORRECTION ICI -->
+    <record id="action_report_emballage_detail" model="ir.actions.report">
+        <field name="name">Détail Mouvements Emballages</field>
+        <field name="model">gecafle.emballage.report.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_gecafle_emballage_tracking.report_emballage_detail_document</field>
+        <field name="report_file">DetailMouvementsEmballages</field>
+        <field name="print_report_name">'DetailMouvementsEmballages_%s' % (object.date_fin.strftime('%Y%m%d'))</field>
+<!--        <field name="paperformat_id" ref="base.paperformat_euro"/>-->
+        <field name="paperformat_id" ref="adi_gecafle_emballage_tracking.paperformat_emballage_tracking"/>
+    </record>
+</odoo>

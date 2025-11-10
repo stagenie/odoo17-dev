@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue héritée du formulaire de vente -->
+    <record id="view_gecafle_vente_form_inherit_consigne" model="ir.ui.view">
+        <field name="name">gecafle.vente.form.inherit.consigne</field>
+        <field name="model">gecafle.vente</field>
+        <field name="inherit_id" ref="adi_gecafle_ventes.view_gecafle_vente_form"/>
+        <field name="arch" type="xml">
+            <!-- AJOUT IMPORTANT : Déclarer tous les champs utilisés dans les expressions -->
+            <xpath expr="//field[@name='state']" position="after">
+                <field name="consigne_retour_count" invisible="1"/>
+                <field name="etat_consigne" invisible="1"/>
+                <field name="consigne_appliquee" invisible="1"/>  <!-- AJOUT DE CE CHAMP -->
+            </xpath>
+
+            <!-- Smart button pour les retours de consigne -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_consigne_retours"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-recycle"
+                        invisible="consigne_retour_count == 0">
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_value">
+                            <field name="consigne_retour_count"/>
+                        </span>
+                        <span class="o_stat_text">Retours</span>
+                    </div>
+                </button>
+            </xpath>
+
+            <!-- Bouton pour créer un retour -->
+            <xpath expr="//header" position="inside">
+                <button name="action_create_consigne_retour"
+                        string="Rendre l'emballage"
+                        type="object"
+                        class="btn-warning"
+                        icon="fa-recycle"
+                        invisible="state != 'valide' or not consigne_appliquee or etat_consigne == 'rendu'"
+                        groups="base.group_user"/>
+            </xpath>
+
+            <!-- Afficher l'état de consigne dans le formulaire -->
+            <xpath expr="//sheet/group[last()]" position="after">
+
+                <group>
+                    <field name="etat_consigne"
+                           invisible="not consigne_appliquee"
+                           widget="badge"
+                           decoration-success="etat_consigne == 'rendu'"
+                           decoration-warning="etat_consigne == 'partiel'"
+                           decoration-danger="etat_consigne == 'non_rendu'"/>
+                    <field name="montant_consigne_recupere"
+                           invisible="montant_consigne_recupere == 0"
+                           widget="monetary"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Vue liste héritée pour afficher l'état de consigne -->
+    <record id="view_gecafle_vente_tree_inherit_consigne" model="ir.ui.view">
+        <field name="name">gecafle.vente.tree.inherit.consigne</field>
+        <field name="model">gecafle.vente</field>
+        <field name="inherit_id" ref="adi_gecafle_ventes.view_gecafle_vente_list"/>
+        <field name="arch" type="xml">
+            <!-- AJOUT : Déclarer le champ invisible ici aussi -->
+            <xpath expr="//field[@name='state']" position="before">
+                <field name="consigne_appliquee" invisible="1"/>
+            </xpath>
+
+            <xpath expr="//field[@name='state']" position="after">
+                <field name="etat_consigne"
+                       optional="show"
+                       widget="badge"
+                       decoration-success="etat_consigne == 'rendu'"
+                       decoration-warning="etat_consigne == 'partiel'"
+                       decoration-danger="etat_consigne == 'non_rendu'"
+                       invisible="not consigne_appliquee"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Filtre de recherche pour l'état de consigne -->
+    <record id="view_gecafle_vente_search_inherit_consigne" model="ir.ui.view">
+        <field name="name">gecafle.vente.search.inherit.consigne</field>
+        <field name="model">gecafle.vente</field>
+        <field name="inherit_id" ref="adi_gecafle_ventes.view_gecafle_vente_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='filter_valide']" position="after">
+                <separator/>
+                <filter string="Consigne non rendue"
+                        name="filter_consigne_non_rendu"
+                        domain="[('etat_consigne', '=', 'non_rendu')]"/>
+                <filter string="Consigne rendue"
+                        name="filter_consigne_rendu"
+                        domain="[('etat_consigne', '=', 'rendu')]"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- Fonction pour initialiser les données About -->
+        <function model="res.company" name="_init_about_data">
+            <value eval=""/>
+        </function>
+
+    </data>
+</odoo>

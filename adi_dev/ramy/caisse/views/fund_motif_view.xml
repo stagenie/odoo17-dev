@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+   <!-- fund.motif tree view -->
+   <record id="fund_motif_view_tree" model="ir.ui.view">
+    <field name="name">motif caisse.view.tree</field>
+    <field name="model">fund.motif</field>
+    <field name="arch" type="xml">
+        <tree string="Motifs" editable="top" create="1" delete="1" multi_edit="1">
+            <!-- Add your fields here -->
+            <field name="name"/>
+            <field name="account_analytic_account_id" required="True"/>
+            <field name="fund_motif_family_id" required="True"/>
+            <field name="type" required="True"/>
+            <field name="default_data" readonly="1"/>
+            <field name="avnc"/>
+            <field name="payment" invisible="1"/>
+        </tree>
+    </field>
+   </record> 
+
+   <!-- fund.motif action window -->
+   <record id="fund_motif_action" model="ir.actions.act_window">
+    <field name="name">Motifs</field>
+    <field name="type">ir.actions.act_window</field>
+    <field name="res_model">fund.motif</field>
+    <field name="view_mode">tree</field>
+    <field name="help" type="html">
+        <p class="oe_view_nocontent_create">
+            <!-- Add Text Here -->
+        </p><p>
+            <!-- More details about what a user can do with this object will be OK --> 
+        </p>
+    </field>
+   </record>
+
+   
+      
+</odoo>

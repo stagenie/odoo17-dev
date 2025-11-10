@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Catégorie de sécurité si elle n'existe pas déjà -->
+    <record id="module_category_gecafle_stock" model="ir.module.category">
+        <field name="name">GECAFLE Stock</field>
+        <field name="sequence">50</field>
+    </record>
+</odoo>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Form View -->
+    <record id="view_gecafle_qualite_form" model="ir.ui.view">
+        <field name="name">gecafle.qualite.form</field>
+        <field name="model">gecafle.qualite</field>
+        <field name="arch" type="xml">
+            <form string="Qualité">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="classification"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    
+    <!-- Tree View - MODIFIÉ: list → tree -->
+    <record id="view_gecafle_qualite_tree" model="ir.ui.view">
+        <field name="name">gecafle.qualite.tree</field>
+        <field name="model">gecafle.qualite</field>
+        <field name="arch" type="xml">
+            <tree string="Qualités">
+                <field name="name"/>
+                <field name="classification"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="view_gecafle_qualite_search" model="ir.ui.view">
+        <field name="name">gecafle.qualite.search</field>
+        <field name="model">gecafle.qualite</field>
+        <field name="arch" type="xml">
+            <search string="Recherche Qualités">
+                <field name="name"/>
+                <field name="classification"/>
+                <filter string="Classification" name="group_by_classification" context="{'group_by': 'classification'}"/>
+            </search>
+        </field>
+    </record>
+</odoo>

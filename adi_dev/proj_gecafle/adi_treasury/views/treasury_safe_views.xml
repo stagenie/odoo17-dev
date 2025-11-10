@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue Tree pour les coffres -->
+    <record id="view_treasury_safe_tree" model="ir.ui.view">
+        <field name="name">treasury.safe.tree</field>
+        <field name="model">treasury.safe</field>
+        <field name="arch" type="xml">
+            <tree string="Coffres-forts" decoration-muted="state == 'locked'">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="current_balance" sum="Total" widget="monetary"/>
+                <field name="currency_id" column_invisible="True"/>
+                <field name="location" optional="show"/>
+                <field name="last_operation_date" optional="show"/>
+                <field name="is_initialized" widget="boolean_toggle" optional="show"/>
+                <field name="state" widget="badge" decoration-success="state == 'active'" decoration-danger="state == 'locked'"/>
+                <field name="company_id" groups="base.group_multi_company" optional="show"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vue Form pour les coffres -->
+    <record id="view_treasury_safe_form" model="ir.ui.view">
+        <field name="name">treasury.safe.form</field>
+        <field name="model">treasury.safe</field>
+        <field name="arch" type="xml">
+            <form string="Coffre-fort">
+                <header>
+                    <button name="action_unlock"
+                            type="object"
+                            string="Déverrouiller"
+                            class="oe_highlight"
+                            invisible="state != 'locked'"
+                            groups="adi_treasury.group_treasury_manager"/>
+                    <button name="action_lock"
+                            type="object"
+                            string="Verrouiller"
+                            invisible="state != 'active'"
+                            confirm="Êtes-vous sûr de vouloir verrouiller ce coffre ?"
+                            groups="adi_treasury.group_treasury_manager"/>
+                    <field name="state" widget="statusbar" statusbar_visible="active,locked"/>
+                </header>
+                <sheet>
+                    <!-- Champ is_initialized nécessaire pour les conditions -->
+                    <field name="is_initialized" invisible="1"/>
+
+                    <widget name="web_ribbon" title="Verrouillé" bg_color="bg-danger" invisible="state != 'locked'"/>
+
+                    <!-- Alerte si non initialisé -->
+                    <div class="alert alert-warning text-center" role="alert" invisible="is_initialized">
+                        <strong>Ce coffre n'a pas encore été initialisé.</strong>
+                        <br/>Cliquez sur "Nouvelle Opération" pour définir le solde initial.
+                    </div>
+
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_transfers"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-exchange">
+                            <field name="transfer_count" widget="statinfo" string="Transferts"/>
+                        </button>
+                        <button name="action_create_operation"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-money">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Nouvelle</span>
+                                <span class="o_stat_text">Opération</span>
+                            </div>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" placeholder="Nom du coffre" readonly="state == 'locked'"/>
+                        </h1>
+                        <group>
+                            <field name="code" readonly="state == 'locked'"/>
+                        </group>
+                    </div>
+                    <group>
+                        <group string="Informations générales">
+                            <field name="currency_id" options="{'no_create': True}" readonly="state == 'locked'"/>
+                            <field name="location" readonly="state == 'locked'"/>
+                            <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
+                        </group>
+                        <group string="Soldes et limites">
+                            <field name="current_balance" class="text-bold"/>
+                            <field name="max_capacity" readonly="state == 'locked'"/>
+                            <field name="last_operation_date" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Responsables" name="users">
+                            <field name="responsible_ids" widget="many2many_tags" options="{'no_create': True}" readonly="state == 'locked'">
+                                <tree>
+                                    <field name="name"/>
+                                    <field name="login"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Opérations" name="operations">
+                            <field name="operation_ids" readonly="1">
+                                <tree decoration-success="operation_type in ['initial', 'bank_in', 'other_in']"
+                                      decoration-danger="operation_type in ['bank_out', 'other_out']"
+                                      decoration-info="operation_type == 'adjustment'">
+                                    <field name="name"/>
+                                    <field name="date"/>
+                                    <field name="operation_type"/>
+                                    <field name="amount" sum="Total"/>
+                                    <field name="bank_reference" optional="show"/>
+                                    <field name="state" widget="badge"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Transferts entrants" name="transfers_in">
+                            <field name="transfer_in_ids" readonly="1">
+                                <tree>
+                                    <field name="name"/>
+                                    <field name="date"/>
+                                    <field name="cash_from_id" optional="show"/>
+                                    <field name="safe_from_id" optional="show"/>
+                                    <field name="amount" sum="Total"/>
+                                    <field name="state" widget="badge"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Transferts sortants" name="transfers_out">
+                            <field name="transfer_out_ids" readonly="1">
+                                <tree>
+                                    <field name="name"/>
+                                    <field name="date"/>
+                                    <field name="cash_to_id" optional="show"/>
+                                    <field name="safe_to_id" optional="show"/>
+                                    <field name="amount" sum="Total"/>
+                                    <field name="state" widget="badge"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Notes" name="notes">
+                            <field name="notes" placeholder="Ajoutez des notes internes..." readonly="state == 'locked'"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vue Kanban pour les coffres -->
+    <record id="view_treasury_safe_kanban" model="ir.ui.view">
+        <field name="name">treasury.safe.kanban</field>
+        <field name="model">treasury.safe</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_dashboard">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="current_balance"/>
+                <field name="currency_id"/>
+                <field name="state"/>
+                <field name="last_operation_date"/>
+                <field name="max_capacity"/>
+                <field name="is_initialized"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="oe_kanban_global_click">
+                            <div class="o_kanban_card_header">
+                                <div class="o_kanban_card_header_title">
+                                    <div class="o_primary">
+                                        <strong><field name="name"/></strong>
+                                    </div>
+                                    <div class="o_secondary">
+                                        <span t-if="record.state.raw_value == 'active'" class="badge badge-success">
+                                            <field name="state"/>
+                                        </span>
+                                        <span t-else="" class="badge badge-danger">
+                                            <field name="state"/>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="container o_kanban_card_content">
+                                <div class="row">
+                                    <div class="col-12 text-center">
+                                        <h2 class="mt-0 mb-1">
+                                            <field name="current_balance" widget="monetary"/>
+                                        </h2>
+                                        <p class="text-muted" t-if="record.max_capacity.raw_value > 0">
+                                            Capacité : <field name="max_capacity" widget="monetary"/>
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="row mt-2" t-if="!record.is_initialized.raw_value">
+                                    <div class="col-12">
+                                        <div class="alert alert-warning text-center p-1 mb-1">
+                                            <i class="fa fa-warning"/> Non initialisé
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row mt-2" t-if="record.last_operation_date.raw_value">
+                                    <div class="col-12 text-center">
+                                        <small class="text-muted">
+                                            Dernière opération : <field name="last_operation_date" widget="date"/>
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Vue Search pour les coffres -->
+    <record id="view_treasury_safe_search" model="ir.ui.view">
+        <field name="name">treasury.safe.search</field>
+        <field name="model">treasury.safe</field>
+        <field name="arch" type="xml">
+            <search string="Rechercher un coffre">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="location"/>
+                <separator/>
+                <filter string="Actifs" name="active" domain="[('state', '=', 'active')]"/>
+                <filter string="Verrouillés" name="locked" domain="[('state', '=', 'locked')]"/>
+                <separator/>
+                <filter string="Initialisés" name="initialized" domain="[('is_initialized', '=', True)]"/>
+                <filter string="Non initialisés" name="not_initialized" domain="[('is_initialized', '=', False)]"/>
+                <separator/>
+                <filter string="Solde positif" name="positive_balance" domain="[('current_balance', '&gt;', 0)]"/>
+                <group expand="0" string="Grouper par">
+                    <filter string="État" name="group_state" context="{'group_by': 'state'}"/>
+                    <filter string="Initialisé" name="group_initialized" context="{'group_by': 'is_initialized'}"/>
+                    <filter string="Société" name="group_company" context="{'group_by': 'company_id'}" groups="base.group_multi_company"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action pour les coffres -->
+    <record id="action_treasury_safe" model="ir.actions.act_window">
+        <field name="name">Coffres-forts</field>
+        <field name="res_model">treasury.safe</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="search_view_id" ref="view_treasury_safe_search"/>
+        <field name="context">{'search_default_active': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créer votre premier coffre-fort
+            </p>
+            <p>
+                Les coffres permettent de sécuriser l'argent des caisses.<br/>
+                Les paiements ne se font jamais directement depuis les coffres.
+            </p>
+        </field>
+    </record>
+</odoo>

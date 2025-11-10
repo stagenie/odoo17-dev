@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ========== ACTIONS AVEC FILTRES ========== -->
+
+    <!-- Action pour les Clients Odoo -->
+    <record id="action_odoo_customers_main" model="ir.actions.act_window">
+        <field name="name">Clients</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">tree,kanban,form</field>
+        <field name="domain">[('customer_rank', '>', 0)]</field>
+        <field name="context">{
+            'default_customer_rank': 1,
+            'default_is_company': False,
+            'search_default_customer': 1
+        }</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créer un nouveau client
+            </p>
+            <p>
+                Gérez vos clients Odoo. Les clients créés ici seront automatiquement
+                synchronisés avec GECAFLE si nécessaire.
+            </p>
+        </field>
+    </record>
+
+    <!-- Action pour les Fournisseurs Odoo -->
+    <record id="action_odoo_suppliers_main" model="ir.actions.act_window">
+        <field name="name">Fournisseurs</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">tree,kanban,form</field>
+        <field name="domain">[('supplier_rank', '>', 0)]</field>
+        <field name="context">{
+            'default_supplier_rank': 1,
+            'default_is_company': False,
+            'search_default_supplier': 1
+        }</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créer un nouveau fournisseur
+            </p>
+            <p>
+                Gérez vos fournisseurs/producteurs Odoo. Les fournisseurs créés ici
+                seront automatiquement synchronisés avec les producteurs GECAFLE.
+            </p>
+        </field>
+    </record>
+
+    <!-- ========== MENUS PRINCIPAUX ========== -->
+
+    <!-- Menu Principal 1 : CLIENTS ODOO -->
+    <menuitem
+        id="menu_odoo_clients_main"
+        name="Clients"
+        action="action_odoo_customers_main"
+        sequence="45"
+        web_icon="adi_gecafle_sync_partners,static/description/icon_clients.png"
+        groups="base.group_user"/>
+
+    <!-- Menu Principal 2 : FOURNISSEURS ODOO -->
+    <menuitem
+        id="menu_odoo_fournisseurs_main"
+        name="Fournisseurs"
+        action="action_odoo_suppliers_main"
+        sequence="46"
+        web_icon="adi_gecafle_sync_partners,static/description/icon_fournisseurs.png"
+        groups="base.group_user"/>
+
+</odoo>

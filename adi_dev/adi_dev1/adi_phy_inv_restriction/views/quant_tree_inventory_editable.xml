@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <data>
+        <record id="adi_stock_view_stock_quant_tree_inventory_editable_inherited" model="ir.ui.view">
+            <field name="name">res.users.view.form.user.warehouse.restriction.allowed_l_ids
+            </field>
+            <field name="model">stock.quant</field>
+            <field name="inherit_id" ref="stock.view_stock_quant_tree_inventory_editable"/>
+            <field name="arch" type="xml">
+                <field name="location_id" position="attributes">
+                    <!-- Use current user's allowed locations from the server -->
+                    <attribute name="domain">[
+                        ('id', 'in', allowed_location_ids)]
+                    </attribute>
+                </field>
+
+            </field>
+        </record>
+    </data>
+</odoo>

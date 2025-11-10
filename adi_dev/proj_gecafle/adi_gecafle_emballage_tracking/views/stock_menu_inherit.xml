@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Action pour la configuration du tracking -->
+    <record id="action_gecafle_tracking_config" model="ir.actions.act_window">
+        <field name="name">Configuration Tracking Emballage</field>
+        <field name="res_model">gecafle.emballage.tracking</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{
+            'search_default_active': 1,
+            'default_is_tracked': True
+        }</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Configurez le tracking des emballages !
+            </p>
+            <p>
+                Cette interface vous permet de :
+                <ul>
+                    <li>Activer/Désactiver le suivi par emballage</li>
+                    <li>Définir les stocks initiaux</li>
+                    <li>Visualiser les stocks actuels</li>
+                    <li>Régulariser les stocks si nécessaire</li>
+                </ul>
+            </p>
+        </field>
+    </record>
+
+    <!-- AJOUT : Menu Configuration Tracking dans Stock > Configuration -->
+    <menuitem id="menu_gecafle_tracking_config"
+        name="Configuration Tracking Emballage"
+        parent="adi_gecafle_base_stock.menu_gecafle_config"
+        action="action_gecafle_tracking_config"
+        sequence="40"
+        groups="base.group_user"/>
+
+    <!-- Action alternative pour ouvrir les paramètres avancés -->
+    <record id="action_gecafle_tracking_settings" model="ir.actions.act_window">
+        <field name="name">Paramètres Tracking Emballage</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+        <field name="context">{
+            'module': 'adi_gecafle_emballage_tracking',
+            'bin_size': False
+        }</field>
+    </record>
+
+    <!-- Menu pour les paramètres avancés -->
+    <menuitem id="menu_gecafle_tracking_settings"
+        name="Paramètres Tracking Avancés"
+        parent="adi_gecafle_base_stock.menu_gecafle_config"
+        action="action_gecafle_tracking_settings"
+        sequence="41"
+        groups="adi_gecafle_emballage_tracking.group_emballage_manager"/>
+</odoo>

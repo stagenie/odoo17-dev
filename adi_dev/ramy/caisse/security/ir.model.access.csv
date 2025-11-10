@@ -1,0 +1,60 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+
+
+caisse_users,caisse users,model_caisse,caisse.group_caisse,1,1,1,0
+caisse_admin,caisse admin,model_caisse,caisse.group_caisse_centrale,1,1,1,0
+
+ligne_caisse_admin_modif,ligne caisse admin modif,model_ligne_caisse,base.group_erp_manager,1,1,1,1
+ligne_caisse_central,ligne caisse admin central,model_ligne_caisse,caisse.group_caisse_centrale,1,0,0,0
+ligne_caisse_users,ligne caisse admin users,model_ligne_caisse,caisse.group_caisse,1,0,0,0
+
+ligne_demande_admin_modif,ligne demande admin modif,model_ligne_demande,base.group_erp_manager,1,1,1,1
+ligne_demande_central,ligne demande admin central,model_ligne_demande,caisse.group_caisse_centrale,1,0,0,0
+ligne_demande_users,ligne demande admin users,model_ligne_demande,caisse.group_caisse,1,0,0,0
+
+caisse_admin_supprime,caisse admin supprimer,model_caisse,base.group_erp_manager,1,1,1,1
+type_caisse,type caisse,model_type_caisse,base.group_erp_manager,1,1,1,1
+
+caisse_date_fin_admin_modif,ligne demande admin modif,model_caisse_date_fin,base.group_erp_manager,1,1,1,1
+caisse_date_fin_central,ligne demande admin central,model_caisse_date_fin,caisse.group_caisse_centrale,1,0,0,0
+caisse_date_fin_users,ligne demande admin users,model_caisse_date_fin,caisse.group_caisse,1,0,0,0
+
+wizard_transaction_admin_modif,ligne demande admin modif,model_wizard_transaction,base.group_erp_manager,1,1,1,1
+wizard_transaction_central,ligne demande admin central,model_wizard_transaction,caisse.group_caisse_centrale,1,0,0,0
+wizard_transaction_users,ligne demande admin users,model_wizard_transaction,caisse.group_caisse,1,0,0,0
+
+wizard_selection_periode_admin_modif,ligne demande admin modif,model_wizard_selection_periode,base.group_erp_manager,1,1,1,1
+wizard_selection_periode_central,ligne demande admin central,model_wizard_selection_periode,caisse.group_caisse_centrale,1,0,0,0
+wizard_selection_periode_users,ligne demande admin users,model_wizard_selection_periode,caisse.group_caisse,1,0,0,0
+
+fund_motif_admin_modif,ligne demande admin modif,model_fund_motif,base.group_erp_manager,1,1,1,1
+fund_motif_central,ligne demande admin central,model_fund_motif,caisse.group_caisse_centrale,1,0,0,0
+fund_motif_users,ligne demande admin users,model_fund_motif,caisse.group_caisse,1,0,0,0
+
+fund_motif_family_admin_modif,ligne demande admin modif,model_fund_motif_family,base.group_erp_manager,1,1,1,1
+fund_motif_family_central,ligne demande admin central,model_fund_motif_family,caisse.group_caisse_centrale,1,0,0,0
+fund_motif_family_users,ligne demande admin users,model_fund_motif_family,caisse.group_caisse,1,0,0,0
+
+fund_advance_admin_modif,ligne demande admin modif,model_fund_advance,base.group_erp_manager,1,1,1,1
+fund_advance_central,ligne demande admin central,model_fund_advance,caisse.group_caisse_centrale,1,0,0,0
+fund_advance_users,ligne demande admin users,model_fund_advance,caisse.group_caisse,1,0,0,0
+
+fund_expense_line_admin_modif,ligne demande admin modif,model_fund_expense_line,base.group_erp_manager,1,1,1,1
+fund_expense_line_central,ligne demande admin central,model_fund_expense_line,caisse.group_caisse_centrale,1,0,0,0
+fund_expense_line_users,ligne demande admin users,model_fund_expense_line,caisse.group_caisse,1,0,0,0
+
+advance_gap_admin_modif,ligne demande admin modif,model_advance_gap,base.group_erp_manager,1,1,1,1
+advance_gap_central,ligne demande admin central,model_advance_gap,caisse.group_caisse_centrale,1,0,0,0
+advance_gap_users,ligne demande admin users,model_advance_gap,caisse.group_caisse,1,0,0,0
+
+fund_advance_repproche_wizard_admin_modif,ligne demande admin modif,model_fund_advance_repproche_wizard,base.group_erp_manager,1,1,1,1
+fund_advance_repproche_wizard_central,ligne demande admin central,model_fund_advance_repproche_wizard,caisse.group_caisse_centrale,1,0,0,0
+fund_advance_repproche_wizard_users,ligne demande admin users,model_fund_advance_repproche_wizard,caisse.group_caisse,1,0,0,0
+
+update_ecart_admin_modif,ligne demande admin modif,model_update_ecart,base.group_erp_manager,1,1,1,1
+update_ecart_central,ligne demande admin central,model_update_ecart,caisse.group_caisse_centrale,1,0,0,0
+update_ecart_users,ligne demande admin users,model_update_ecart,caisse.group_caisse,1,0,0,0
+
+caisse_account_payment_wizard_manager,ligne demande admin modif,model_caisse_account_payment_wizard,base.group_erp_manager,1,1,1,1
+caisse_account_payment_wizard_central,ligne demande admin central,model_caisse_account_payment_wizard,,1,1,1,1
+caisse_account_payment_wizard_user,ligne demande admin users,model_caisse_account_payment_wizard,,1,1,1,1

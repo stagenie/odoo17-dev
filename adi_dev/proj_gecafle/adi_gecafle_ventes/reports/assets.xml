@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_assets_common_gecafle" inherit_id="web.report_assets_common">
+        <xpath expr="." position="inside">
+            <style>
+                /* Styles pour les rubans et bordures */
+                .ribbon {
+                    position: absolute;
+                    right: -5px;
+                    top: -5px;
+                    z-index: 1;
+                    overflow: hidden;
+                    width: 135px;
+                    height: 135px;
+                    text-align: right;
+                }
+                .ribbon span {
+                    font-size: 14px;
+                    font-weight: bold;
+                    color: #FFF;
+                    text-transform: uppercase;
+                    text-align: center;
+                    line-height: 32px;
+                    transform: rotate(45deg);
+                    width: 180px;
+                    display: block;
+                    background-color: #F06050;
+                    position: absolute;
+                    top: 42px;
+                    right: -42px;
+                }
+                .border-dashed {
+                    border-style: dashed !important;
+                }
+            </style>
+        </xpath>
+    </template>
+</odoo>

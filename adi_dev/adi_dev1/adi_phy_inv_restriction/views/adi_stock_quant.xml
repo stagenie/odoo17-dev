@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+        <record id="adi_view_stock_quant_tree_inherit_modified" model="ir.ui.view">
+            <field name="name">stock.quant.tree.inherit</field>
+            <field name="model">stock.quant</field>
+            <field name="inherit_id" ref="stock.view_stock_quant_tree_inventory_editable"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='location_id']" position="after">
+                    <field name="user_id" readonly="1"/>
+                    <field name="allowed_location_ids"  widget="many2many_tags" readonly="1"/>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+
+</odoo>
+

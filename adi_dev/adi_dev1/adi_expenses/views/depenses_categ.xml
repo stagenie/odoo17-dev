@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Vue Liste/Formulaire pour les Catégories de Dépenses -->
+    <record id="view_depense_categorie_tree" model="ir.ui.view">
+        <field name="name">depense.categorie.tree</field>
+        <field name="model">depenses.categorie</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="description"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_depense_categorie_form" model="ir.ui.view">
+        <field name="name">depense.categorie.form</field>
+        <field name="model">depenses.categorie</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="description"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action pour les Catégories de Dépenses -->
+    <record id="action_depense_categorie" model="ir.actions.act_window">
+        <field name="name">Catégories de Dépenses</field>
+        <field name="res_model">depenses.categorie</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Menu pour accéder aux Catégories de Dépenses -->
+    <menuitem id="menu_depense_categories"
+              name="Catégories de Dépenses"
+              parent="adi_expenses.menu_depenses_root"
+              action="action_depense_categorie"/>
+
+
+</odoo>

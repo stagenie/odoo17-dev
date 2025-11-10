@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+
+        <!-- Action pour la liste des Clients -->
+        <record id="action_gecafle_client_list" model="ir.actions.act_window">
+            <field name="name">Gestion des Clients</field>
+            <field name="res_model">gecafle.client</field>
+            <field name="view_mode">list,form</field>
+            <field name="search_view_id" ref="view_gecafle_client_search"/>
+            <field name="context">{}</field>
+        </record>
+
+        <!-- Menu principal de l'application Gestion des Ventes avec icône -->
+        <menuitem id="menu_adi_gecafle_ventes"
+                  name="Ventes" sequence="10"
+                  web_icon="adi_gecafle_ventes,static/description/sales.png"/>
+
+        <!-- Sous-menu pointant sur la liste des Ventes (action par défaut) -->
+
+
+        <!-- Sous-menu pour gérer les Clients -->
+        <menuitem id="menu_gecafle_client"
+                  name="Clients"
+                  parent="menu_adi_gecafle_ventes"
+                  sequence="20"/>
+
+        <record id="action_emballage_client" model="ir.actions.act_window">
+            <field name="name">Opérations Emballage Client</field>
+            <field name="res_model">gecafle.emballage.client</field>
+            <field name="view_mode">list,form</field>
+        </record>
+
+
+        <!-- Sous-menu Réceptions pointant vers l'action liste des clients-->
+        <menuitem id="menu_gecafle_manag_client_root"
+                  name="Clients"
+                  parent="menu_gecafle_client"
+                  action="action_gecafle_client_list"
+                  sequence="30"/>
+        <menuitem id="menu_gecafle_client_list"
+                  parent="menu_gecafle_client"
+                  name="Emballage Clients"
+                  action="action_emballage_client"
+                  sequence="40"/>
+
+
+    </data>
+
+    <!-- Ajouter après le menu des ventes -->
+    <!-- Action -->
+    <record id="action_gecafle_avoir_client" model="ir.actions.act_window">
+        <field name="name">Avoirs Client</field>
+        <field name="res_model">gecafle.avoir.client</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créez votre premier avoir client
+            </p>
+        </field>
+    </record>
+    <!-- ACTION -->
+    <record id="action_view_vendor_credit" model="ir.actions.act_window">
+        <field name="name">Avoirs Producteur</field>
+        <field name="res_model">gecafle.avoir.producteur</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créez votre premier avoir producteur
+            </p>
+            <p>
+                Les avoirs producteur seront générés automatiquement depuis les avoirs clients
+                si l'option est activée.
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_gecafle_avoirs"
+              name="Avoirs"
+              parent="menu_adi_gecafle_ventes"
+              sequence="50"/>
+
+    <menuitem id="menu_gecafle_avoir_client"
+              name="Avoirs Client"
+              parent="menu_gecafle_avoirs"
+              action="action_gecafle_avoir_client"
+              sequence="10"/>
+</odoo>

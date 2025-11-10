@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Collection d'Icônes pour Interface</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            font-size: 2.5em;
+        }
+
+        .category {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .category h2 {
+            color: #4a5568;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .icon-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .icon-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .icon-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            border-color: #667eea;
+        }
+
+        .icon {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            user-select: none;
+        }
+
+        .icon-code {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            color: #666;
+            background: #f8f9fa;
+            padding: 5px 8px;
+            border-radius: 5px;
+            text-align: center;
+            word-break: break-all;
+        }
+
+        .copy-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #48bb78;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transform: translateX(300px);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .copy-notification.show {
+            transform: translateX(0);
+        }
+
+        .demo-section {
+            margin-top: 20px;
+            padding: 20px;
+            background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 10px;
+            color: white;
+        }
+
+        .demo-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .demo-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .demo-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.05);
+        }
+
+        .svg-icons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .svg-icon {
+            width: 40px;
+            height: 40px;
+            fill: currentColor;
+            transition: all 0.3s ease;
+        }
+
+        .svg-icon:hover {
+            transform: scale(1.2);
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 Collection d'Icônes pour Interface</h1>
+
+        <div class="copy-notification" id="copyNotification">
+            ✅ Icône copiée !
+        </div>
+
+        <!-- Actions et Navigation -->
+        <div class="category">
+            <h2>🎯 Actions et Navigation</h2>
+            <div class="icon-grid">
+                <div class="icon-item" onclick="copyIcon('👉')">
+                    <div class="icon">👉</div>
+                    <div class="icon-code">👉</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('👈')">
+                    <div class="icon">👈</div>
+                    <div class="icon-code">👈</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('👆')">
+                    <div class="icon">👆</div>
+                    <div class="icon-code">👆</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('👇')">
+                    <div class="icon">👇</div>
+                    <div class="icon-code">👇</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('➡️')">
+                    <div class="icon">➡️</div>
+                    <div class="icon-code">➡️</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('⬅️')">
+                    <div class="icon">⬅️</div>
+                    <div class="icon-code">⬅️</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('⬆️')">
+                    <div class="icon">⬆️</div>
+                    <div class="icon-code">⬆️</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('⬇️')">
+                    <div class="icon">⬇️</div>
+                    <div class="icon-code">⬇️</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('↗️')">
+                    <div class="icon">↗️</div>
+                    <div class="icon-code">↗️</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('↙️')">
+                    <div class="icon">↙️</div>
+                    <div class="icon-code">↙️</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('🔄')">
+                    <div class="icon">🔄</div>
+                    <div class="icon-code">🔄</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('🔃')">
+                    <div class="icon">🔃</div>
+                    <div class="icon-code">🔃</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- États et Statuts -->
+        <div class="category">
+            <h2>✅ États et Statuts</h2>
+            <div class="icon-grid">
+                <div class="icon-item" onclick="copyIcon('✅')">
+                    <div class="icon">✅</div>
+                    <div class="icon-code">✅</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('❌')">
+                    <div class="icon">❌</div>
+                    <div class="icon-code">❌</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('✔️')">
+                    <div class="icon">✔️</div>
+                    <div class="icon-code">✔️</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('❎')">
+                    <div class="icon">❎</div>
+                    <div class="icon-code">❎</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('⚠️')">
+                    <div class="icon">⚠️</div>
+                    <div class="icon-code">⚠️</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('❗')">
+                    <div class="icon">❗</div>
+                    <div class="icon-code">❗</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('❓')">
+                    <div class="icon">❓</div>
+                    <div class="icon-code">❓</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('ℹ️')">
+                    <div class="icon">ℹ️</div>
+                    <div class="icon-code">ℹ️</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('🔴')">
+                    <div class="icon">🔴</div>
+                    <div class="icon-code">🔴</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('🟢')">
+                    <div class="icon">🟢</div>
+                    <div class="icon-code">🟢</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('🟡')">
+                    <div class="icon">🟡</div>
+                    <div class="icon-code">🟡</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('🔄')">
+                    <div class="icon">🔄</div>
+                    <div class="icon-code">🔄 (loading)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Interface et Contrôles -->
+        <div class="category">
+            <h2>🎛️ Interface et Contrôles</h2>
+            <div class="icon-grid">
+                <div class="icon-item" onclick="copyIcon('⚙️')">
+                    <div class="icon">⚙️</div>
+                    <div class="icon-code">⚙️</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('🔧')">
+                    <div class="icon">🔧</div>
+                    <div class="icon-code">🔧</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('🏠')">
+                    <div class="icon">🏠</div>
+                    <div class="icon-code">🏠</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('🔍')">
+                    <div class="icon">🔍</div>
+                    <div class="icon-code">🔍</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('📱')">
+                    <div class="icon">📱</div>
+                    <div class="icon-code">📱</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('💻')">
+                    <div class="icon">💻</div>
+                    <div class="icon-code">💻</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('📄')">
+                    <div class="icon">📄</div>
+                    <div class="icon-code">📄</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('📁')">
+                    <div class="icon">📁</div>
+                    <div class="icon-code">📁</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('💾')">
+                    <div class="icon">💾</div>
+                    <div class="icon-code">💾</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('🗑️')">
+                    <div class="icon">🗑️</div>
+                    <div class="icon-code">🗑️</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('✏️')">
+                    <div class="icon">✏️</div>
+                    <div class="icon-code">✏️</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('📝')">
+                    <div class="icon">📝</div>
+                    <div class="icon-code">📝</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Communication et Social -->
+        <div class="category">
+            <h2>💬 Communication et Social</h2>
+            <div class="icon-grid">
+                <div class="icon-item" onclick="copyIcon('💬')">
+                    <div class="icon">💬</div>
+                    <div class="icon-code">💬</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('📧')">
+                    <div class="icon">📧</div>
+                    <div class="icon-code">📧</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('📞')">
+                    <div class="icon">📞</div>
+                    <div class="icon-code">📞</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('👤')">
+                    <div class="icon">👤</div>
+                    <div class="icon-code">👤</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('👥')">
+                    <div class="icon">👥</div>
+                    <div class="icon-code">👥</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('❤️')">
+                    <div class="icon">❤️</div>
+                    <div class="icon-code">❤️</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('👍')">
+                    <div class="icon">👍</div>
+                    <div class="icon-code">👍</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('👎')">
+                    <div class="icon">👎</div>
+                    <div class="icon-code">👎</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('⭐')">
+                    <div class="icon">⭐</div>
+                    <div class="icon-code">⭐</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('🔔')">
+                    <div class="icon">🔔</div>
+                    <div class="icon-code">🔔</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('🔕')">
+                    <div class="icon">🔕</div>
+                    <div class="icon-code">🔕</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('📢')">
+                    <div class="icon">📢</div>
+                    <div class="icon-code">📢</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Commerce et Finance -->
+        <div class="category">
+            <h2>💰 Commerce et Finance</h2>
+            <div class="icon-grid">
+                <div class="icon-item" onclick="copyIcon('💰')">
+                    <div class="icon">💰</div>
+                    <div class="icon-code">💰</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('💳')">
+                    <div class="icon">💳</div>
+                    <div class="icon-code">💳</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('🛒')">
+                    <div class="icon">🛒</div>
+                    <div class="icon-code">🛒</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('🛍️')">
+                    <div class="icon">🛍️</div>
+                    <div class="icon-code">🛍️</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('💎')">
+                    <div class="icon">💎</div>
+                    <div class="icon-code">💎</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('🏪')">
+                    <div class="icon">🏪</div>
+                    <div class="icon-code">🏪</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('🏦')">
+                    <div class="icon">🏦</div>
+                    <div class="icon-code">🏦</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('📊')">
+                    <div class="icon">📊</div>
+                    <div class="icon-code">📊</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('📈')">
+                    <div class="icon">📈</div>
+                    <div class="icon-code">📈</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('📉')">
+                    <div class="icon">📉</div>
+                    <div class="icon-code">📉</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('💸')">
+                    <div class="icon">💸</div>
+                    <div class="icon-code">💸</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('🎁')">
+                    <div class="icon">🎁</div>
+                    <div class="icon-code">🎁</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sécurité et Protection -->
+        <div class="category">
+            <h2>🔒 Sécurité et Protection</h2>
+            <div class="icon-grid">
+                <div class="icon-item" onclick="copyIcon('🔒')">
+                    <div class="icon">🔒</div>
+                    <div class="icon-code">🔒</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('🔓')">
+                    <div class="icon">🔓</div>
+                    <div class="icon-code">🔓</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('🔐')">
+                    <div class="icon">🔐</div>
+                    <div class="icon-code">🔐</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('🗝️')">
+                    <div class="icon">🗝️</div>
+                    <div class="icon-code">🗝️</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('🛡️')">
+                    <div class="icon">🛡️</div>
+                    <div class="icon-code">🛡️</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('🔑')">
+                    <div class="icon">🔑</div>
+                    <div class="icon-code">🔑</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('👁️')">
+                    <div class="icon">👁️</div>
+                    <div class="icon-code">👁️</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('🚫')">
+                    <div class="icon">🚫</div>
+                    <div class="icon-code">🚫</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('⛔')">
+                    <div class="icon">⛔</div>
+                    <div class="icon-code">⛔</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('🔰')">
+                    <div class="icon">🔰</div>
+                    <div class="icon-code">🔰</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transport et Localisation -->
+        <div class="category">
+            <h2>🚗 Transport et Localisation</h2>
+            <div class="icon-grid">
+                <div class="icon-item" onclick="copyIcon('🚗')">
+                    <div class="icon">🚗</div>
+                    <div class="icon-code">🚗</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('🚲')">
+                    <div class="icon">🚲</div>
+                    <div class="icon-code">🚲</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('✈️')">
+                    <div class="icon">✈️</div>
+                    <div class="icon-code">✈️</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('🚂')">
+                    <div class="icon">🚂</div>
+                    <div class="icon-code">🚂</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('🚌')">
+                    <div class="icon">🚌</div>
+                    <div class="icon-code">🚌</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('📍')">
+                    <div class="icon">📍</div>
+                    <div class="icon-code">📍</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('🗺️')">
+                    <div class="icon">🗺️</div>
+                    <div class="icon-code">🗺️</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('🧭')">
+                    <div class="icon">🧭</div>
+                    <div class="icon-code">🧭</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('🌍')">
+                    <div class="icon">🌍</div>
+                    <div class="icon-code">🌍</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('🏁')">
+                    <div class="icon">🏁</div>
+                    <div class="icon-code">🏁</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Temps et Date -->
+        <div class="category">
+            <h2>⏰ Temps et Date</h2>
+            <div class="icon-grid">
+                <div class="icon-item" onclick="copyIcon('⏰')">
+                    <div class="icon">⏰</div>
+                    <div class="icon-code">⏰</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('⏱️')">
+                    <div class="icon">⏱️</div>
+                    <div class="icon-code">⏱️</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('📅')">
+                    <div class="icon">📅</div>
+                    <div class="icon-code">📅</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('📆')">
+                    <div class="icon">📆</div>
+                    <div class="icon-code">📆</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('🕐')">
+                    <div class="icon">🕐</div>
+                    <div class="icon-code">🕐</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('⌚')">
+                    <div class="icon">⌚</div>
+                    <div class="icon-code">⌚</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('⏳')">
+                    <div class="icon">⏳</div>
+                    <div class="icon-code">⏳</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('⌛')">
+                    <div class="icon">⌛</div>
+                    <div class="icon-code">⌛</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Multimédia -->
+        <div class="category">
+            <h2>🎵 Multimédia</h2>
+            <div class="icon-grid">
+                <div class="icon-item" onclick="copyIcon('🎵')">
+                    <div class="icon">🎵</div>
+                    <div class="icon-code">🎵</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('🎶')">
+                    <div class="icon">🎶</div>
+                    <div class="icon-code">🎶</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('🎥')">
+                    <div class="icon">🎥</div>
+                    <div class="icon-code">🎥</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('📷')">
+                    <div class="icon">📷</div>
+                    <div class="icon-code">📷</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('📸')">
+                    <div class="icon">📸</div>
+                    <div class="icon-code">📸</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('🎨')">
+                    <div class="icon">🎨</div>
+                    <div class="icon-code">🎨</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('🖼️')">
+                    <div class="icon">🖼️</div>
+                    <div class="icon-code">🖼️</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('▶️')">
+                    <div class="icon">▶️</div>
+                    <div class="icon-code">▶️</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('⏸️')">
+                    <div class="icon">⏸️</div>
+                    <div class="icon-code">⏸️</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('⏹️')">
+                    <div class="icon">⏹️</div>
+                    <div class="icon-code">⏹️</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('🔊')">
+                    <div class="icon">🔊</div>
+                    <div class="icon-code">🔊</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('🔇')">
+                    <div class="icon">🔇</div>
+                    <div class="icon-code">🔇</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Démonstration d'utilisation -->
+        <div class="demo-section">
+            <h3>💡 Exemples d'utilisation dans des boutons</h3>
+            <div class="demo-buttons">
+                <button class="demo-btn">👉 Suivant</button>
+                <button class="demo-btn">✅ Valider</button>
+                <button class="demo-btn">❌ Annuler</button>
+                <button class="demo-btn">🔍 Rechercher</button>
+                <button class="demo-btn">💾 Sauvegarder</button>
+                <button class="demo-btn">🗑️ Supprimer</button>
+                <button class="demo-btn">⚙️ Paramètres</button>
+                <button class="demo-btn">📧 Envoyer</button>
+                <button class="demo-btn">🛒 Ajouter au panier</button>
+                <button class="demo-btn">❤️ J'aime</button>
+            </div>
+        </div>
+
+        <!-- Instructions d'utilisation -->
+        <div class="category">
+            <h2>📋 Instructions d'utilisation</h2>
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 15px 0;">
+                <h3>Comment utiliser ces icônes :</h3>
+                <ul style="margin: 15px 0; padding-left: 20px;">
+                    <li><strong>Cliquez sur une icône</strong> pour la copier automatiquement dans le presse-papiers</li>
+                    <li><strong>Collez directement</strong> l'icône dans votre code HTML, CSS ou texte</li>
+                    <li><strong>Utilisez en CSS</strong> : <code>content: "👉";</code> dans un pseudo-élément</li>
+                    <li><strong>En HTML</strong> : Collez directement dans le texte ou utilisez en attribut</li>
+                    <li><strong>Responsive</strong> : Ces icônes s'adaptent automatiquement à la taille de police</li>
+                </ul>
+
+                <h3 style="margin-top: 20px;">Codes CSS utiles :</h3>
+                <div style="background: #2d3748; color: #e2e8f0; padding: 15px; border-radius: 8px; margin: 10px 0; font-family: monospace;">
+                    <p>/* Bouton avec icône */</p>
+                    <p>.btn-icon::before { content: "👉"; margin-right: 8px; }</p>
+                    <p></p>
+                    <p>/* État de validation */</p>
+                    <p>.success::after { content: "✅"; margin-left: 5px; }</p>
+                    <p></p>
+                    <p>/* Indicateur de statut */</p>
+                    <p>.status-online::before { content: "🟢"; margin-right: 5px; }</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Icônes SVG Bonus -->
+        <div class="category">
+            <h2>🎨 Icônes SVG Bonus</h2>
+            <p style="margin-bottom: 20px; color: #666;">Icônes vectorielles pour une qualité parfaite à toutes les tailles</p>
+            <div class="svg-icons">
+                <!-- Icône Menu Hamburger -->
+                <svg class="svg-icon" viewBox="0 0 24 24" onclick="copySVG(this)">
+                    <path d="M3 12h18M3 6h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+
+                <!-- Icône Fermer -->
+                <svg class="svg-icon" viewBox="0 0 24 24" onclick="copySVG(this)">
+                    <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+
+                <!-- Icône Plus -->
+                <svg class="svg-icon" viewBox="0 0 24 24" onclick="copySVG(this)">
+                    <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+
+                <!-- Icône Moins -->
+                <svg class="svg-icon" viewBox="0 0 24 24" onclick="copySVG(this)">
+                    <path d="M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+
+                <!-- Icône Cœur -->
+                <svg class="svg-icon" viewBox="0 0 24 24" onclick="copySVG(this)">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" fill="currentColor"/>
+                </svg>
+
+                <!-- Icône Étoile -->
+                <svg class="svg-icon" viewBox="0 0 24 24" onclick="copySVG(this)">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="currentColor"/>
+                </svg>
+
+                <!-- Icône Download -->
+                <svg class="svg-icon" viewBox="0 0 24 24" onclick="copySVG(this)">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+
+                <!-- Icône Upload -->
+                <svg class="svg-icon" viewBox="0 0 24 24" onclick="copySVG(this)">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+
+                <!-- Icône Share -->
+                <svg class="svg-icon" viewBox="0 0 24 24" onclick="copySVG(this)">
+                    <circle cx="18" cy="5" r="3" fill="currentColor"/>
+                    <circle cx="6" cy="12" r="3" fill="currentColor"/>
+                    <circle cx="18" cy="19" r="3" fill="currentColor"/>
+                    <path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98" stroke="currentColor" stroke-width="2"/>
+                </svg>
+
+                <!-- Icône Eye -->
+                <svg class="svg-icon" viewBox="0 0 24 24" onclick="copySVG(this)">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="2"/>
+                    <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                </svg>
+            </div>
+
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 20px;">
+                <p><strong>💡 Astuce :</strong> Cliquez sur les icônes SVG ci-dessus pour copier leur code complet. Vous pouvez ensuite modifier la couleur avec la propriété CSS <code>color</code> ou <code>fill</code>.</p>
+            </div>
+        </div>
+
+        <!-- Section bonus : Symboles spéciaux -->
+        <div class="category">
+            <h2>🔣 Symboles Spéciaux et Décoratifs</h2>
+            <div class="icon-grid">
+                <div class="icon-item" onclick="copyIcon('◉')">
+                    <div class="icon">◉</div>
+                    <div class="icon-code">◉</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('◎')">
+                    <div class="icon">◎</div>
+                    <div class="icon-code">◎</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('●')">
+                    <div class="icon">●</div>
+                    <div class="icon-code">●</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('○')">
+                    <div class="icon">○</div>
+                    <div class="icon-code">○</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('◆')">
+                    <div class="icon">◆</div>
+                    <div class="icon-code">◆</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('◇')">
+                    <div class="icon">◇</div>
+                    <div class="icon-code">◇</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('▲')">
+                    <div class="icon">▲</div>
+                    <div class="icon-code">▲</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('▼')">
+                    <div class="icon">▼</div>
+                    <div class="icon-code">▼</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('►')">
+                    <div class="icon">►</div>
+                    <div class="icon-code">►</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('◄')">
+                    <div class="icon">◄</div>
+                    <div class="icon-code">◄</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('■')">
+                    <div class="icon">■</div>
+                    <div class="icon-code">■</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('□')">
+                    <div class="icon">□</div>
+                    <div class="icon-code">□</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('★')">
+                    <div class="icon">★</div>
+                    <div class="icon-code">★</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('☆')">
+                    <div class="icon">☆</div>
+                    <div class="icon-code">☆</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('♥')">
+                    <div class="icon">♥</div>
+                    <div class="icon-code">♥</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('♦')">
+                    <div class="icon">♦</div>
+                    <div class="icon-code">♦</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('♠')">
+                    <div class="icon">♠</div>
+                    <div class="icon-code">♠</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('♣')">
+                    <div class="icon">♣</div>
+                    <div class="icon-code">♣</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('※')">
+                    <div class="icon">※</div>
+                    <div class="icon-code">※</div>
+                </div>
+                <div class="icon-item" onclick="copyIcon('‡')">
+                    <div class="icon">‡</div>
+                    <div class="icon-code">‡</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Fonction pour copier une icône
+        function copyIcon(icon) {
+            navigator.clipboard.writeText(icon).then(() => {
+                showNotification();
+            }).catch(err => {
+                console.error('Erreur lors de la copie:', err);
+            });
+        }
+
+        // Fonction pour copier le code SVG
+        function copySVG(svgElement) {
+            const svgCode = svgElement.outerHTML;
+            navigator.clipboard.writeText(svgCode).then(() => {
+                showNotification();
+            }).catch(err => {
+                console.error('Erreur lors de la copie:', err);
+            });
+        }
+
+        // Afficher la notification de copie
+        function showNotification() {
+            const notification = document.getElementById('copyNotification');
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 2000);
+        }
+
+        // Animation des icônes au survol
+        document.querySelectorAll('.icon-item').forEach(item => {
+            item.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-3px) scale(1.05)';
+            });
+
+            item.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+
+        // Animation des icônes SVG
+        document.querySelectorAll('.svg-icon').forEach(icon => {
+            icon.addEventListener('mouseenter', function() {
+                this.style.transform = 'scale(1.2) rotate(5deg)';
+            });
+
+            icon.addEventListener('mouseleave', function() {
+                this.style.transform = 'scale(1) rotate(0deg)';
+            });
+        });
+
+        // Effet de particules au clic
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.icon-item') || e.target.closest('.svg-icon')) {
+                createParticles(e.clientX, e.clientY);
+            }
+        });
+
+        function createParticles(x, y) {
+            for (let i = 0; i < 6; i++) {
+                const particle = document.createElement('div');
+                particle.style.cssText = `
+                    position: fixed;
+                    width: 6px;
+                    height: 6px;
+                    background: linear-gradient(45deg, #667eea, #764ba2);
+                    border-radius: 50%;
+                    pointer-events: none;
+                    z-index: 1000;
+                    left: ${x}px;
+                    top: ${y}px;
+                    animation: particle-explosion 0.8s ease-out forwards;
+                `;
+                document.body.appendChild(particle);
+
+                const angle = (i * 60) * (Math.PI / 180);
+                const velocity = 100;
+                const vx = Math.cos(angle) * velocity;
+                const vy = Math.sin(angle) * velocity;
+
+                particle.style.setProperty('--vx', vx + 'px');
+                particle.style.setProperty('--vy', vy + 'px');
+
+                setTimeout(() => particle.remove(), 800);
+            }
+        }
+
+        // Ajout du CSS pour l'animation des particules
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes particle-explosion {
+                0% {
+                    transform: translate(0, 0) scale(1);
+                    opacity: 1;
+                }
+                100% {
+                    transform: translate(var(--vx), var(--vy)) scale(0);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

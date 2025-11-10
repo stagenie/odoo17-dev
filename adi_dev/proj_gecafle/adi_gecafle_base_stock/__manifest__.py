@@ -1,0 +1,30 @@
+{
+    'name': 'Adi Gecafle Base',
+    'version': '17.1.0',
+    'category': 'None',
+    'summary': 'Ajoute les informations de base nécessaire à la GECAFLE',
+    'description': """
+        Ajoute les informations de base nécessaire à la GECAFLE',
+    """,
+    "author": "ADICOPS",
+    "email": 'info@adicops.com',
+    "license": 'AGPL-3',
+
+    "website": 'https://adicops.com/',
+    'depends': ['base',],
+     'data': [
+        'security/ir.model.access.csv',
+        'security/security.xml',
+        'views/res_company_views.xml',
+         'views/produit_views.xml',
+        'views/fruits_legumes_views.xml',
+        'views/producteur_views.xml',
+        'views/qualite_views.xml',
+        'views/emballage_views.xml',
+        'views/menu_views.xml',
+    ],
+    'installable': True,
+    'sequence':1,
+    'application': True,
+    'auto_install': False,
+}

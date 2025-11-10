@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Template pour le rapport PDF de synthèse -->
+    <template id="report_emballage_tracking_summary_document">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="page">
+                    <h2 class="text-center">ÉTAT DES EMBALLAGES</h2>
+                    <p class="text-center">
+                        <strong>Date:</strong> <span t-esc="datetime.datetime.now().strftime('%d/%m/%Y')"/>
+                    </p>
+
+                    <!-- Tableau par type de partenaire -->
+                    <h3>Producteurs</h3>
+                    <table class="table table-sm table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Producteur</th>
+                                <th>Emballage</th>
+                                <th class="text-right">Entrées</th>
+                                <th class="text-right">Sorties</th>
+                                <th class="text-right">Solde</th>
+                                <th>Dernier mouvement</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-set="producteurs" t-value="docs.filtered(lambda r: r.partner_type == 'producteur')"/>
+                            <tr t-foreach="producteurs" t-as="line">
+                                <td><span t-field="line.partner_name"/></td>
+                                <td><span t-field="line.emballage_name"/></td>
+                                <td class="text-right"><span t-field="line.total_entrees"/></td>
+                                <td class="text-right"><span t-field="line.total_sorties"/></td>
+                                <td class="text-right">
+                                    <strong t-attf-class="#{line.balance > 0 and 'text-success' or 'text-danger'}">
+                                        <span t-field="line.balance"/>
+                                    </strong>
+                                </td>
+                                <td><span t-field="line.last_movement_date"/></td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="2"><strong>Total</strong></td>
+                                <td class="text-right"><strong><span t-esc="sum(producteurs.mapped('total_entrees'))"/></strong></td>
+                                <td class="text-right"><strong><span t-esc="sum(producteurs.mapped('total_sorties'))"/></strong></td>
+                                <td class="text-right"><strong><span t-esc="sum(producteurs.mapped('balance'))"/></strong></td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                    <h3>Clients</h3>
+                    <table class="table table-sm table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Client</th>
+                                <th>Emballage</th>
+                                <th class="text-right">Entrées</th>
+                                <th class="text-right">Sorties</th>
+                                <th class="text-right">Solde</th>
+                                <th>Dernier mouvement</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-set="clients" t-value="docs.filtered(lambda r: r.partner_type == 'client')"/>
+                            <tr t-foreach="clients" t-as="line">
+                                <td><span t-field="line.partner_name"/></td>
+                                <td><span t-field="line.emballage_name"/></td>
+                                <td class="text-right"><span t-field="line.total_entrees"/></td>
+                                <td class="text-right"><span t-field="line.total_sorties"/></td>
+                                <td class="text-right">
+                                    <strong t-attf-class="#{line.balance > 0 and 'text-success' or 'text-danger'}">
+                                        <span t-field="line.balance"/>
+                                    </strong>
+                                </td>
+                                <td><span t-field="line.last_movement_date"/></td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="2"><strong>Total</strong></td>
+                                <td class="text-right"><strong><span t-esc="sum(clients.mapped('total_entrees'))"/></strong></td>
+                                <td class="text-right"><strong><span t-esc="sum(clients.mapped('total_sorties'))"/></strong></td>
+                                <td class="text-right"><strong><span t-esc="sum(clients.mapped('balance'))"/></strong></td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                    <!-- Résumé global par type d'emballage -->
+                    <h3>Résumé par Type d'Emballage</h3>
+                    <table class="table table-sm table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Type d'Emballage</th>
+                                <th class="text-right">Total en circulation</th>
+                                <th class="text-right">Chez Producteurs</th>
+                                <th class="text-right">Chez Clients</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="docs.mapped('emballage_name').sorted()" t-as="emb_name">
+                                <t t-set="emb_lines" t-value="docs.filtered(lambda r: r.emballage_name == emb_name)"/>
+                                <t t-set="prod_balance" t-value="sum(emb_lines.filtered(lambda r: r.partner_type == 'producteur').mapped('balance'))"/>
+                                <t t-set="client_balance" t-value="sum(emb_lines.filtered(lambda r: r.partner_type == 'client').mapped('balance'))"/>
+                                <tr>
+                                    <td><t t-esc="emb_name"/></td>
+                                    <td class="text-right"><strong><t t-esc="prod_balance + client_balance"/></strong></td>
+                                    <td class="text-right"><t t-esc="prod_balance"/></td>
+                                    <td class="text-right"><t t-esc="client_balance"/></td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+        </t>
+    </template>
+
+    <!-- Définition du rapport PDF -->
+    <record id="action_report_emballage_tracking_summary" model="ir.actions.report">
+        <field name="name">État des Emballages</field>
+        <field name="model">emballage.tracking.summary.report</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_gecafle_emballage_tracking.report_emballage_tracking_summary_document</field>
+        <field name="report_file">adi_gecafle_emballage_tracking.report_emballage_tracking_summary</field>
+        <field name="print_report_name">'État Emballages - %s' % (datetime.datetime.now().strftime('%d-%m-%Y'))</field>
+        <field name="paperformat_id" ref="base.paperformat_euro"/>
+    </record>
+
+    <!-- Ajouter un bouton d'impression dans la vue tree de synthèse -->
+    <record id="view_emballage_tracking_summary_tree_inherit" model="ir.ui.view">
+        <field name="name">emballage.tracking.summary.report.tree.inherit</field>
+        <field name="model">emballage.tracking.summary.report</field>
+        <field name="inherit_id" ref="view_emballage_tracking_summary_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//tree" position="inside">
+                <header>
+                    <button name="%(action_report_emballage_tracking_summary)d"
+                            string="Imprimer État"
+                            type="action"
+                            class="btn-primary"/>
+                </header>
+            </xpath>
+        </field>
+    </record>
+</odoo>

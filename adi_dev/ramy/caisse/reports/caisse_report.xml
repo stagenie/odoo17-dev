@@ -1,0 +1,417 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<data>
+		<record id="paperformat_smal" model="report.paperformat">
+			<field name="name">caisse</field>
+			<field name="default" eval="True" />
+			<field name="format">A4</field>
+			<field name="page_height">0</field>
+			<field name="page_width">0</field>
+			<field name="orientation">Portrait</field>
+			<field name="margin_top">50</field>
+			<field name="margin_bottom">20</field>
+			<field name="margin_left">5</field>
+			<field name="margin_right">5</field>
+			<field name="header_line" eval="False" />
+			<field name="header_spacing">40</field>
+			<field name="dpi">90</field>
+		</record>
+		<!-- <report 
+			id="caisse"
+			model="wizard.selection.periode"
+			string="Caisse"
+			report_type="qweb-pdf"
+			name="caisse.report_caisse"
+			file="caisse.report_caisse"
+			paperformat="caisse.paperformat_smal"
+			/> -->
+		
+		<record id="action_report_caisse" model="ir.actions.report">
+			<field name="name">Caisse</field>
+			<field name="model">wizard.selection.periode</field>
+			<field name="report_type">qweb-pdf</field>
+			<field name="report_name">caisse.report_caisse</field>
+			<field name="report_file">caisse.report_caisse</field>
+			<field name="paperformat_id" ref="caisse.paperformat_smal"/>
+			<field name="print_report_name">'Caisse - %s' % (object.id)</field>
+		</record>
+
+		<template id="report_caisse">
+				<t t-call="web.html_container">
+					<t t-call="web.external_layout">
+					<div class="page">
+						<center><h4>Caisse <t t-esc="data['type_caisse_id'][1]"/><br/>
+							Du <b><t t-esc="data['date_from']" t-options="{'widget' : 'date'}"/></b> au <b><t t-esc="data['date_to']" t-options="{'widget' : 'date'}"/></b></h4></center><br/>
+							<t t-foreach="get_mois(data['date_from'],data['date_to'],data['type_caisse_id'][0])" t-as="data_dict">
+								<br/>
+								<div>
+									<div class="col-xs-10">
+										<table class="table table-bordered text-center"  height="70" width="70" style="border: 1 height:50px;border: 1px solid black;">
+												<tr class="menu-fixe" style="border:1px solid black; margin: 0; padding:0;">
+													<td style="border:1px solid black; margin: 0; padding:0;" class="text-center"><b>Piéce</b></td>
+													<td style="border:1px solid black; margin: 0; padding:0;" class="text-center"><b>Date</b></td>
+													<td style="border:1px solid black; margin: 0; padding:0;" class="text-center"><b>Recettes</b></td>
+													<td style="border:1px solid black; margin: 0; padding:0;" class="text-center"><b>Dépenses</b></td>
+													<td style="border:1px solid black; margin: 0; padding:0;" class="text-center"><b>Désignation</b></td>
+												</tr>
+												<tr style="border:1px solid black; background-color: rgb(0, 0, 0); margin: 0; padding:0;">
+													<td style="border:1px solid black; color:white ; margin: 0; padding:0;" colspan="5"><b><span t-esc="data_dict['annee']"/></b></td>
+												</tr>
+												<t t-if="verif_mois_existe(data['date_from'], data['date_to'], 1)">
+													<tr style="border:1px solid black; margin: 0; padding:0;">
+														<td style="border:1px solid black; background-color:silver; margin: 0; padding:0;" colspan="5"><b>Janvier</b></td>
+													</tr>
+													<tr style="border:1px solid black; margin: 0; padding:0;">
+														<td style="border:1px solid black; margin: 0; padding:0;" ><b>Solde d'ouverture</b></td>
+														<td style="border:1px solid black; margin: 0; padding:0; " colspan="4"><b><span t-esc="data_dict['so_janvier']"/></b></td>
+													</tr>
+													<!--span t-esc="data_dict['ss']"/-->
+													<t t-foreach="data_dict['janvier']" t-as="ligne">
+														<tr style="border:1px solid black; margin: 0; padding:0;">
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['ref']"/></td>
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['date']"/></td>
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['recette']"/></td>
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['depence']"/></td>
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['designation']"/></td>	
+														</tr>
+													</t>
+													<tr style="border:1px solid black;">
+														<td style="border:1px solid black; background-color:gray; margin: 0; padding:0;" colspan="2"><b>Total</b></td>
+														<td style="border:1px solid black; background-color:gray; margin: 0; padding:0;"><b><span t-esc="data_dict['total_rec_1']"/></b></td>
+														<td style="border:1px solid black; background-color:gray; margin: 0; padding:0;"><b><span t-esc="data_dict['total_dep_1']"/></b></td>
+														<td style="border:1px solid black; background-color:gray; margin: 0; padding:0;"><br/></td>
+													</tr>
+												</t>
+												<t t-if="verif_mois_existe(data['date_from'], data['date_to'], 2)">
+													<tr style="border:1px solid black; margin: 0; padding:0;">
+														<td style="border:1px solid black; background-color:silver; margin: 0; padding:0;" colspan="5"><b>Février</b></td>
+													</tr>
+													<tr style="border:1px solid black; margin: 0; padding:0;">
+														<td style="border:1px solid black; margin: 0; padding:0;" ><b>Solde d'ouverture</b></td>
+														<td style="border:1px solid black; margin: 0; padding:0; " colspan="4"><b><span t-esc="data_dict['so_fev']"/></b></td>
+													</tr>
+													<t t-foreach="data_dict['fev']" t-as="ligne">
+														<tr style="border:1px solid black; margin: 0; padding:0;">
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['ref']"/></td>
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['date']"/></td>
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['recette']"/></td>
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['depence']"/></td>
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['designation']"/></td>	
+														</tr>
+													</t>
+													<tr style="border:1px solid black; margin: 0; padding:0;">
+														<td style="border:1px solid black; background-color:gray; margin: 0; padding:0;" colspan="2"><b>Total</b></td>
+														<td style="border:1px solid black; background-color:gray; margin: 0; padding:0;"><b><span t-esc="data_dict['total_rec_2']"/></b></td>
+														<td style="border:1px solid black; background-color:gray; margin: 0; padding:0;"><b><span t-esc="data_dict['total_dep_2']"/></b></td>
+														<td style="border:1px solid black; background-color:gray; margin: 0; padding:0;"><br/></td>
+													</tr>
+												</t>
+
+												<t t-if="verif_mois_existe(data['date_from'], data['date_to'], 3)">
+													<tr style="border:1px solid black; margin: 0; padding:0;">
+														<td style="border:1px solid black; background-color:silver; margin: 0; padding:0;" colspan="5"><b>Mars</b></td>
+													</tr>
+													<tr style="border:1px solid  margin: 0; padding:0;;">
+														<td style="border:1px solid black; margin: 0; padding:0;" ><b>Solde d'ouverture</b></td>
+														<td style="border:1px solid black; margin: 0; padding:0; " colspan="4"><b><span t-esc="data_dict['so_mars']"/></b></td>
+													</tr>
+													<t t-foreach="data_dict['mars']" t-as="ligne">
+														<tr style="border:1px solid black; margin: 0; padding:0;">
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['ref']"/></td>
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['date']"/></td>
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['recette']"/></td>
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['depence']"/></td>
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['designation']"/></td>	
+														</tr>
+													</t>
+													<tr style="border:1px solid black; margin: 0; padding:0;">
+														<td style="border:1px solid black; background-color:gray; margin: 0; padding:0;" colspan="2"><b>Total</b></td>
+														<td style="border:1px solid black; background-color:gray; margin: 0; padding:0;"><b><span t-esc="data_dict['total_rec_3']"/></b></td>
+														<td style="border:1px solid black; background-color:gray; margin: 0; padding:0;"><b><span t-esc="data_dict['total_dep_3']"/></b></td>
+														<td style="border:1px solid black; background-color:gray; margin: 0; padding:0;"><br/></td>
+													</tr>
+												</t>
+												<t t-if="verif_mois_existe(data['date_from'], data['date_to'], 4)">
+													<tr style="border:1px solid black; margin: 0; padding:0;">
+														<td style="border:1px solid black; background-color:silver; margin: 0; padding:0;" colspan="5"><b>Avril</b></td>
+													</tr>
+													<tr style="border:1px solid black; margin: 0; padding:0;">
+														<td style="border:1px solid black; margin: 0; padding:0;" ><b>Solde d'ouverture</b></td>
+														<td style="border:1px solid black; margin: 0; padding:0; " colspan="4"><b><span t-esc="data_dict['so_avr']"/></b></td>
+													</tr>
+													<t t-foreach="data_dict['avr']" t-as="ligne">
+														<tr style="border:1px solid black; margin: 0; padding:0;">
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['ref']"/> michto</td>
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['date']"/></td>
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['recette']"/></td>
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['depence']"/></td>
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['designation']"/></td>	
+														</tr>
+													</t>
+													<tr style="border:1px solid black; margin: 0; padding:0;">
+														<td style="border:1px solid black; background-color:gray; margin: 0; padding:0;" colspan="2"><b>Total</b></td>
+														<td style="border:1px solid black; background-color:gray; margin: 0; padding:0;"><b><span t-esc="data_dict['total_rec_4']"/></b></td>
+														<td style="border:1px solid black; background-color:gray; margin: 0; padding:0;"><b><span t-esc="data_dict['total_dep_4']"/></b></td>
+														<td style="border:1px solid black; background-color:gray; margin: 0; padding:0;"><br/></td>
+													</tr>
+												</t>
+												<t t-if="verif_mois_existe(data['date_from'], data['date_to'], 5)">
+													<tr style="border:1px solid black; margin: 0; padding:0;">
+														<td style="border:1px solid black; background-color:silver; margin: 0; padding:0;" colspan="5"><b>Mai</b></td>
+													</tr>
+													<tr style="border:1px solid black; margin: 0; padding:0;">
+														<td style="border:1px solid black; margin: 0; padding:0;" ><b>Solde d'ouverture</b></td>
+														<td style="border:1px solid black; margin: 0; padding:0; " colspan="4"><b><span t-esc="data_dict['so_mai']"/></b></td>
+													</tr>
+													<t t-foreach="data_dict['mai']" t-as="ligne">
+														<tr style="border:1px solid black; margin: 0; padding:0;">
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['ref']"/></td>
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['date']"/></td>
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['recette']"/></td>
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['depence']"/></td>
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['designation']"/></td>	
+														</tr>
+													</t>
+													<tr style="border:1px solid black; margin: 0; padding:0;">
+														<td style="border:1px solid black; background-color:gray; margin: 0; padding:0;" colspan="2"><b>Total</b></td>
+														<td style="border:1px solid black; background-color:gray; margin: 0; padding:0;"><b><span t-esc="data_dict['total_rec_5']"/></b></td>
+														<td style="border:1px solid black; background-color:gray; margin: 0; padding:0;"><b><span t-esc="data_dict['total_dep_5']"/></b></td>
+														<td style="border:1px solid black; background-color:gray; margin: 0; padding:0;"><br/></td>
+													</tr>
+												</t>
+												<t t-if="verif_mois_existe(data['date_from'], data['date_to'], 1)">
+													<tr style="border:1px solid black; margin: 0; padding:0;">
+														<td style="border:1px solid black; background-color:silver; margin: 0; padding:0;" colspan="5"><b>Juin</b></td>
+													</tr>
+													<tr style="border:1px solid black; margin: 0; padding:0;">
+														<td style="border:1px solid black; margin: 0; padding:0;" ><b>Solde d'ouverture</b></td>
+														<td style="border:1px solid black;  margin: 0; padding:0;" colspan="4"><b><span t-esc="data_dict['so_juin']"/></b></td>
+													</tr>
+													<t t-foreach="data_dict['juin']" t-as="ligne">
+														<tr style="border:1px solid black; margin: 0; padding:0;">
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['ref']"/></td>
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['date']"/></td>
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['recette']"/></td>
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['depence']"/></td>
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['designation']"/></td>	
+														</tr>
+													</t>
+													<tr style="border:1px solid black; margin: 0; padding:0;">
+														<td style="border:1px solid black; background-color:gray; margin: 0; padding:0;" colspan="2"><b>Total</b></td>
+														<td style="border:1px solid black; background-color:gray; margin: 0; padding:0;"><b><span t-esc="data_dict['total_rec_6']"/></b></td>
+														<td style="border:1px solid black; background-color:gray; margin: 0; padding:0;"><b><span t-esc="data_dict['total_dep_6']"/></b></td>
+														<td style="border:1px solid black; background-color:gray; margin: 0; padding:0;"><br/></td>
+													</tr>
+												</t>
+												<t t-if="verif_mois_existe(data['date_from'], data['date_to'], 7)">
+													<tr style="border:1px solid black; margin: 0; padding:0;">
+														<td style="border:1px solid black; background-color:silver; margin: 0; padding:0;" colspan="5"><b>Juillet</b></td>
+													</tr>
+													<tr style="border:1px solid black; margin: 0; padding:0;">
+														<td style="border:1px solid black; margin: 0; padding:0;" ><b>Solde d'ouverture</b></td>
+														<td style="border:1px solid black; margin: 0; padding:0; " colspan="4"><b><span t-esc="data_dict['so_juil']"/></b></td>
+													</tr>
+													<t t-foreach="data_dict['juil']" t-as="ligne">
+														<tr style="border:1px solid black; margin: 0; padding:0;">
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['ref']"/></td>
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['date']"/></td>
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['recette']"/></td>
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['depence']"/></td>
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['designation']"/></td>	
+														</tr>
+													</t>
+													<tr style="border:1px solid black; margin: 0; padding:0;">
+														<td style="border:1px solid black; background-color:gray; margin: 0; padding:0;" colspan="2"><b>Total</b></td>
+														<td style="border:1px solid black; background-color:gray; margin: 0; padding:0;"><b><span t-esc="data_dict['total_rec_7']"/></b></td>
+														<td style="border:1px solid black; background-color:gray; margin: 0; padding:0;"><b><span t-esc="data_dict['total_dep_7']"/></b></td>
+														<td style="border:1px solid black; background-color:gray; margin: 0; padding:0;"><br/></td>
+													</tr>
+												</t>
+												<t t-if="verif_mois_existe(data['date_from'], data['date_to'], 8)">
+													<tr style="border:1px solid black; margin: 0; padding:0;">
+														<td style="border:1px solid black; background-color:silver; margin: 0; padding:0;" colspan="5"><b>Août</b></td>
+													</tr>
+													<tr style="border:1px solid black; margin: 0; padding:0;">
+														<td style="border:1px solid black; margin: 0; padding:0;" ><b>Solde d'ouverture</b></td>
+														<td style="border:1px solid black; margin: 0; padding:0; " colspan="4"><b><span t-esc="data_dict['so_out']"/></b></td>
+													</tr>
+													<t t-foreach="data_dict['out']" t-as="ligne">
+														<tr style="border:1px solid black; margin: 0; padding:0;">
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['ref']"/></td>
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['date']"/></td>
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['recette']"/></td>
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['depence']"/></td>
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['designation']"/></td>	
+														</tr>
+													</t>
+													<tr style="border:1px solid black; margin: 0; padding:0;">
+														<td style="border:1px solid black; background-color:gray; margin: 0; padding:0;" colspan="2"><b>Total</b></td>
+														<td style="border:1px solid black; background-color:gray; margin: 0; padding:0;"><b><span t-esc="data_dict['total_rec_8']"/></b></td>
+														<td style="border:1px solid black; background-color:gray; margin: 0; padding:0;"><b><span t-esc="data_dict['total_dep_8']"/></b></td>
+														<td style="border:1px solid black; background-color:gray; margin: 0; padding:0;"><br/></td>
+													</tr>
+												</t>
+												<t t-if="verif_mois_existe(data['date_from'], data['date_to'], 9)">
+													<tr style="border:1px solid black; margin: 0; padding:0;">
+														<td style="border:1px solid black; background-color:silver; margin: 0; padding:0;" colspan="5"><b>Septembre</b></td>
+													</tr>
+													<tr style="border:1px solid black; margin: 0; padding:0;">
+														<td style="border:1px solid black; margin: 0; padding:0;" ><b>Solde d'ouverture</b></td>
+														<td style="border:1px solid black; margin: 0; padding:0; " colspan="4"><b><span t-esc="data_dict['so_sep']"/></b></td>
+													</tr>
+													<t t-foreach="data_dict['sep']" t-as="ligne">
+														<tr style="border:1px solid black; margin: 0; padding:0;">
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['ref']"/></td>
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['date']"/></td>
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['recette']"/></td>
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['depence']"/></td>
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['designation']"/></td>	
+														</tr>
+													</t>
+													<tr style="border:1px solid black; margin: 0; padding:0;">
+														<td style="border:1px solid black; background-color:gray; margin: 0; padding:0;" colspan="2"><b>Total</b></td>
+														<td style="border:1px solid black; background-color:gray; margin: 0; padding:0;"><b><span t-esc="data_dict['total_rec_9']"/></b></td>
+														<td style="border:1px solid black; background-color:gray; margin: 0; padding:0;"><b><span t-esc="data_dict['total_dep_9']"/></b></td>
+														<td style="border:1px solid black; background-color:gray; margin: 0; padding:0;"><br/></td>
+													</tr>
+												</t>
+												<t t-if="verif_mois_existe(data['date_from'], data['date_to'], 10)">
+													<tr style="border:1px solid black; margin: 0; padding:0;">
+														<td style="border:1px solid black; background-color:silver; margin: 0; padding:0;" colspan="5"><b>Octobre</b></td>
+													</tr>
+													<tr style="border:1px solid black; margin: 0; padding:0;">
+														<td style="border:1px solid black; margin: 0; padding:0;" ><b>Solde d'ouverture</b></td>
+														<td style="border:1px solid black; margin: 0; padding:0; " colspan="4"><b><span t-esc="data_dict['so_octo']"/></b></td>
+													</tr>
+													<t t-foreach="data_dict['octo']" t-as="ligne">
+														<tr style="border:1px solid black; margin: 0; padding:0;">
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['ref']"/></td>
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['date']"/></td>
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['recette']"/></td>
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['depence']"/></td>
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['designation']"/></td>	
+														</tr>
+													</t>
+													<tr style="border:1px solid black; margin: 0; padding:0;">
+														<td style="border:1px solid black; background-color:gray; margin: 0; padding:0;" colspan="2"><b>Total</b></td>
+														<td style="border:1px solid black; background-color:gray; margin: 0; padding:0;"><b><span t-esc="data_dict['total_rec_10']"/></b></td>
+														<td style="border:1px solid black; background-color:gray; margin: 0; padding:0;"><b><span t-esc="data_dict['total_dep_10']"/></b></td>
+														<td style="border:1px solid black; background-color:gray; margin: 0; padding:0;"><br/></td>
+													</tr>
+												</t>
+												<t t-if="verif_mois_existe(data['date_from'], data['date_to'], 11)">
+													<tr style="border:1px solid black; margin: 0; padding:0;">
+														<td style="border:1px solid black; background-color:silver; margin: 0; padding:0;" colspan="5"><b>Novembre</b></td>
+													</tr>
+													<tr style="border:1px solid black; margin: 0; padding:0;">
+														<td style="border:1px solid black; margin: 0; padding:0;" ><b>Solde d'ouverture</b></td>
+														<td style="border:1px solid black; margin: 0; padding:0; " colspan="4"><b><span t-esc="data_dict['so_nov']"/></b></td>
+													</tr>
+													<t t-foreach="data_dict['nov']" t-as="ligne">
+														<tr style="border:1px solid black; margin: 0; padding:0;">
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['ref']"/></td>
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['date']"/></td>
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['recette']"/></td>
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['depence']"/></td>
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['designation']"/></td>	
+														</tr>
+													</t>
+													<tr style="border:1px solid black; margin: 0; padding:0;">
+														<td style="border:1px solid black; background-color:gray; margin: 0; padding:0;" colspan="2"><b>Total</b></td>
+														<td style="border:1px solid black; background-color:gray; margin: 0; padding:0;"><b><span t-esc="data_dict['total_rec_11']"/></b></td>
+														<td style="border:1px solid black; background-color:gray; margin: 0; padding:0;"><b><span t-esc="data_dict['total_dep_11']"/></b></td>
+														<td style="border:1px solid black; background-color:gray; margin: 0; padding:0;"><br/></td>
+													</tr>
+												</t>
+												<t t-if="verif_mois_existe(data['date_from'], data['date_to'], 12)">
+													<tr style="border:1px solid black; margin: 0; padding:0;">
+														<td style="border:1px solid black; background-color:silver; margin: 0; padding:0;" colspan="5"><b>Décembre</b></td>
+													</tr>
+													<tr style="border:1px solid black; margin: 0; padding:0;">
+														<td style="border:1px solid black; margin: 0; padding:0;" ><b>Solde d'ouverture</b></td>
+														<td style="border:1px solid black; margin: 0; padding:0; " colspan="4"><b><span t-esc="data_dict['so_dec']"/></b></td>
+													</tr>
+													<t t-foreach="data_dict['dec']" t-as="ligne">
+														<tr style="border:1px solid black; margin: 0; padding:0;">
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['ref']"/></td>
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['date']"/></td>
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['recette']"/></td>
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['depence']"/></td>
+															<td class="text-center" style="border:1px solid black; margin: 0; padding:0;"><span t-esc="ligne['designation']"/></td>	
+														</tr>
+													</t>
+													<tr style="border:1px solid black; margin: 0; padding:0;">
+														<td style="border:1px solid black; background-color:gray; margin: 0; padding:0;" colspan="2"><b>Total</b></td>
+														<td style="border:1px solid black; background-color:gray; margin: 0; padding:0;"><b><span t-esc="data_dict['total_rec_12']"/></b></td>
+														<td style="border:1px solid black; background-color:gray; margin: 0; padding:0;"><b><span t-esc="data_dict['total_dep_12']"/></b></td>
+														<td style="border:1px solid black; background-color:gray; margin: 0; padding:0;"><br/></td>
+													</tr>
+												</t>
+										</table>
+									</div>
+									<div class="col-xs-2">
+									</div>
+								</div>
+								<div>
+									<div class="col-xs-12">
+										<div class="col-xs-8">
+											<h4>Arrêté le présent état à la somme de </h4>
+										</div>
+
+										<div class="col-xs-2">
+											<h4>
+												<span t-esc="data_dict['solde_ouvert_t']"/>
+											</h4>
+										</div>
+									</div>	
+									<div class="col-xs-12">
+										<span t-esc="data_dict['solde_ouvert_t_ch']"/><br/><br/><br/><br/>
+									</div>
+								</div>
+								
+								<table width="100%">
+									<tr>
+										<td style="text-align:center">Le Gérant</td>
+										<td style="text-align:center">Le Caissier</td>
+									</tr>
+								</table>
+							</t>							
+								
+					</div>
+
+					<div class="footer last-page" style="border-top:2px solid; color:CE3A09;"> 
+						
+						<br/>
+						<table width="100%">
+							<tr>
+								<td style="text-align: left;">
+									<b>Num. Téléphone :</b> <span t-field="res_company.phone"/>
+								</td>
+								<td style="text-align: center;" COLSPAN="2">
+									<b>E-mail :</b> <span t-field="res_company.email"/>
+								</td>
+								<td style="text-align: right;">
+									<b>Site web :</b> <span t-field="res_company.website"/>
+								</td>
+							</tr>
+							<tr>
+								<td style="text-align: left;">
+									<b>N° RC : <span t-field="res_company.company_registry"/></b>
+								</td>
+								<td style="text-align: center;">
+									<b>N° IF : <span t-field="res_company.nif"/></b>
+								</td>
+								<td style="text-align: center;">
+									<b>N° IS : <span t-field="res_company.nis"/></b>
+								</td>
+								<!-- <td style="text-align: right;">
+									<b>CPA : <span t-field="res_company.banc_nb"/></b>
+								</td> -->
+							</tr>
+						</table>
+					</div>
+					</t>
+				</t>
+		</template>
+	</data>
+</odoo>

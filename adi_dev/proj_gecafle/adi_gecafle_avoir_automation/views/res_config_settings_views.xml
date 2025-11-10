@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_inherit_avoir" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.avoir</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <!-- Utiliser la structure correcte pour Odoo 17 -->
+            <xpath expr="//form" position="inside">
+                <app data-string="Avoirs GECAFLE" string="Avoirs GECAFLE" name="adi_gecafle_avoir_automation">
+                    <block title="Automatisation des Avoirs">
+                        <setting>
+                            <field name="avoir_auto_validate"/>
+                            <div class="text-muted">
+                                Valide automatiquement les avoirs dès leur création
+                            </div>
+                        </setting>
+
+                        <setting>
+                            <field name="avoir_auto_create_credit_note"/>
+                            <div class="text-muted">
+                                Crée automatiquement la note de crédit comptable
+                            </div>
+                        </setting>
+
+                        <setting>
+                            <field name="avoir_auto_post_credit_note"/>
+                            <div class="text-muted">
+                                Comptabilise automatiquement la note de crédit
+                            </div>
+                        </setting>
+
+                        <setting>
+                            <field name="avoir_auto_validate_producteur"/>
+                            <div class="text-muted">
+                                Valide automatiquement les avoirs producteurs générés
+                            </div>
+                        </setting>
+                    </block>
+
+                    <block title="Paramètres par défaut">
+                        <setting>
+                            <label for="avoir_default_type"/>
+                            <field name="avoir_default_type"/>
+                            <div class="text-muted">
+                                Type d'avoir utilisé par défaut dans le mode express
+                            </div>
+                        </setting>
+
+                        <setting>
+                            <field name="avoir_generer_producteurs_defaut"/>
+                            <div class="text-muted">
+                                Si activé, génère automatiquement les avoirs producteurs pour les avoirs normaux (hors consigne)
+                            </div>
+                        </setting>
+
+                        <setting>
+                            <label for="avoir_types_sans_producteur"/>
+                            <field name="avoir_types_sans_producteur"/>
+                            <div class="text-muted">
+                                Types d'avoir pour lesquels on ne génère pas d'avoirs producteurs
+                            </div>
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+</odoo>

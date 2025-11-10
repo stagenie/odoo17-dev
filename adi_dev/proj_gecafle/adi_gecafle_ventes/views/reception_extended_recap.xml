@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_gecafle_reception_form_inherit_recap" model="ir.ui.view">
+        <field name="name">gecafle.reception.form.inherit.recap</field>
+        <field name="model">gecafle.reception</field>
+        <field name="inherit_id" ref="adi_gecafle_receptions.view_gecafle_reception_form"/>
+        <field name="arch" type="xml">
+            <!-- Ajouter les champs techniques -->
+            <field name="state" position="after">
+                <field name="stock_epuise" invisible="1"/>
+                <field name="recap_count" invisible="1"/>
+            </field>
+
+            <!-- Ajouter le bouton dans le button_box -->
+            <div name="button_box" position="inside">
+                <button name="action_view_recaps" type="object"
+                        class="oe_stat_button" icon="fa-list-alt">
+                    <field name="recap_count" widget="statinfo"
+                           string="Bordereau"/>
+                </button>
+            </div>
+
+            <!-- Ajouter le bouton de création du récapitulatif -->
+            <xpath expr="//header" position="inside">
+                <button name="action_create_recap"
+                        string="Créer Récapitulatif"
+                        type="object"
+                        class="btn-success"
+                        invisible="not stock_epuise or state != 'confirmee' or recap_count > 0"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

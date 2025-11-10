@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<data>
+
+		<!-- Sequences for advance -->
+        <record id="seq_fund_advance" model="ir.sequence">
+            <field name="name">Fund advance</field>
+            <field name="code">fund.advance</field>
+            <field name="prefix">avance/</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+############################################################################
+		<!-- Séquences destransactions-->
+############################################################################
+		<!-- Sequences for recette -->
+        <record id="seq_recette" model="ir.sequence">
+            <field name="name">Recette</field>
+            <field name="code">recette.seq</field>
+            <field name="prefix">Rct/</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+		<!-- Sequences for dépense -->
+        <record id="seq_depense" model="ir.sequence">
+            <field name="name">Dépense</field>
+            <field name="code">depense.seq</field>
+            <field name="prefix">Dep/</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+		
+		<!-- Sequences for transfert intern -->
+        <record id="seq_transfert" model="ir.sequence">
+            <field name="name">Transfert intern</field>
+            <field name="code">trans.intr</field>
+            <field name="prefix">transfert/</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+	</data>
+</odoo>

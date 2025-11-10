@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Template du bon de réception valorisé en français -->
+    <template id="report_bon_reception_valorise_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <!-- En-tête du document -->
+                        <div class="text-center mb-4">
+                            <h2>
+                                <strong>BON DE RÉCEPTION VALORISÉ</strong>
+                            </h2>
+                        </div>
+
+                        <!-- Informations générales -->
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <table class="table table-sm">
+                                    <tr>
+                                        <td width="40%"><strong>N° Réception:</strong></td>
+                                        <td><span t-field="o.name"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Date:</strong></td>
+                                        <td><span t-field="o.reception_date" t-options='{"widget": "datetime", "format": "dd/MM/yyyy HH:mm"}'/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Producteur:</strong></td>
+                                        <td><span t-field="o.producteur_id.name"/></td>
+                                    </tr>
+                                    <tr t-if="o.producteur_id.phone">
+                                        <td><strong>Téléphone:</strong></td>
+                                        <td><span t-field="o.producteur_id.phone"/></td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="col-6">
+                                <table class="table table-sm">
+                                    <tr>
+                                        <td width="40%"><strong>État:</strong></td>
+                                        <td>
+                                            <span t-if="o.state == 'brouillon'" class="badge badge-warning">Brouillon</span>
+                                            <span t-elif="o.state == 'confirmee'" class="badge badge-success">Confirmée</span>
+                                            <span t-elif="o.state == 'annulee'" class="badge badge-danger">Annulée</span>
+                                        </td>
+                                    </tr>
+                                    <tr t-if="o.invoice_id">
+                                        <td><strong>Facture:</strong></td>
+                                        <td><span t-field="o.invoice_id.name"/></td>
+                                    </tr>
+                                    <tr t-if="o.avance_producteur">
+                                        <td><strong>Avance:</strong></td>
+                                        <td>
+                                            <span t-field="o.avance_producteur"
+                                                  t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Tableau des produits avec Poids colis ajouté -->
+                        <div class="mt-4">
+                            <h5>Détails des Produits</h5>
+                            <table class="table table-sm table-bordered">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th width="4%">N°</th>
+                                        <th width="18%">Produit</th>
+                                        <th width="12%">Qualité</th>
+                                        <th width="12%">Type Colis</th>
+                                        <th class="text-right" width="7%">Qté</th>
+                                        <th class="text-right" width="9%">P. Brut</th>
+                                        <th class="text-right" width="9%">P. Colis</th>
+                                        <th class="text-right" width="9%">P. Net</th>
+                                        <th class="text-right" width="8%">Prix/kg</th>
+                                        <th class="text-right" width="12%">Montant</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-set="total_qty" t-value="0"/>
+                                    <t t-foreach="o.details_reception_ids" t-as="line">
+                                        <tr>
+                                            <td><span t-field="line.num_seq"/></td>
+                                            <td><span t-field="line.designation_id.name"/></td>
+                                            <td><span t-field="line.qualite_id.name"/></td>
+                                            <td><span t-field="line.type_colis_id.name"/></td>
+                                            <td class="text-right">
+                                                <span t-field="line.qte_colis_recue"/>
+                                                <t t-set="total_qty" t-value="total_qty + line.qte_colis_recue"/>
+                                            </td>
+                                            <td class="text-right">
+                                                <span t-field="line.poids_brut" t-options='{"widget": "float", "precision": 2}'/>
+                                            </td>
+                                            <td class="text-right">
+                                                <span t-field="line.poids_colis" t-options='{"widget": "float", "precision": 2}'/>
+                                            </td>
+                                            <td class="text-right">
+                                                <span t-field="line.poids_net" t-options='{"widget": "float", "precision": 2}'/>
+                                            </td>
+                                            <td class="text-right">
+                                                <span t-field="line.prix_unitaire_achat" t-options='{"widget": "float", "precision": 2}'/>
+                                            </td>
+                                            <td class="text-right">
+                                                <span t-field="line.montant_ligne"
+                                                      t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                    <t t-if="not o.details_reception_ids">
+                                        <tr>
+                                            <td colspan="10" class="text-center text-muted">Aucun produit</td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                                <tfoot class="font-weight-bold bg-light">
+                                    <tr>
+                                        <td colspan="4" class="text-right">TOTAUX:</td>
+                                        <td class="text-right"><t t-esc="total_qty"/></td>
+                                        <td class="text-right">
+                                            <span t-field="o.total_poids_brut" t-options='{"widget": "float", "precision": 2}'/>
+                                        </td>
+                                        <td class="text-right">
+                                            <span t-field="o.total_poids_colis" t-options='{"widget": "float", "precision": 2}'/>
+                                        </td>
+                                        <td class="text-right">
+                                            <span t-field="o.total_poids_net" t-options='{"widget": "float", "precision": 2}'/>
+                                        </td>
+                                        <td></td>
+                                        <td class="text-right">
+                                            <span t-field="o.montant_total_brut"
+                                                  t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+
+                        <!-- Emballages achetés - CORRECTION : afficher seulement si montant > 0 -->
+                        <t t-if="o.montant_total_emballages > 0 and o.details_emballage_reception_ids.filtered('is_achete')">
+                            <div class="mt-4">
+                                <h5>Emballages Achetés</h5>
+                                <table class="table table-sm table-bordered">
+                                    <thead class="bg-light">
+                                        <tr>
+                                            <th width="30%">Type d'Emballage</th>
+                                            <th class="text-right" width="20%">Qté Entrante</th>
+                                            <th class="text-right" width="20%">Qté Achetée</th>
+                                            <th class="text-right" width="15%">Prix Unit.</th>
+                                            <th class="text-right" width="15%">Montant</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="o.details_emballage_reception_ids.filtered('is_achete')" t-as="emb">
+                                            <!-- N'afficher que si le montant est > 0 -->
+                                            <tr t-if="emb.montant_achat > 0">
+                                                <td><span t-field="emb.emballage_id.name"/></td>
+                                                <td class="text-right"><span t-field="emb.qte_entrantes"/></td>
+                                                <td class="text-right">
+                                                    <!-- CORRECTION : Afficher seulement qte_achetee -->
+                                                    <span t-field="emb.qte_achetee"/>
+                                                </td>
+                                                <td class="text-right">
+                                                    <span t-field="emb.prix_unitaire_achat"
+                                                          t-options='{"widget": "float", "precision": 2}'/>
+                                                </td>
+                                                <td class="text-right">
+                                                    <span t-field="emb.montant_achat"
+                                                          t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                    <tfoot class="font-weight-bold bg-light">
+                                        <tr>
+                                            <td colspan="4" class="text-right">Total Emballages:</td>
+                                            <td class="text-right">
+                                                <span t-field="o.montant_total_emballages"
+                                                      t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                            </td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </t>
+
+                        <!-- Récapitulatif financier -->
+                        <div class="row mt-5">
+                            <div class="col-6">
+                                <!-- Notes et observations -->
+                                <t t-if="o.observations">
+                                    <h6>Observations:</h6>
+                                    <p class="text-muted"><span t-field="o.observations"/></p>
+                                </t>
+                            </div>
+                            <div class="col-6">
+                                <table class="table table-sm">
+                                    <tr>
+                                        <td class="text-right" width="60%"><strong>Montant Total Brut:</strong></td>
+                                        <td class="text-right">
+                                            <span t-field="o.montant_total_brut"
+                                                  t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                        </td>
+                                    </tr>
+                                    <tr t-if="o.montant_total_emballages > 0">
+                                        <td class="text-right"><strong>- Emballages Achetés:</strong></td>
+                                        <td class="text-right">
+                                            <span t-field="o.montant_total_emballages"
+                                                  t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                        </td>
+                                    </tr>
+                                    <tr t-if="o.remise_globale > 0">
+                                        <td class="text-right"><strong>- Remise Globale:</strong></td>
+                                        <td class="text-right">
+                                            <span t-field="o.remise_globale"
+                                                  t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                        </td>
+                                    </tr>
+                                    <tr class="border-top">
+                                        <td class="text-right"><h5><strong>NET À PAYER:</strong></h5></td>
+                                        <td class="text-right">
+                                            <h5 class="text-primary">
+                                                <strong>
+                                                    <span t-field="o.montant_net_a_payer"
+                                                          t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                                </strong>
+                                            </h5>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Signatures -->
+                        <div class="row mt-5 pt-4">
+                            <div class="col-6 text-center">
+                                <div class="border-top pt-2">
+                                    <strong>Le Producteur</strong><br/>
+                                    <small class="text-muted">Signature et cachet</small>
+                                </div>
+                            </div>
+                            <div class="col-6 text-center">
+                                <div class="border-top pt-2">
+                                    <strong>Le Responsable</strong><br/>
+                                    <small class="text-muted">Signature et cachet</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <!-- Définition du rapport FR -->
+    <record id="action_report_bon_reception_valorise" model="ir.actions.report">
+        <field name="name">Bon de Réception Valorisé (FR)</field>
+        <field name="model">gecafle.reception</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_reception_valorisee.report_bon_reception_valorise_document</field>
+        <field name="report_file">adi_reception_valorisee.report_bon_reception_valorise</field>
+        <field name="print_report_name">'Bon Réception Valorisé - %s' % (object.name)</field>
+        <field name="paperformat_id" ref="base.paperformat_euro"/>
+    </record>
+</odoo>

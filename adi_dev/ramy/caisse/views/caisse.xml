@@ -1,0 +1,448 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<data>
+
+		<!-- account.bank.statement.cashbox inherit form view -->
+		<record id="account_bank_statement_cashbox_form_inherit" model="ir.ui.view">
+			<field name="name">account.bank.statement.cashbox.inherit.view.form</field>
+			<field name="model">account.bank.statement.cashbox</field>
+			<field name="inherit_id" ref="account_bnk_stm_cash_box.view_account_bnk_stmt_cashbox"/>
+			<field name="arch" type="xml">
+				<field name="end_bank_stmt_ids" position="after">
+					<field name="start_caisse_ids" invisible="1"/>
+                    <field name="end_caisse_ids" invisible="1"/>
+				</field>
+				<xpath expr="//div[1]" position="replace"/>
+				<!-- ajout des pièces et les séparer des billets -->
+				<xpath expr="//field[@name='cashbox_lines_ids']" position="replace">
+					<div>
+						<group>
+							<group class="oe_subtotal_footer oe_right" cols="6">
+								<field name="currency_id" invisible="1" />
+								<div class="o_td_label"></div>
+								<field name="total" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+							</group>
+						</group>
+					</div>
+					<!-- Blillets -->
+					<label for='cashbox_lines_ids' string="Billets"/>
+					
+					<field name="cashbox_lines_ids"  context="{'default_currency_id': currency_id}">
+						<tree editable="bottom">
+							<field name="currency_id" invisible="1"/>
+							<field name="number" string="Nombre de billets"/>
+							<!-- <field name="type_coin"/> -->
+							<field name="coin_value" string="Valeur de billet" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+							<field name="subtotal" sum="Total" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+						</tree>
+					</field>
+	
+					<!-- Pièces -->
+					<label for='cashbox_lines_coin_ids' string="Pièces"/>
+					
+					<field name="cashbox_lines_coin_ids"  context="{'default_currency_id': currency_id}">
+						<tree editable="bottom">
+							<field name="currency_id" invisible="1"/>
+							<field name="number" string="Nombre de Pièces"/>
+							<!-- <field name="type_coin"/> -->
+							<field name="coin_value" string="Valeur de pièce" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+							<field name="subtotal" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+						</tree>
+					</field>
+				</xpath> 
+			</field>
+		</record>
+
+		<record id="view_caisse_mens_tree" model="ir.ui.view">
+			<field name="name">caisse.tree</field>
+			<field name="model">caisse</field>
+			<field name="arch" type="xml" >
+				<tree  string="caisse" decoration-bf="state == 'open'" decoration-muted="state == 'confirm'">
+					<field name="name"/>
+					<field name="date"/>
+					<field name="solde_ouvr" />
+					<field name="prec_ecart" />
+					<field name="close_date_caisse"/>
+					<field name="solde_recette" optional="hide"/>
+					<field name="solde_depense" optional="hide"/>
+					<field name="total" />
+					<field name="balance_end_real" string="Solde Physique"/>
+					<field name="end_ecart" />
+					<!-- <field name="start_ecart" optional="hide"/> -->
+					<!-- <field name="caisse_prec" optional="hide"/> -->				
+					<field name="caisse_ecart_state"/>
+					<field name="state"/>
+				</tree>
+			</field>
+		</record>
+
+		<record id="view_caisse_mens_form" model="ir.ui.view">
+			<field name="name">caisse.form</field>
+			<field name="model">caisse</field>
+			<field name="priority">2</field>
+			<field name="arch" type="xml">
+				<form string="caisse">
+					<header>                                
+						<button name="open" invisible="state != 'draft'" string="Ouvrir la caisse" type="object" class="oe_highlight"/>
+						<button name="%(transaction_actions)d" invisible="state != 'open'" string="Mouvement de caisse" type="action" class="btn-success"/>
+
+						<button name="%(caisse_date_action)d" 
+							confirm="Etes vous sur de vouloir fermer la caisse? Les demandes de virement non traitées, ils vont être automatiquelent refusées" 
+							invisible="state != 'open' or not close_caisse" 
+							string="Fermer la caisse" type="action" class="btn-danger"/>
+						<button name="%(caisse_account_payment_wizard_action)d" string="Paiement client" type="action" invisible="1"/>
+						<button name="%(caisse_account_customer_refund_wizard_action)d" string="Remboursement client" type="action" invisible="1"/>
+						<button name="%(caisse_account_payment_supplier_wizard_action)d" string="Paiement fournisseur" type="action" invisible="1"/>
+						<button name="%(caisse_account_refund_supplier_wizard_action)d" string="Remboursement fournisseur" type="action" invisible="1"/>
+						<field name="state" widget="statusbar" statusbar_visible="draft,confirm"/>
+					</header>
+
+					<sheet string="Caisse">
+						<widget name="web_ribbon" text="Solde non calculé"
+								bg_color="bg-info"
+								invisible="state != 'open' or balance_state != 'draft'"
+								tooltip="Attention ! Si vous ne mettez pas le solde finale, il va être écrasé par le solde théorique"/>
+								
+						<widget name="web_ribbon" text="Solde incorrect"
+								bg_color="bg-danger"
+								invisible="state != 'open' or balance_state != 'incorrect'"
+								tooltip="Attention ! Si vous ne mettez pas le solde finale, il va être écrasé par le solde théorique"/>
+								
+						<widget name="web_ribbon" text="Solde Correct"
+								bg_color="bg-success"
+								invisible="state != 'open' or balance_state != 'correct'"
+								tooltip="Parfait ! le solde finale est identique avec le solde théorique."/>
+						<group>
+							<group>
+								<field name="type_c" style="width:auto;" invisible="0"/>
+								<field name="date_caisse" required="type_c == 'daily'" invisible="type_c != 'daily'" readonly="state != 'draft'"/>
+								<field name="annee" required="type_c == 'mensuel' or 1" invisible="type_c != 'mensuel'" readonly="state != 'draft'"/>
+								<field name="mois" required="type_c == 'mensuel'" invisible="type_c != 'mensuel'" readonly="state != 'draft'"/>
+							</group>
+							<group>
+							
+								<div >
+									<h2><field name="name" class="oe_inline" style="width:100px;" readonly="1"/></h2>
+								</div>
+							</group>
+						</group>
+						<group>
+							<group>
+								<field name="user_id" readonly="state != 'draft'" string="Responsable"/>
+								<field name="compte_id" readonly="state != 'draft'" string="Compte" invisible="1"/>
+								<field name="journal_id" widget="selection"/>  
+							</group>
+							<group>
+								<field name="date" readonly="state != 'draft'"/>
+								<field name="close_date_caisse" invisible="state != 'confirm'" readonly="1"/>
+								<field name="type_caisse" required="1" style="width:auto;" readonly="state != 'draft'"/>
+								<field name="caisse_prec" string="Caisse précédente" 
+									domain="[('state','=','confirm'),('type_c','=',type_c),('type_caisse','=',type_caisse)]" 
+									readonly="state != 'draft' or not precedent_cash" required="precedent_cash"
+									options="{'no_create_edit': False}"/>
+								<field name="precedent_cash" style="width:auto;" invisible="1"/>
+								<field name="total_char" invisible="1"/>                          
+								<field name="currency_id" invisible="1"/>                     
+								<field name="balance_state" invisible="1"/>                     
+								<field name="close_caisse" invisible="1"/>
+								<field name="show_confg_initial_balance" invisible="1"/>                     
+							</group>
+						</group>
+						<group>
+							<group>
+								<label for="balance_start" invisible="not show_confg_initial_balance"/>
+								<div invisible="not show_confg_initial_balance">
+									<!-- Compter solde initiale réel -->
+									<field name="balance_start" force_save="1" class="oe_inline" readonly="state != 'open'" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+									<button name="open_cashbox_id" invisible="state != 'open'" string="&#8594; Compter" type="object" class="oe_edit_only oe_link oe_inline" context="{'balance':'start'}"/>
+								</div>
+								
+								<label for="close_force" invisible="balance_state == 'correct'"/>
+								<div>
+									<field name="close_force" invisible="balance_state == 'correct'"/>
+									<!-- <button name="%(update_ecart_action)d" string="&#8594; Traiter l'écart" type="action"
+									invisible="balance_state != 'incorrect'" class="oe_link oe_inline"/> -->
+								</div>
+							</group>
+						</group>
+						<group>
+							<group>
+								<label for="solde_ouvr"/>
+								<div>
+									<field name="solde_ouvr" class="oe_inline" nolabel="1" force_save="1" widget="monetary" options="{'currency_field': 'currency_id'}" help="Total of opening cash control lines" readonly="state != 'draft'"/>
+									<button name="open_cashbox_id" invisible="state != 'open'" string="&#8594; Compter" type="object" class="oe_edit_only oe_link oe_inline" context="{'balance':'solde_ouvr'}"/>                    
+								</div>
+							</group>
+							<group>
+								<label for="total" string="Total théorique" force_save="1" invisible="state == 'draft'"/>
+								<field name="total" nolabel="1" widget="monetary" options="{'currency_field': 'currency_id'}" help="Total of opening cash control lines" invisible="state == 'draft'"/>
+								<field name="memo"/>
+							</group>
+							<group>
+								<label for="balance_end_real"/>
+								<div>
+									<!-- Compter solde final réel -->
+									<field name="balance_end_real" class="oe_inline" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+									<button name="open_cashbox_id" invisible="state != 'open'" string="&#8594; Compter" type="object" class="oe_edit_only oe_link oe_inline" context="{'balance':'close'}"/>
+									<p style="color:tomato;" invisible="state != 'open' or balance_state != 'draft'">
+										Attention ! Si vous ne mettez pas le solde finale, il va être écrasé par le solde théorique.
+									</p>
+									<p style="color:tomato;" invisible="state != 'open' or balance_state != 'incorrect'">
+										Veuillez SVP traiter l'ecart du solde ou vérifiez vos transactions!.
+									</p>
+									<p style="color:green;" invisible="state != 'open' or balance_state != 'correct'">
+										Parfait ! le solde finale est identique avec le solde théorique.
+									</p>
+								</div>
+							</group>
+						</group>
+						<notebook>
+							<!-- Transactions -->
+							<page string="Transactions" invisible="state == 'draft'">
+								<field name="caisse_line_ids">
+									<tree editable="false" create="false" string="lignes">
+										<field name="date"/>
+										<field name="type_payment" optional="hide"/>
+										<field name="name" readonly="1"/>
+										<field name="motif_id" readonly="1" optional="hide"/>
+										<field name="motif_family_id" readonly="1" optional="hide"/>
+										<field name="designation" readonly="1"/> 
+										<field name="res_partner_id"  optional="hide"/>
+										<field name="demandeur_id"  optional="hide"/>
+										<field name="collaborator_id"  optional="hide"/>
+										<field name="ordonator_id"  optional="hide"/>
+										<field name="collaborator_ext_id"  optional="hide"/>
+										<field name="beneficiary_id"  optional="hide"/>
+										<field name="structure_id"  optional="hide"/>
+										<field name="montant" readonly="advance or payment" />
+										
+										<!-- invisible fields -->
+										<field name="destination" column_invisible="1"/>
+										<field name="type_trans" column_invisible="1"/>                         
+										<field name="type_entre" column_invisible="1"/>
+										<field name="source" column_invisible="1"/>
+										<field name="type_caisse" column_invisible="1"/>
+										<field name="demande" column_invisible="1"/>
+										<field name="c_an_rec_dep" column_invisible="1"/>
+										<field name="affiche_rapport" column_invisible="1"/>
+										<field name="fund_advance_id" column_invisible="1"/>
+										<field name="advance" column_invisible="1"/>
+										<field name="payment" column_invisible="1"/>
+										<field name="currency_id" column_invisible="1"/>
+									</tree>
+								</field>    
+							</page>
+
+							<page string="Recettes" invisible="state == 'draft'">
+								<field name="line_ids">
+									<tree editable="false" create="false" string="lignes">
+										<field name="date"/>
+										<field name="type_payment"/>
+										<field name="name" readonly="1"/>
+										<field name="motif_id" readonly="1"/>
+										<field name="designation" readonly="1"/> 
+										<field name="montant" sum="Recette" readonly="1"/>
+										<field name="transaction_state" readonly="1"/>
+										<field name="jointure" />
+										<field name="destination" invisible="1"/>
+									</tree>
+								</field>    
+							</page>  
+							<page string="Dépenses" invisible="state == 'draft'">
+								<field name="d_ids">
+									<tree editable="false" create="false" string="lignes">
+										<field name="type_trans" invisible="1"/>                                   
+										<field name="date"/>
+										<field name="type_payment"/>
+										<field name="type_entre" invisible="1" optional="hide"/>
+										<field name="designation" readonly="1" optional="hide"/> 
+										<field name="montant" sum="Dépense" readonly="1"/>
+										<field name="transaction_state" readonly="1"/>
+										<field name="jointure"/>
+									</tree>                           
+								</field>    
+							</page>   
+							<page string="Demandes de virement" invisible="not demande_ids or state != 'open'">
+								<field name="demande_ids">
+									<tree create="false" string="lignes" editable="bottom" colors="green:type_caisse=='dg';red:type_caisse=='anem';blue:type_caisse=='expl';teal:type_caisse=='sn_ref'">
+										<field name="date" readonly="0"/>
+										<field name="type_payment" optional="hide"/>
+										<field name="name"/>
+										<field name="designation" readonly="1" />
+										<field name="res_partner_id" optional="hide"/>
+										<field name="demandeur_id"  optional="hide"/>
+										<field name="collaborator_id"  optional="hide"/>
+										<field name="ordonator_id"  optional="hide"/>
+										<field name="collaborator_ext_id"  optional="hide"/>
+										<field name="beneficiary_id"  optional="hide"/>
+										<field name="structure_id" optional="hide"/>
+										<field name="montant" readonly="1"/>
+										<field name="amount_ok" readonly="0"/>
+										<field name="state" readonly="1"/>
+										<button name="valider" string="Valider" type="object" class="btn-success" invisible="state != 'demande'"/>
+										<button name="annuler" string="Refuser" type="object" class="btn-danger" invisible="state != 'demande'"/>
+									</tree>                           
+								</field>    
+							</page> 
+
+							<page string="Demandes envoyées" invisible="not demande_env_ids or state == 'draft'">
+								<field name="demande_env_ids">
+									<tree create="false" string="lignes" editable="bottom">
+										<field name="type_trans" invisible="1"/>                                   
+										<field name="date" readonly="0"/>
+										<field name="type_payment"/>
+										<field name="name"/>
+										<field name="designation_d" readonly="1"/>
+										<field name="montant" readonly="1"/>
+										<field name="amount_ok" readonly="1"/>
+										<field name="destination" invisible="1"/>
+										<field name="state" readonly="1"/>
+									</tree>                           
+								</field>    
+							</page>                     
+						</notebook>
+						<group>
+							<group class="oe_subtotal_footer oe_left">
+								<field name="show_start_ecart" invisible="1"/>
+								<label for="end_ecart" invisible="state != 'confirm'"/>
+								<field name="end_ecart" nolabel="1" widget="monetary" options="{'currency_field': 'currency_id'}" help="Ecart of opening cash control lines" invisible="state != 'confirm'"/>
+							</group>
+						</group>                                        
+					</sheet>
+				</form>
+			</field>
+		</record>
+
+
+	<record id="caisse_search_mens_view" model="ir.ui.view">
+			<field name="name">caisse.search</field>
+			<field name="model">caisse</field>
+			<field name="arch" type="xml">
+				<search string="Caisse">
+					<field name="name"/>
+					<field name="date"/>
+					<field name="total"/>                   
+					<group expand='1' string='Grouper par'>
+					   <filter name="productgroup" string='Caisse' domain="[]" context="{'group_by' : 'name'}"/>
+					   <filter name="dategroup" string='Date' context="{'group_by' : 'date'}"/>
+					   <filter name="typegroup" string='Type' context="{'group_by' : 'type_caisse'}"/>
+					</group>
+				</search>
+			</field>
+		</record>
+
+		<record model="ir.actions.act_window" id="caisse_mensuel_action">
+			<field name="name">Caisse </field>
+			<field name="type">ir.actions.act_window</field>
+			<field name="res_model">caisse</field>
+			<field name="view_mode">tree,form</field>
+			<field name="view_id" ref="view_caisse_mens_tree"></field>
+			<field name="domain"></field><!-- [("type_c", "=", 'mensuel')] -->
+			<field name="context"></field><!-- {'default_type_c':'mensuel'} -->
+		</record>
+		
+		<record id="view_caisse_info_tree" model="ir.ui.view">
+			<field name="name">caisse.info.tree</field>
+			<field name="model">caisse</field>
+			<field name="arch" type="xml" >
+				<tree  string="caisse" decoration-success="caisse_ecart_state == 'no_ecart'" 
+										decoration-danger="caisse_ecart_state == 'with_ecart'"
+										decoration-info="caisse_ecart_state == 'with_ecart_t'"
+				edit="false" create="false" delete="false" >
+					<field name="name"/>
+					<button name="get_detail_caisse" type="object" class="fa fa-list btn btn-primary"/>
+					<field name="date"/>
+					<field name="balance_state" invisible="1"/>
+					<field name="state" invisible="1"/>
+					<field name="caisse_ecart_state2" invisible="1"/>
+					<field name="caisse_ecart_state"/>
+					<button name="%(update_ecart_action)d" string="Traiter l'écart" type="action"
+							invisible="balance_state != 'incorrect' or caisse_ecart_state2" 
+							class="btn-success"/>
+					<field name="total"/>
+					<field name="balance_end_real"/>
+					<field name="end_ecart2"/>
+					<!-- <field name="end_ecart"/> -->
+					<field name="end_ecart_variable"/>
+					<field name="cumul_ecart"/>
+					<button name="%(update_ecart_action)d" string="Traiter l'écart cumulé" type="action"
+							invisible="cumul_ecart == 0.00 or caisse_ecart_state2"
+							context="{'ecart_cumule': True}" class="btn-success"/>
+				</tree>
+			</field>
+		</record>
+
+		<record model="ir.actions.act_window" id="caisse_info_action">
+			<field name="name">Caisse information</field>
+			<field name="type">ir.actions.act_window</field>
+			<field name="res_model">caisse</field>
+			<field name="view_mode">tree</field>
+			<field name="view_id" ref="view_caisse_info_tree"></field>
+			<field name="domain">[("state", "=", 'confirm'),('end_ecart','!=',0.00)]</field><!-- [("type_c", "=", 'mensuel')] -->
+			<field name="context">{'group_by':['type_caisse']}</field>
+		</record>
+
+		<!-- <record model="ir.actions.act_window.view" id="caisse_mensuel_action_tree">
+			<field eval="1" name="sequence"/> 
+			<field name="name">Caisse </field>
+			<field name="type">ir.actions.act_window</field>
+			<field name="res_model">caisse</field>
+			<field name="view_mode">tree</field>
+			<field name="view_id" ref="view_caisse_mens_tree"></field>
+			<field name="act_window_id" ref="caisse_mensuel_action"/>
+		</record>
+
+		<record model="ir.actions.act_window.view" id="caisse_mensuel_action_form">
+			<field eval="2" name="sequence"/> 
+			<field name="name">Caisse </field>
+			<field name="type">ir.actions.act_window</field>
+			<field name="res_model">caisse</field>
+			<field name="view_mode">form</field>
+			<field name="view_id" ref="view_caisse_mens_form"></field>
+			<field name="act_window_id" ref="caisse_mensuel_action"/>
+		</record> -->
+
+		<record id="caisse_ligne_tree" model="ir.ui.view">
+            <field name="name">caisse.ligne.tree</field>
+            <field name="model">ligne.caisse</field>
+            <field name="arch" type="xml">
+                <tree string="Les lignes" edit="false" create="false" delete="false">
+					<field name="date"/>
+					<field name="type_caisse" string="Type de caisse"/>
+					<field name="type_payment"/>
+					<field name="name"/>
+					<field name="designation"/> 
+					<field name="montant_signe" sum="Total"/>
+                </tree>
+            </field>
+        </record>
+			
+
+		<record id="caisse_ligne_search_view" model="ir.ui.view">
+		    <field name="name">caisse.ligne.search.view</field>
+		    <field name="model">ligne.caisse</field>
+		    <field name="arch" type="xml">
+		        <search string="Lignes des transaction">
+		            <field name="type_caisse" string="Type de caisse"/>
+		            <field name="type_entre" string="Type de transaction"/>
+		            <field name="date" string="Date"/>
+		            <filter name='recette_filter' string="Recette" domain="[('type_entre','=','recette')]" icon="terp-document-new"/>
+		            <filter name='depense_filter' string="Dépense" domain="[('type_entre','=','depense')]" icon="terp-document-new"/>
+		            <group expand="1" string="Grouper par">
+		                <filter name='date_group' string="Date" context="{'group_by': 'date:year'}" icon="terp-folder-orange"/>
+		                <filter name='type_caisse_group' string="Type de caisse" context="{'group_by': 'type_caisse'}" icon="terp-folder-orange"/>
+		                <filter name='type_transaction_group' string="Type de transaction" context="{'group_by': 'type_entre'}" icon="terp-folder-orange"/>
+		            </group>
+		        </search>
+		    </field>
+		</record>
+
+		<record id="caisse_ligne_action" model="ir.actions.act_window">
+		    <field name="name">Ligne des transaction</field>
+		    <field name="res_model">ligne.caisse</field>
+		    <field name="view_mode">tree</field>
+		    <field name="context">{'search_default_date_group': 1,'search_default_type_caisse_group': 1}</field>
+		</record>
+
+	</data>
+</odoo>

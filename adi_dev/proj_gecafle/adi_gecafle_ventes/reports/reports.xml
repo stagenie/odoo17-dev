@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Définition du rapport bon de vente -->
+    <record id="action_report_gecafle_bon_vente" model="ir.actions.report">
+        <field name="name">Bon de Vente</field>
+        <field name="model">gecafle.vente</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_gecafle_ventes.report_bon_vente</field>
+        <field name="report_file">adi_gecafle_ventes.report_bon_vente</field>
+        <field name="binding_model_id" ref="model_gecafle_vente"/>
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="base.paperformat_euro"/>
+        <field name="print_report_name">'Bon de Vente - %s' % (object.name)</field>
+    </record>
+
+    <!-- Définition du rapport duplicata -->
+<record id="action_report_gecafle_bon_vente_duplicata" model="ir.actions.report">
+    <field name="name">Duplicata Bon de Vente</field>
+    <field name="model">gecafle.vente</field>
+    <field name="report_type">qweb-pdf</field>
+    <field name="report_name">adi_gecafle_ventes.report_bon_vente_duplicata</field>
+    <field name="report_file">adi_gecafle_ventes.report_bon_vente_duplicata</field>
+    <field name="paperformat_id" ref="base.paperformat_euro"/>
+    <field name="print_report_name">'Duplicata Bon de Vente - %s' % (object.name)</field>
+</record>
+
+
+    <!-- Définition du rapport duplicata -->
+
+
+    <!-- Action pour marquer comme imprimé après impression -->
+    <record id="action_report_gecafle_bon_vente_printed" model="ir.actions.server">
+        <field name="name">Marquer comme imprimé</field>
+        <field name="model_id" ref="model_gecafle_vente"/>
+        <field name="binding_model_id" ref="model_gecafle_vente"/>
+        <field name="state">code</field>
+        <field name="code">
+            if records:
+                records.mark_as_printed()
+        </field>
+    </record>
+</odoo>

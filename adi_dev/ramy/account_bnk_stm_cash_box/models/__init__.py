@@ -1,0 +1,1 @@
+from . import accnt_bnk_stm_cashbox

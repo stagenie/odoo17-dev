@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-name="adi_pdf_to_print_options.ButtonOptions">
+        <Dialog size="'md'" title="title">
+            <div style="text-align:center; padding: 20px;">
+                <h5 class="mb-4">Options d'impression du rapport</h5>
+                <div class="btn-group-vertical w-100" role="group">
+                    <button class="btn btn-primary mb-2 py-3"
+                            t-on-click="() => executePdfAction('print')">
+                        <i class="fa fa-print me-2"/>
+                        <span>Imprimer directement</span>
+                    </button>
+                    <button class="btn btn-info mb-2 py-3"
+                            t-on-click="() => executePdfAction('download')">
+                        <i class="fa fa-download me-2"/>
+                        <span>Télécharger le PDF</span>
+                    </button>
+                    <button class="btn btn-success py-3"
+                            t-on-click="() => executePdfAction('open')">
+                        <i class="fa fa-external-link me-2"/>
+                        <span>Ouvrir dans un nouvel onglet</span>
+                    </button>
+                </div>
+            </div>
+        </Dialog>
+    </t>
+</templates>

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <!-- Extension de la vue de liste de Stock  -->
+        <record id="view_gecafle_stock_tree" model="ir.ui.view">
+            <field name="name">gecafle.stock.tree</field>
+            <field name="model">gecafle.stock</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="reception_id"/>
+                    <field name="reception_date"/>
+                    <field name="producteur_id"/>
+                    <field name="designation_id"/>
+                    <field name="qualite_id"/>
+                    <field name="emballage_id"/>
+                    <field name="qte_disponible"/>
+
+                </tree>
+            </field>
+        </record>
+
+
+        <record id="action_gecafle_stock_list"
+                model="ir.actions.act_window">
+            <field name="name">Journal de Stock</field>
+            <field name="res_model">gecafle.stock</field>
+            <field name="view_mode">tree</field>
+            <field name="view_id" ref="view_gecafle_stock_tree"/>
+            <field name="context">{'search_default_today': 1,'create': False, 'edit': False, 'delete': False}</field>
+            <field name="help" type="html">
+                <p>Aucune entrée de stock trouvée pour aujourd’hui.</p>
+            </field>
+        </record>
+
+         <menuitem id="menu_gecafle_stock_journal_de_stock"
+                  name="Journal de Stok"
+                  parent="menu_gecafle_reception_root"
+                  sequence="3"/>
+
+        <menuitem id="menu_gecafle_stock"
+                  name="Stok"
+                  parent="menu_gecafle_stock_journal_de_stock"
+                  action="action_gecafle_stock_list"
+                  sequence="1"/>
+
+
+          <menuitem id="menu_gecafle_stock_journal_de_stock_stock"
+                  name="Journal de Stok"
+                  parent="adi_gecafle_base_stock.menu_gecafle_stock_root"
+                  sequence="70"/>
+
+        <menuitem id="menu_gecafle_stock_stock"
+                  name="Stok"
+                  parent="menu_gecafle_stock_journal_de_stock_stock"
+                  action="action_gecafle_stock_list"
+                  sequence="1"/>
+
+
+        <record id="view_gecafle_stock_search" model="ir.ui.view">
+            <field name="name">gecafle.stock.search</field>
+            <field name="model">gecafle.stock</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="reception_id" string="N° de Réception"/>
+                    <field name="reception_date" string="Date de Réception"/>
+                    <field name="producteur_id" string="Producteur"/>
+                    <field name="designation_id" string="Produit"/>
+                    <field name="emballage_id" string="Emballage"/>
+                    <field name="qualite_id" string="Qualité"/>
+                    <!-- Filtre par champ date -->
+
+
+                    <filter name="stock_disponible" string="Stock Disponible"
+                            domain="[('qte_disponible', '>', 0)]"/>
+                       <separator/>
+                 <filter string="Réceptions du jour" name="filter_today_receptions"
+        domain="[('reception_date','&gt;=', context_today().strftime('%Y-%m-%d 00:00:00')),
+               ('reception_date','&lt;=', context_today().strftime('%Y-%m-%d 23:59:59'))]"/>
+
+                    <separator/>
+
+                    <group expand="0" string="Périodes">
+                        <filter string="Aujourd'hui" name="today"
+                                domain="[('reception_date', '>=', context_today())]"/>
+                        <filter string="Cette semaine" name="this_week"
+                                domain="[('reception_date', '>=', (context_today() + relativedelta(weeks=-1, days=1, weekday=0)).strftime('%Y-%m-%d'))]"/>
+                        <filter string="Ce mois" name="this_month"
+                                domain="[('reception_date', '>=', (context_today() + relativedelta(day=1)).strftime('%Y-%m-%d'))]"/>
+                    </group>
+                     <filter string="Date de réception" name="filter_reception_date"
+                            date="reception_date"/>
+
+
+                    <group expand="0" string="Group By">
+                        <filter string="Réception"
+                                name="group_reception"
+                                context="{'group_by':'reception_id'}"/>
+                        <filter string="Producteur"
+                                name="group_producteur"
+                                context="{'group_by':'producteur_id'}"/>
+                        <filter string="Produit"
+                                name="group_product" context="{'group_by':'designation_id'}"/>
+                        <filter string="Qualité"
+                                name="group_qualite" context="{'group_by':'qualite_id'}"/>
+                        <filter string="Type de colis"
+                                name="group_colis" context="{'group_by':'emballage_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+
+    </data>
+</odoo>

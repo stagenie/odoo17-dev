@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_gecafle_consigne_retour_user,access.gecafle.consigne.retour.user,model_gecafle_consigne_retour,base.group_user,1,1,1,0
+access_gecafle_consigne_retour_manager,access.gecafle.consigne.retour.manager,model_gecafle_consigne_retour,adi_gecafle_ventes.group_gecafle_manager,1,1,1,1
+access_gecafle_consigne_retour_line_user,access.gecafle.consigne.retour.line.user,model_gecafle_consigne_retour_line,base.group_user,1,1,1,1

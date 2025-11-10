@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Rapport lot de paie - Format Odoo 17 -->
+    <record id="action_report_payroll_batch" model="ir.actions.report">
+        <field name="name">État du lot de paie</field>
+        <field name="model">payroll.batch</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_simple_payroll.report_payroll_batch</field>
+        <field name="report_file">adi_simple_payroll.report_payroll_batch</field>
+        <field name="print_report_name">'Lot de paie - %s' % object.name</field>
+        <field name="binding_model_id" ref="model_payroll_batch"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_payroll_batch">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2 class="text-center">ÉTAT DE PAIE</h2>
+                        <h3 class="text-center">
+                            Période du <span t-field="doc.date_start"/> au <span t-field="doc.date_end"/>
+                        </h3>
+
+                        <table class="table table-sm mt-4">
+                            <thead>
+                                <tr>
+                                    <th>Nom et Prénom</th>
+                                    <th>Fonction</th>
+                                    <th class="text-right">Salaire Net</th>
+                                    <th>État</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="doc.slip_ids" t-as="slip">
+                                    <tr>
+                                        <td><span t-field="slip.employee_name"/></td>
+                                        <td><span t-field="slip.job_id.name"/></td>
+                                        <td class="text-right"><span t-field="slip.total_net" widget="monetary"/></td>
+                                        <td><span t-field="slip.state"/></td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                            <tfoot>
+                                <tr class="border-top">
+                                    <td colspan="2"><strong>Total général:</strong></td>
+                                    <td class="text-right"><strong><span t-field="doc.total_net" widget="monetary"/></strong></td>
+                                    <td></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+
+                        <div class="mt-4">
+                            <p><strong>Nombre d'employés:</strong> <span t-field="doc.slip_count"/></p>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

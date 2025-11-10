@@ -1,0 +1,334 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Template pour le rapport Liste des Ventes Total -->
+    <template id="report_liste_ventes_total_document">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="page">
+                    <h3 class="text-center">Liste des Ventes - Total</h3>
+                    <p class="text-center">
+                        Période :
+                        <span t-esc="date_from"/>
+                        -
+                        <span t-esc="date_to"/>
+                    </p>
+
+                    <table class="table table-sm table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>N° Souche</th>
+                                <th>Client</th>
+                                <th class="text-right">Montant Vente</th>
+                                <th class="text-right">Payé</th>
+                                <th class="text-right">Reste</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-set="total_vente" t-value="0.0"/>
+                            <t t-set="total_paye" t-value="0.0"/>
+                            <t t-set="total_reste" t-value="0.0"/>
+
+
+                            <t t-foreach="docs" t-as="vente">
+                                <tr>
+                                    <td>
+                                        <span t-field="vente.date_vente"/>
+                                    </td>
+                                    <td>
+                                        <span t-field="vente.name"/>
+                                    </td>
+                                    <td>
+                                        <span t-field="vente.client_id.name"/>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-field="vente.montant_total_a_payer"
+                                              t-options='{"widget": "monetary", "display_currency": vente.currency_id}'/>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-field="vente.amount_paid"
+                                              t-options='{"widget": "monetary", "display_currency": vente.currency_id}'/>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-field="vente.amount_residual_signed"
+                                              t-options='{"widget": "monetary", "display_currency": vente.currency_id}'/>
+                                    </td>
+                                </tr>
+                                <t t-set="total_vente" t-value="total_vente + vente.montant_total_a_payer"/>
+                                <t t-set="total_paye" t-value="total_paye + vente.amount_paid"/>
+                                <t t-set="total_reste" t-value="total_reste + vente.amount_residual_signed"/>
+                                <t t-set="company" t-value="user.company_id"/>
+
+                            </t>
+                        </tbody>
+                        <tfoot>
+
+                            <tr class="font-weight-bold">
+                                <td colspan="3" class="text-right">TOTAUX</td>
+                                <td class="text-right">
+                                    <span t-esc="total_vente"
+                                          t-options='{"widget": "monetary", "display_currency": company.currency_id}'/>
+
+                                </td>
+                                <td class="text-right">
+                                    <span t-esc="total_paye"
+                                          t-options='{"widget": "monetary", "display_currency": company.currency_id}'/>
+                                </td>
+                                <td class="text-right">
+                                    <span t-esc="total_reste"
+                                          t-options='{"widget": "monetary", "display_currency":company.currency_id}'/>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                    <div class="row mt-4">
+                        <div class="col-6">
+                            <p>Imprimé le :
+                                <span t-esc="datetime.datetime.now().strftime('%d/%m/%Y %H:%M')"/>
+                            </p>
+                        </div>
+                        <div class="col-6 text-right">
+                            <p>Par :
+                                <span t-esc="user.name"/>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+
+    <!-- Template pour Ventes Payées -->
+    <template id="report_liste_ventes_payees_document">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="page">
+                    <h3 class="text-center">Liste des Ventes Payées Totalement</h3>
+                    <p class="text-center">
+                        Période :
+                        <span t-esc="date_from"/>
+                        -
+                        <span t-esc="date_to"/>
+                    </p>
+                    <t t-set="company" t-value="user.company_id"/>
+
+
+                    <table class="table table-sm table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>N° Souche</th>
+                                <th>Client</th>
+                                <th class="text-right">Montant Vente</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-set="total" t-value="0.0"/>
+                            <t t-foreach="docs" t-as="vente">
+                                <tr>
+                                    <td>
+                                        <span t-field="vente.date_vente"/>
+                                    </td>
+                                    <td>
+                                        <span t-field="vente.name"/>
+                                    </td>
+                                    <td>
+                                        <span t-field="vente.client_id.name"/>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-field="vente.montant_total_a_payer"
+                                              t-options='{"widget": "monetary", "display_currency": vente.currency_id}'/>
+                                    </td>
+                                </tr>
+                                <t t-set="total" t-value="total + vente.montant_total_a_payer"/>
+                            </t>
+                        </tbody>
+                        <tfoot>
+                            <tr class="font-weight-bold bg-light">
+                                <td colspan="3" class="text-right">TOTAL</td>
+                                <td class="text-right">
+                                    <span t-esc="total"
+                                          t-options='{"widget": "monetary", "display_currency": company.currency_id}'/>
+
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                    <div class="row mt-4">
+                        <div class="col-6">
+                            <p>Imprimé le :
+                                <span t-esc="datetime.datetime.now().strftime('%d/%m/%Y %H:%M')"/>
+                            </p>
+                        </div>
+                        <div class="col-6 text-right">
+                            <p>Par :
+                                <span t-esc="user.name"/>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+
+    <!-- Template pour Ventes Crédit -->
+    <template id="report_liste_ventes_credit_document">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="page">
+                    <h3 class="text-center">Liste des Ventes Crédit</h3>
+                    <p class="text-center">
+                        Période :
+                        <span t-esc="date_from"/>
+                        -
+                        <span t-esc="date_to"/>
+                    </p>
+
+                    <table class="table table-sm table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>N° Souche</th>
+                                <th>Client</th>
+                                <th class="text-right">Reste à payer</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-set="total" t-value="0.0"/>
+                            <t t-set="company" t-value="user.company_id"/>
+                            <t t-foreach="docs" t-as="vente">
+                                <tr>
+                                    <td>
+                                        <span t-field="vente.date_vente"/>
+                                    </td>
+                                    <td>
+                                        <span t-field="vente.name"/>
+                                    </td>
+                                    <td>
+                                        <span t-field="vente.client_id.name"/>
+                                    </td>
+                                    <td class="text-right text-danger">
+                                        <span t-field="vente.amount_residual_signed"
+                                              t-options='{"widget": "monetary", "display_currency": vente.currency_id}'/>
+                                    </td>
+                                </tr>
+                                <t t-set="total" t-value="total + vente.amount_residual_signed"/>
+                            </t>
+                        </tbody>
+                        <tfoot>
+                            <tr class="font-weight-bold bg-danger text-white">
+                                <td colspan="3" class="text-right">TOTAL CRÉDIT</td>
+                                <td class="text-right">
+                                    <span t-esc="total"
+                                          t-options='{"widget": "monetary", "display_currency": company.currency_id}'/>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                    <div class="row mt-4">
+                        <div class="col-6">
+                            <p>Imprimé le :
+                                <span t-esc="datetime.datetime.now().strftime('%d/%m/%Y %H:%M')"/>
+                            </p>
+                        </div>
+                        <div class="col-6 text-right">
+                            <p>Par :
+                                <span t-esc="user.name"/>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+
+    <!-- Définition des rapports -->
+    <record id="action_report_liste_ventes_total" model="ir.actions.report">
+        <field name="name">Liste des Ventes - Total</field>
+        <field name="model">gecafle.vente</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_gecafle_statistiques.report_liste_ventes_total_document</field>
+        <field name="report_file">Liste_Ventes_Total</field>
+        <field name="print_report_name">'Liste_Ventes_Total_%s' % (datetime.datetime.now().strftime('%Y%m%d'))</field>
+        <field name="paperformat_id" ref="base.paperformat_euro"/>
+        <field name="binding_model_id" ref="adi_gecafle_ventes.model_gecafle_vente"/>
+    </record>
+
+    <record id="action_report_liste_ventes_payees" model="ir.actions.report">
+        <field name="name">Liste des Ventes Payées</field>
+        <field name="model">gecafle.vente</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_gecafle_statistiques.report_liste_ventes_payees_document</field>
+        <field name="report_file">Liste_Ventes_Payees</field>
+        <field name="print_report_name">'Liste_Ventes_Payees_%s' % (datetime.datetime.now().strftime('%Y%m%d'))</field>
+        <field name="paperformat_id" ref="base.paperformat_euro"/>
+        <field name="binding_model_id" ref="adi_gecafle_ventes.model_gecafle_vente"/>
+    </record>
+
+    <record id="action_report_liste_ventes_credit" model="ir.actions.report">
+        <field name="name">Liste des Ventes Crédit</field>
+        <field name="model">gecafle.vente</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_gecafle_statistiques.report_liste_ventes_credit_document</field>
+        <field name="report_file">Liste_Ventes_Credit</field>
+        <field name="print_report_name">'Liste_Ventes_Credit_%s' % (datetime.datetime.now().strftime('%Y%m%d'))</field>
+        <field name="paperformat_id" ref="base.paperformat_euro"/>
+        <field name="binding_model_id" ref="adi_gecafle_ventes.model_gecafle_vente"/>
+    </record>
+
+
+    <record id="view_liste_ventes_payees_tree_inherit" model="ir.ui.view">
+        <field name="name">gecafle.vente.liste.payees.tree.inherit</field>
+        <field name="model">gecafle.vente</field>
+        <field name="inherit_id" ref="adi_gecafle_statistiques.view_liste_ventes_payees_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//tree" position="inside">
+                <header>
+                    <button name="%(adi_gecafle_statistiques.action_report_liste_ventes_payees)d"
+                            string="🖨️ Imprimer la liste"
+                            type="action"
+                            class="btn btn-primary"/>
+                </header>
+
+            </xpath>
+        </field>
+    </record>
+    <record id="view_liste_ventes_credit_tree_inherit" model="ir.ui.view">
+        <field name="name">gecafle.vente.liste.credit.tree.inherit</field>
+        <field name="model">gecafle.vente</field>
+        <field name="inherit_id" ref="adi_gecafle_statistiques.view_liste_ventes_credit_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//tree" position="inside">
+                <header>
+                    <button name="%(adi_gecafle_statistiques.action_report_liste_ventes_credit)d"
+                            string="🖨️ Imprimer la liste"
+                            type="action"
+                            class="btn btn-primary"/>
+
+                </header>
+
+            </xpath>
+        </field>
+    </record>
+    <record id="view_liste_ventes_total_tree_inherit" model="ir.ui.view">
+        <field name="name">gecafle.vente.liste.total.tree.inherit</field>
+        <field name="model">gecafle.vente</field>
+        <field name="inherit_id" ref="adi_gecafle_statistiques.view_liste_ventes_total_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//tree" position="inside">
+                <header>
+                    <button name="%(adi_gecafle_statistiques.action_report_liste_ventes_total)d"
+                            string="🖨️ Imprimer la liste"
+                            type="action"
+                            class="btn btn-primary"/>
+
+                </header>
+
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Menu principal -->
+    <menuitem id="menu_emballage_tracking_root"
+              name="Tracking Emballages"
+              sequence="70"
+              web_icon="adi_gecafle_emballage_tracking,static/description/track.png"/>
+
+    <!-- Tableau de bord -->
+    <menuitem id="menu_emballage_dashboard"
+              name="Tableau de bord"
+              parent="menu_emballage_tracking_root"
+              action="action_emballage_tracking"
+              sequence="10"/>
+
+    <!-- Mouvements -->
+    <menuitem id="menu_emballage_mouvements"
+              name="Mouvements"
+              parent="menu_emballage_tracking_root"
+              action="action_emballage_mouvement"
+              sequence="20"/>
+
+    <!-- Balances -->
+    <menuitem id="menu_emballage_balances"
+              name="Balances"
+              parent="menu_emballage_tracking_root"
+              sequence="30"/>
+
+    <menuitem id="menu_emballage_balance_client"
+              name="Balance Clients"
+              parent="menu_emballage_balances"
+              action="action_emballage_balance_client"
+              sequence="10"/>
+
+    <menuitem id="menu_emballage_balance_producteur"
+              name="Balance Producteurs"
+              parent="menu_emballage_balances"
+              action="action_emballage_balance_producteur"
+              sequence="20"/>
+
+    <!-- Rapports -->
+    <menuitem id="menu_emballage_reports"
+              name="Rapports"
+              parent="menu_emballage_tracking_root"
+              sequence="40"/>
+
+    <menuitem id="menu_emballage_report_wizard"
+              name="Générer un rapport"
+              parent="menu_emballage_reports"
+              action="action_emballage_report_wizard"
+              sequence="10"/>
+
+    <!-- Configuration -->
+    <menuitem id="menu_emballage_config"
+              name="Configuration"
+              parent="menu_emballage_tracking_root"
+              sequence="100"
+              groups="adi_gecafle_emballage_tracking.group_emballage_manager"/>
+</odoo>

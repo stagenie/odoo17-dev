@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue Formulaire du Wizard -->
+    <record id="view_cost_calculation_wizard_form" model="ir.ui.view">
+        <field name="name">adi.cost.calculation.wizard.form</field>
+        <field name="model">adi.cost.calculation.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Calculer les Coûts de Production">
+                <group>
+                    <group>
+                        <field name="period_type"/>
+                        <field name="date_from"/>
+                        <field name="date_to"/>
+                    </group>
+                    <group>
+                        <field name="product_ids" widget="many2many_tags"
+                               options="{'no_create': True}"
+                               domain="[('type', '=', 'product')]"/>
+                        <field name="product_category_ids" widget="many2many_tags"
+                               options="{'no_create': True}"/>
+                    </group>
+                </group>
+
+                <group>
+                    <group>
+                        <field name="state_filter"/>
+                        <field name="include_scraps"/>
+                        <field name="scrap_type_filter"
+                               invisible="not include_scraps"/>
+                    </group>
+                    <group>
+                        <field name="calculation_method"/>
+                        <field name="update_product_cost"/>
+                        <field name="create_missing_records"/>
+                    </group>
+                </group>
+
+                <group>
+                    <group>
+                        <field name="generate_report"/>
+                        <field name="report_format"
+                               invisible="not generate_report"/>
+                        <field name="send_by_email"
+                               invisible="not generate_report"/>
+                    </group>
+                    <group>
+                        <field name="email_recipients"
+                               placeholder="email1@exemple.com, email2@exemple.com"
+                               invisible="not send_by_email"/>
+                    </group>
+                </group>
+
+                <!-- Résultats (si déjà calculés) -->
+                <group string="Résultats" invisible="not result_message">
+                    <field name="result_count" readonly="1"/>
+                    <field name="result_message" readonly="1" nolabel="1" colspan="2"/>
+                </group>
+
+                <footer>
+                    <button name="action_calculate"
+                            type="object"
+                            string="Calculer"
+                            class="btn-primary"/>
+                    <button string="Annuler"
+                            class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- ACTION MANQUANTE : À AJOUTER -->
+    <record id="action_cost_calculation_wizard" model="ir.actions.act_window">
+        <field name="name">Calculer les Coûts</field>
+        <field name="res_model">adi.cost.calculation.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="view_id" ref="view_cost_calculation_wizard_form"/>
+        <field name="context">{
+            'default_period_type': 'month',
+            'default_generate_report': True,
+            'default_update_product_cost': False
+        }</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Assistant de Calcul des Coûts
+            </p>
+            <p>
+                Cet assistant vous permet de calculer les coûts de production
+                pour une période donnée, en incluant l'impact des rebuts.
+            </p>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue formulaire pour account.payment - Ajouter le type de paiement -->
+    <record id="view_account_payment_form_inherit_gecafle" model="ir.ui.view">
+        <field name="name">account.payment.form.inherit.gecafle</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_form"/>
+        <field name="arch" type="xml">
+            <!-- Ajouter le type de paiement après partner_id -->
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="type_de_paiement" widget="badge"
+                       decoration-info="type_de_paiement == 'standard'"
+                       decoration-warning="type_de_paiement == 'avance_producteur'"
+                       decoration-success="type_de_paiement == 'avance_transport'"/>
+            </xpath>
+
+            <!-- Ajouter reception_id après le montant -->
+            <xpath expr="//field[@name='amount']" position="after">
+                <field name="reception_id" string="Réception Liée"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Vue tree (liste) pour account.payment - Ajouter type dans la liste -->
+    <record id="view_account_payment_tree_inherit_gecafle" model="ir.ui.view">
+        <field name="name">account.payment.tree.inherit.gecafle</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_tree"/>
+        <field name="arch" type="xml">
+            <!-- Ajouter le type de paiement après state -->
+            <xpath expr="//field[@name='state']" position="after">
+                <field name="type_de_paiement" widget="badge"
+                       optional="show"
+                       decoration-info="type_de_paiement == 'standard'"
+                       decoration-warning="type_de_paiement == 'avance_producteur'"
+                       decoration-success="type_de_paiement == 'avance_transport'"/>
+                <field name="ref"
+                       optional="show"
+                       string="Référence"/>
+                <field name="is_advance_producer"
+                       optional="show"
+                       string="Avance Producteur"/>
+                <field name="is_advance_transport"
+                       optional="show"
+                       string="Transport"/>
+                <field name="reception_id"
+                       optional="show"
+                       string="Réception"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

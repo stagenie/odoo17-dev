@@ -1,0 +1,9 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_adi_daily_production_user,access.adi.daily.production.user,model_adi_daily_production,group_adi_cost_user,1,1,1,0
+access_adi_daily_production_manager,access.adi.daily.production.manager,model_adi_daily_production,group_adi_cost_manager,1,1,1,1
+access_adi_scrap_management_user,access.adi.scrap.management.user,model_adi_scrap_management,group_adi_cost_user,1,1,1,0
+access_adi_scrap_management_manager,access.adi.scrap.management.manager,model_adi_scrap_management,group_adi_cost_manager,1,1,1,1
+access_adi_cost_analysis_user,access.adi.cost.analysis.user,model_adi_cost_analysis,group_adi_cost_user,1,0,0,0
+access_adi_cost_analysis_manager,access.adi.cost.analysis.manager,model_adi_cost_analysis,group_adi_cost_manager,1,0,0,0
+access_adi_cost_calculation_wizard_user,access.adi.cost.calculation.wizard.user,model_adi_cost_calculation_wizard,group_adi_cost_user,1,1,1,0
+access_adi_cost_calculation_wizard_manager,access.adi.cost.calculation.wizard.manager,model_adi_cost_calculation_wizard,group_adi_cost_manager,1,1,1,1

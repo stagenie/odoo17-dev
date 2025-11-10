@@ -1,0 +1,345 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Template principal pour le bon de vente NORMAL -->
+    <template id="report_bon_vente">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="adi_gecafle_ventes.report_bon_vente_document"/>
+            </t>
+        </t>
+    </template>
+
+    <!-- Template pour le DUPLICATA -->
+    <template id="report_bon_vente_duplicata">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="adi_gecafle_ventes.report_bon_vente_duplicata_document"/>
+            </t>
+        </t>
+    </template>
+
+    <!-- Template du document bon de vente NORMAL -->
+    <template id="report_bon_vente_document">
+        <t t-set="company" t-value="doc.company_id or env.company"/>
+        <t t-call="web.external_layout">
+            <t t-set="o" t-value="doc"/>
+
+            <!-- PAS de section DUPLICATA ici -->
+
+            <!-- Affichage d'alerte si la vente est annulée -->
+            <div t-if="o.state == 'annule'" class="alert alert-danger text-center mb-3">
+                <strong style="font-size: 18px;">VENTE ANNULÉE</strong>
+            </div>
+
+            <!-- Affichage d'alerte si la vente est en brouillon -->
+            <div t-if="o.state == 'brouillon'" class="alert alert-warning text-center mb-3">
+                <strong style="font-size: 18px;">BROUILLON</strong>
+            </div>
+
+            <div class="page">
+                <div class="row mb-4">
+                    <!-- Section Vente et client -->
+                    <div t-att-class="'col-9' if not o.client_id.est_fidel else 'col-12'">
+                        <h2 class="text-center">BON DE VENTE</h2>
+                        <div class="row mt-4">
+                            <div class="col-6">
+                                <strong>Bon de Vente N°:</strong> <span t-field="o.name"/>
+                            </div>
+                            <div class="col-6 text-right">
+                                <strong>Date/Heure:</strong>
+                                <span t-field="o.date_vente" t-options='{"widget": "datetime"}'/>
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-8">
+                                <strong>Client:</strong> <span t-field="o.client_id.name"/>
+                            </div>
+                            <div class="col-4 text-right">
+                                <strong>Tel:</strong> <span t-field="o.tel_mob_client"/>
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-6">
+                                <strong>Vendeur:</strong> <span t-field="o.user_id.name"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section Consigne (conditionnelle) -->
+                    <div t-if="not o.client_id.est_fidel" class="col-3 consigne-section">
+                        <div class="text-center mb-2">
+                            <h5>CONSIGNE</h5>
+                            <div class="border-bottom border-dark mb-2" style="border-style: dashed !important;"></div>
+                        </div>
+                        <div class="row">
+                            <div class="col-6"><strong>N° Souche:</strong></div>
+                            <div class="col-6"><span t-field="o.name"/></div>
+                        </div>
+                        <div class="row mt-1">
+                            <div class="col-6"><strong>Emballage:</strong></div>
+                            <div class="col-6"><span t-field="o.emballages_consigne_desc"/></div>
+                        </div>
+                        <div class="row mt-1">
+                            <div class="col-6"><strong>Montant:</strong></div>
+                            <div class="col-6"><span t-field="o.montant_total_consigne"/></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tableau des produits -->
+                <table class="table table-sm table-bordered">
+                    <thead>
+                        <tr>
+                            <th>N°BR</th>
+                            <th>Producteur</th>
+                            <th>Nbre colis</th>
+                            <th>Désignation</th>
+                            <th>Poids/U</th>
+                            <th>Type Colis</th>
+                            <th>Q.</th>
+                            <th>Poids Brut</th>
+                            <th>Poids Colis</th>
+                            <th>Poids Net</th>
+                            <th>Prix /U</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="o.detail_vente_ids" t-as="line">
+                            <tr>
+                                <td><span t-field="line.reception_id.name"/></td>
+                                <td><span t-field="line.producteur_id.name"/></td>
+                                <td class="text-center"><span t-field="line.nombre_colis"/></td>
+                                <td><span t-field="line.produit_id.name"/></td>
+                                <td><span t-esc="'%.2f' % line.poids_brut_un_colis"/></td>
+                                <td><span t-field="line.type_colis_id.name"/></td>
+                                <td><span t-field="line.qualite_id.name"/></td>
+                                <td class="text-right"><span t-esc="'%.2f' % line.poids_brut"/></td>
+                                <td class="text-right"><span t-esc="'%.2f' % line.poids_colis"/></td>
+                                <td class="text-right"><span t-esc="'%.2f' % line.poids_net"/></td>
+                                <td class="text-right"><span t-esc="o.format_number(line.prix_unitaire)"/></td>
+                                <td class="text-right"><span t-esc="o.format_number(line.montant_net)"/> DA</td>
+                            </tr>
+                        </t>
+                    </tbody>
+                    <tfoot>
+                        <tr class="font-weight-bold">
+                            <td colspan="2"><strong>TOTAUX</strong></td>
+                            <td class="text-center"><span t-esc="sum(o.detail_vente_ids.mapped('nombre_colis'))"/></td>
+                            <td colspan="4"></td>
+                            <td class="text-right"><span t-esc="'%.2f' % sum(o.detail_vente_ids.mapped('poids_brut'))"/></td>
+                            <td class="text-right"><span t-esc="'%.2f' % sum(o.detail_vente_ids.mapped('poids_colis'))"/></td>
+                            <td class="text-right"><span t-esc="'%.2f' % sum(o.detail_vente_ids.mapped('poids_net'))"/></td>
+                            <td></td>
+                            <td class="text-right">
+                                <span t-field="o.montant_total_net"
+                                      t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+
+                <!-- Section du bas -->
+                <div class="row mt-5">
+                    <!-- Notes et observations -->
+                    <div class="col-6">
+                        <div t-if="o.notes">
+                            <h5>Conditions Générales</h5>
+                            <p t-field="o.notes"/>
+                        </div>
+                        <div t-if="o.observation" class="mt-3">
+                            <h5>Observations</h5>
+                            <p t-field="o.observation"/>
+                        </div>
+                    </div>
+
+                    <!-- Récapitulatif des totaux -->
+                    <div class="col-6">
+                        <table class="table table-sm">
+                            <tr>
+                                <td class="text-right"><strong>Montant Colis:</strong></td>
+                                <td class="text-right"><span t-field="o.montant_total_emballages"/></td>
+                            </tr>
+                            <tr>
+                                <td class="text-right"><strong>Montant Net:</strong></td>
+                                <td class="text-right"><span t-field="o.montant_total_net"/></td>
+                            </tr>
+                            <tr t-if="o.montant_remise_globale > 0">
+                                <td class="text-right"><strong>Remise:</strong></td>
+                                <td class="text-right"><span t-field="o.montant_remise_globale"/></td>
+                            </tr>
+                            <tr class="border-top">
+                                <td class="text-right"><strong>Montant Total:</strong></td>
+                                <td class="text-right"><strong><span t-field="o.montant_total_a_payer"/></strong></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!-- Template du document bon de vente DUPLICATA -->
+    <template id="report_bon_vente_duplicata_document">
+        <t t-set="company" t-value="doc.company_id or env.company"/>
+        <t t-call="web.external_layout">
+            <t t-set="o" t-value="doc"/>
+
+            <!-- Section DUPLICATA toujours visible -->
+            <div class="alert alert-info text-center mb-3">
+                <strong style="font-size: 18px;">DUPLICATA</strong>
+            </div>
+
+            <!-- Affichage d'alerte si la vente est annulée -->
+            <div t-if="o.state == 'annule'" class="alert alert-danger text-center mb-3">
+                <strong style="font-size: 18px;">VENTE ANNULÉE</strong>
+            </div>
+
+            <!-- Affichage d'alerte si la vente est en brouillon -->
+            <div t-if="o.state == 'brouillon'" class="alert alert-warning text-center mb-3">
+                <strong style="font-size: 18px;">BROUILLON</strong>
+            </div>
+
+            <div class="page">
+                <div class="row mb-4">
+                    <!-- Section Vente et client -->
+                    <div t-att-class="'col-9' if not o.client_id.est_fidel else 'col-12'">
+                        <h2 class="text-center">BON DE VENTE</h2>
+                        <div class="row mt-4">
+                            <div class="col-6">
+                                <strong>Bon de Vente N°:</strong> <span t-field="o.name"/>
+                            </div>
+                            <div class="col-6 text-right">
+                                <strong>Date/Heure:</strong>
+                                <span t-field="o.date_vente" t-options='{"widget": "datetime"}'/>
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-8">
+                                <strong>Client:</strong> <span t-field="o.client_id.name"/>
+                            </div>
+                            <div class="col-4 text-right">
+                                <strong>Tel:</strong> <span t-field="o.tel_mob_client"/>
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-6">
+                                <strong>Vendeur:</strong> <span t-field="o.user_id.name"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section Consigne (conditionnelle) -->
+                    <div t-if="not o.client_id.est_fidel" class="col-3 consigne-section">
+                        <div class="text-center mb-2">
+                            <h5>CONSIGNE</h5>
+                            <div class="border-bottom border-dark mb-2" style="border-style: dashed !important;"></div>
+                        </div>
+                        <div class="row">
+                            <div class="col-6"><strong>N° Souche:</strong></div>
+                            <div class="col-6"><span t-field="o.name"/></div>
+                        </div>
+                        <div class="row mt-1">
+                            <div class="col-6"><strong>Emballage:</strong></div>
+                            <div class="col-6"><span t-field="o.emballages_consigne_desc"/></div>
+                        </div>
+                        <div class="row mt-1">
+                            <div class="col-6"><strong>Montant:</strong></div>
+                            <div class="col-6"><span t-field="o.montant_total_consigne"/></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tableau des produits (même contenu que le rapport normal) -->
+                <table class="table table-sm table-bordered">
+                    <thead>
+                        <tr>
+                            <th>N°BR</th>
+                            <th>Producteur</th>
+                            <th>Nbre colis</th>
+                            <th>Désignation</th>
+                            <th>Poids/U</th>
+                            <th>Type Colis</th>
+                            <th>Q.</th>
+                            <th>Poids Brut</th>
+                            <th>Poids Colis</th>
+                            <th>Poids Net</th>
+                            <th>Prix /U</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="o.detail_vente_ids" t-as="line">
+                            <tr>
+                                <td><span t-field="line.reception_id.name"/></td>
+                                <td><span t-field="line.producteur_id.name"/></td>
+                                <td class="text-center"><span t-field="line.nombre_colis"/></td>
+                                <td><span t-field="line.produit_id.name"/></td>
+                                <td><span t-esc="'%.2f' % line.poids_brut_un_colis"/></td>
+                                <td><span t-field="line.type_colis_id.name"/></td>
+                                <td><span t-field="line.qualite_id.name"/></td>
+                                <td class="text-right"><span t-esc="'%.2f' % line.poids_brut"/></td>
+                                <td class="text-right"><span t-esc="'%.2f' % line.poids_colis"/></td>
+                                <td class="text-right"><span t-esc="'%.2f' % line.poids_net"/></td>
+                                <td class="text-right"><span t-esc="o.format_number(line.prix_unitaire)"/></td>
+                                <td class="text-right"><span t-esc="o.format_number(line.montant_net)"/> DA</td>
+                            </tr>
+                        </t>
+                    </tbody>
+                    <tfoot>
+                        <tr class="font-weight-bold">
+                            <td colspan="2"><strong>TOTAUX</strong></td>
+                            <td class="text-center"><span t-esc="sum(o.detail_vente_ids.mapped('nombre_colis'))"/></td>
+                            <td colspan="4"></td>
+                            <td class="text-right"><span t-esc="'%.2f' % sum(o.detail_vente_ids.mapped('poids_brut'))"/></td>
+                            <td class="text-right"><span t-esc="'%.2f' % sum(o.detail_vente_ids.mapped('poids_colis'))"/></td>
+                            <td class="text-right"><span t-esc="'%.2f' % sum(o.detail_vente_ids.mapped('poids_net'))"/></td>
+                            <td></td>
+                            <td class="text-right">
+                                <span t-field="o.montant_total_net"
+                                      t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+
+                <!-- Section du bas -->
+                <div class="row mt-5">
+                    <!-- Notes et observations -->
+                    <div class="col-6">
+                        <div t-if="o.notes">
+                            <h5>Conditions Générales</h5>
+                            <p t-field="o.notes"/>
+                        </div>
+                        <div t-if="o.observation" class="mt-3">
+                            <h5>Observations</h5>
+                            <p t-field="o.observation"/>
+                        </div>
+                    </div>
+
+                    <!-- Récapitulatif des totaux -->
+                    <div class="col-6">
+                        <table class="table table-sm">
+                            <tr>
+                                <td class="text-right"><strong>Montant Colis:</strong></td>
+                                <td class="text-right"><span t-field="o.montant_total_emballages"/></td>
+                            </tr>
+                            <tr>
+                                <td class="text-right"><strong>Montant Net:</strong></td>
+                                <td class="text-right"><span t-field="o.montant_total_net"/></td>
+                            </tr>
+                            <tr t-if="o.montant_remise_globale > 0">
+                                <td class="text-right"><strong>Remise:</strong></td>
+                                <td class="text-right"><span t-field="o.montant_remise_globale"/></td>
+                            </tr>
+                            <tr class="border-top">
+                                <td class="text-right"><strong>Montant Total:</strong></td>
+                                <td class="text-right"><strong><span t-field="o.montant_total_a_payer"/></strong></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>

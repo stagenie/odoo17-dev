@@ -1,0 +1,16 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_gecafle_statistiques_ventes_user,access.gecafle.statistiques.ventes.user,model_gecafle_statistiques_ventes,base.group_user,1,0,0,0
+access_gecafle_statistiques_ventes_manager,access.gecafle.statistiques.ventes.manager,model_gecafle_statistiques_ventes,adi_gecafle_ventes.group_gecafle_manager,1,1,1,1
+access_gecafle_releve_reception_ventes_user,access.gecafle.releve.reception.ventes.user,model_gecafle_releve_reception_ventes,base.group_user,1,1,1,0
+access_gecafle_releve_reception_ventes_manager,access.gecafle.releve.reception.ventes.manager,model_gecafle_releve_reception_ventes,adi_gecafle_ventes.group_gecafle_manager,1,1,1,1
+access_gecafle_releve_reception_ventes_line_user,access.gecafle.releve.reception.ventes.line.user,model_gecafle_releve_reception_ventes_line,base.group_user,1,1,1,1
+access_gecafle_releve_reception_detail_user,access.gecafle.releve.reception.detail.user,model_gecafle_releve_reception_detail,base.group_user,1,1,1,1
+access_gecafle_releve_vente_detail_user,access.gecafle.releve.vente.detail.user,model_gecafle_releve_vente_detail,base.group_user,1,1,1,1
+
+
+access_gecafle_tracabilite_user,access.gecafle.tracabilite.user,model_gecafle_tracabilite_produits,base.group_user,1,1,1,1
+access_gecafle_tracabilite_reception_line_user,access.gecafle.tracabilite.reception.line.user,model_gecafle_tracabilite_reception_line,base.group_user,1,1,1,1
+access_gecafle_tracabilite_vente_line_user,access.gecafle.tracabilite.vente.line.user,model_gecafle_tracabilite_vente_line,base.group_user,1,1,1,1
+
+
+

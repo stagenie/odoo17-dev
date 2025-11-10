@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Menu principal -->
+    <menuitem id="menu_backup_root"
+              name="📦 Backup Manager"
+              groups="adi_backup_manager.group_backup_user"
+              web_icon="adi_backup_manager,static/description/backup.png"
+              sequence="95"/>
+
+    <!-- Dashboard -->
+    <menuitem id="menu_backup_dashboard"
+              name="🎯 Tableau de Bord"
+              parent="menu_backup_root"
+              action="action_backup_dashboard"
+              sequence="1"/>
+
+    <!-- Récupération -->
+    <menuitem id="menu_backup_recovery"
+              name="💾 Récupération"
+              parent="menu_backup_root"
+              action="action_backup_recovery_wizard"
+              sequence="10"/>
+
+    <!-- Fichiers -->
+    <menuitem id="menu_backup_files"
+              name="📄 Fichiers"
+              parent="menu_backup_root"
+              action="action_backup_files"
+              sequence="20"/>
+
+    <!-- Configuration -->
+    <menuitem id="menu_backup_config"
+              name="⚙️ Configuration"
+              parent="menu_backup_root"
+              sequence="100">
+
+        <menuitem id="menu_backup_directories"
+                  name="📁 Répertoires"
+                  action="action_backup_directories"
+                  sequence="10"/>
+
+        <menuitem id="menu_backup_settings"
+                  name="🔧 Paramètres"
+                  action="action_backup_config_settings"
+                  sequence="20"/>
+    </menuitem>
+</odoo>

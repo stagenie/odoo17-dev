@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_partner_form_wilaya_composition" model="ir.ui.view">
+        <field name="name">res.partner.form.wilaya.composition</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <data>
+                <!-- Modifier l'agencement des champs -->
+
+                <!-- Pour Adresse de la société -->
+                <xpath expr="//field[@name='state_id']" position="after">
+                    <field name="composition_id"
+                           class="oe_no_button"
+                           placeholder="Localités"
+                           options="{'no_open': True}"
+                           domain="[('state_id', '=', state_id)]"
+                           style="width: 50%;"/>
+                </xpath>
+                <xpath expr="//field[@name='state_id']" position="attributes">
+                    <attribute name="class">oe_no_button</attribute>
+                    <attribute name="style">width: 50%;padding-right: 5px;</attribute>
+                    <attribute name="placeholder">Wilayas</attribute>
+                </xpath>
+                <xpath expr="//field[@name='city']" position="attributes">
+                    <attribute name="class">oe_no_button</attribute>
+                    <attribute name="style">width: 100%;</attribute>
+                </xpath>
+                <xpath expr="//field[@name='zip']" position="attributes">
+                    <attribute name="class">oe_no_button</attribute>
+                    <attribute name="style">width: 49%;</attribute>
+                </xpath>
+                <xpath expr="//field[@name='country_id']" position="attributes">
+                    <attribute name="class">oe_no_button</attribute>
+                    <attribute name="style">width: 51%;padding-left: 5px;</attribute>
+                </xpath>
+
+                <!-- Pour Contacts & Adresses -->
+                <xpath expr="//div[@name='div_address']/field[@name='state_id']" position="after">
+                    <field name="composition_id"
+                           class="oe_no_button"
+                           placeholder="Localités"
+                           options="{'no_open': True, 'no_quick_create': True}"
+                           domain="[('state_id', '=', state_id)]"
+                           style="width: 50%;"/>
+                </xpath>
+                <xpath expr="//div[@name='div_address']/field[@name='state_id']" position="attributes">
+                    <attribute name="class">oe_no_button</attribute>
+                    <attribute name="style">width: 50%;padding-right: 5px;</attribute>
+                    <attribute name="placeholder">Wilayas</attribute>
+                </xpath>
+                <xpath expr="//div[@name='div_address']/field[@name='city']" position="attributes">
+                    <attribute name="class">oe_no_button</attribute>
+                    <attribute name="style">width: 100%;</attribute>
+                </xpath>
+                <xpath expr="//div[@name='div_address']/field[@name='zip']" position="attributes">
+                    <attribute name="class">oe_no_button</attribute>
+                    <attribute name="style">width: 48%;</attribute>
+                </xpath>
+                <xpath expr="//div[@name='div_address']/field[@name='country_id']" position="attributes">
+                    <attribute name="class">oe_no_button</attribute>
+                    <attribute name="style">width: 52%;padding-left: 5px;</attribute>
+                </xpath>
+            </data>
+        </field>
+    </record>
+</odoo>

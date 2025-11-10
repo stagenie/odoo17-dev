@@ -1,0 +1,358 @@
+/* Styles pour le dashboard GECAFLE */
+
+.gecafle-dashboard {
+    padding: 20px;
+    background-color: #f5f5f5;
+}
+
+/* Cartes de statistiques */
+.gecafle-stat-card {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+}
+
+.gecafle-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.gecafle-stat-card .card-header {
+    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+.gecafle-stat-card .card-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+}
+
+.gecafle-stat-card .card-value {
+    font-size: 32px;
+    font-weight: bold;
+    color: #2c3e50;
+    margin: 10px 0;
+}
+
+.gecafle-stat-card .card-subtitle {
+    font-size: 14px;
+    color: #7f8c8d;
+}
+
+/* Indicateurs colorés */
+.stat-card-primary {
+    border-left: 4px solid #3498db;
+}
+
+.stat-card-success {
+    border-left: 4px solid #27ae60;
+}
+
+.stat-card-warning {
+    border-left: 4px solid #f39c12;
+}
+
+.stat-card-danger {
+    border-left: 4px solid #e74c3c;
+}
+
+.stat-card-info {
+    border-left: 4px solid #16a085;
+}
+
+/* Filtres de période */
+.gecafle-period-filter {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.gecafle-period-filter .btn-group {
+    display: flex;
+    gap: 5px;
+}
+
+.gecafle-period-filter .btn {
+    padding: 8px 16px;
+    border: 1px solid #ddd;
+    background: white;
+    color: #555;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.gecafle-period-filter .btn:hover {
+    background: #f8f9fa;
+}
+
+.gecafle-period-filter .btn.active {
+    background: #3498db;
+    color: white;
+    border-color: #3498db;
+}
+
+/* Graphiques */
+.gecafle-chart-container {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.gecafle-chart-container .chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.gecafle-chart-container .chart-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+}
+
+.gecafle-chart-container .chart-actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* Tableau Top Produits */
+.gecafle-top-products {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.gecafle-top-products table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.gecafle-top-products th {
+    background: #f8f9fa;
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+    color: #555;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.gecafle-top-products td {
+    padding: 12px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.gecafle-top-products tr:hover {
+    background: #f8f9fa;
+}
+
+.gecafle-top-products .rank-badge {
+    display: inline-block;
+    width: 28px;
+    height: 28px;
+    line-height: 28px;
+    text-align: center;
+    border-radius: 50%;
+    font-weight: bold;
+    font-size: 12px;
+}
+
+.rank-badge.rank-1 {
+    background: #ffd700;
+    color: #333;
+}
+
+.rank-badge.rank-2 {
+    background: #c0c0c0;
+    color: #333;
+}
+
+.rank-badge.rank-3 {
+    background: #cd7f32;
+    color: white;
+}
+
+.rank-badge.rank-default {
+    background: #6c757d;
+    color: white;
+}
+
+/* Loading state */
+.gecafle-loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+}
+
+.gecafle-loading .spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .gecafle-dashboard {
+        padding: 10px;
+    }
+
+    .gecafle-stat-card {
+        margin-bottom: 10px;
+    }
+
+    .gecafle-period-filter {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .gecafle-period-filter .btn-group {
+        flex-wrap: wrap;
+    }
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.gecafle-stat-card,
+.gecafle-chart-container {
+    animation: fadeIn 0.5s ease;
+}
+
+/* Tooltip personnalisé */
+.gecafle-tooltip {
+    position: relative;
+    display: inline-block;
+}
+
+.gecafle-tooltip .tooltip-text {
+    visibility: hidden;
+    width: 200px;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 8px;
+    position: absolute;
+    z-index: 1000;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -100px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 12px;
+}
+
+.gecafle-tooltip:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Progress bars */
+.gecafle-progress {
+    width: 100%;
+    height: 20px;
+    background-color: #f0f0f0;
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 10px 0;
+}
+
+.gecafle-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #3498db, #2980b9);
+    border-radius: 10px;
+    transition: width 0.5s ease;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 10px;
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+/* État de paiement */
+.payment-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.payment-badge.paid {
+    background: #d4edda;
+    color: #155724;
+}
+
+.payment-badge.partial {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.payment-badge.unpaid {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+/* Export buttons */
+.export-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.export-buttons .btn {
+    padding: 8px 16px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    background: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.export-buttons .btn:hover {
+    background: #f8f9fa;
+    transform: translateY(-1px);
+}
+
+.export-buttons .btn i {
+    font-size: 14px;
+}

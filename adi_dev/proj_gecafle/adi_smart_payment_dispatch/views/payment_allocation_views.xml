@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ========== PAYMENT ALLOCATION LINE VIEWS ========== -->
+
+    <!-- Tree View -->
+    <record id="view_payment_allocation_line_tree" model="ir.ui.view">
+        <field name="name">payment.allocation.line.tree</field>
+        <field name="model">payment.allocation.line</field>
+        <field name="arch" type="xml">
+            <tree string="Lignes de répartition" editable="bottom" create="false">
+                <field name="invoice_id" readonly="1" optional="show"/>
+                <field name="invoice_date" readonly="1" optional="show"/>
+                <field name="invoice_date_due" readonly="1" optional="show"/>
+                <field name="invoice_amount_total" readonly="1" optional="show" sum="Total factures"/>
+                <field name="invoice_amount_residual_before" readonly="1" optional="show" sum="Total dû avant"/>
+                <field name="allocated_amount" sum="Total alloué"
+                       decoration-success="allocated_amount > 0"
+                       decoration-warning="allocated_amount == 0"/>
+                <field name="invoice_amount_residual_after" readonly="1" optional="show" sum="Total dû après"/>
+                <field name="invoice_payment_state" readonly="1" widget="badge" optional="hide"
+                       decoration-success="invoice_payment_state == 'paid'"
+                       decoration-warning="invoice_payment_state == 'partial'"
+                       decoration-danger="invoice_payment_state == 'not_paid'"/>
+                <field name="state" readonly="1" widget="badge" optional="hide"
+                       decoration-success="state == 'reconciled'"
+                       decoration-muted="state == 'cancelled'"/>
+                <field name="currency_id" invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form View (pour consultation détaillée) -->
+    <record id="view_payment_allocation_line_form" model="ir.ui.view">
+        <field name="name">payment.allocation.line.form</field>
+        <field name="model">payment.allocation.line</field>
+        <field name="arch" type="xml">
+            <form string="Ligne de répartition">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_invoice" type="object" class="oe_stat_button" icon="fa-file-text-o">
+                            <field name="invoice_id" widget="statinfo" string="Facture"/>
+                        </button>
+                    </div>
+                    <group>
+                        <group string="Informations du paiement">
+                            <field name="payment_id" readonly="1"/>
+                            <field name="partner_id" readonly="1"/>
+                            <field name="allocated_amount"/>
+                            <field name="state" widget="badge"/>
+                        </group>
+                        <group string="Informations de la facture">
+                            <field name="invoice_id" readonly="1"/>
+                            <field name="invoice_date" readonly="1"/>
+                            <field name="invoice_date_due" readonly="1"/>
+                            <field name="invoice_payment_state" widget="badge" readonly="1"/>
+                        </group>
+                    </group>
+                    <group string="Montants">
+                        <group>
+                            <field name="invoice_amount_total" readonly="1"/>
+                            <field name="invoice_amount_residual_before" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="allocated_amount"/>
+                            <field name="invoice_amount_residual_after" readonly="1"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="view_payment_allocation_line_search" model="ir.ui.view">
+        <field name="name">payment.allocation.line.search</field>
+        <field name="model">payment.allocation.line</field>
+        <field name="arch" type="xml">
+            <search string="Rechercher une allocation">
+                <field name="payment_id"/>
+                <field name="invoice_id"/>
+                <field name="partner_id"/>
+                <separator/>
+                <filter string="Lettrées" name="reconciled" domain="[('state', '=', 'reconciled')]"/>
+                <filter string="En brouillon" name="draft" domain="[('state', '=', 'draft')]"/>
+                <filter string="Annulées" name="cancelled" domain="[('state', '=', 'cancelled')]"/>
+                <separator/>
+                <filter string="Factures échues" name="overdue"
+                        domain="[('invoice_date_due', '&lt;', context_today().strftime('%Y-%m-%d'))]"/>
+                <group expand="0" string="Grouper par">
+                    <filter string="Paiement" name="group_payment" context="{'group_by':'payment_id'}"/>
+                    <filter string="Facture" name="group_invoice" context="{'group_by':'invoice_id'}"/>
+                    <filter string="Partenaire" name="group_partner" context="{'group_by':'partner_id'}"/>
+                    <filter string="État" name="group_state" context="{'group_by':'state'}"/>
+                    <filter string="Date facture" name="group_invoice_date" context="{'group_by':'invoice_date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Pivot View pour analyse -->
+    <record id="view_payment_allocation_line_pivot" model="ir.ui.view">
+        <field name="name">payment.allocation.line.pivot</field>
+        <field name="model">payment.allocation.line</field>
+        <field name="arch" type="xml">
+            <pivot string="Analyse des répartitions">
+                <field name="partner_id" type="row"/>
+                <field name="invoice_date" interval="month" type="col"/>
+                <field name="allocated_amount" type="measure"/>
+                <field name="invoice_amount_residual_before" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Graph View -->
+    <record id="view_payment_allocation_line_graph" model="ir.ui.view">
+        <field name="name">payment.allocation.line.graph</field>
+        <field name="model">payment.allocation.line</field>
+        <field name="arch" type="xml">
+            <graph string="Graphique des allocations" type="bar">
+                <field name="invoice_date" interval="month"/>
+                <field name="allocated_amount" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_payment_allocation_lines" model="ir.actions.act_window">
+        <field name="name">Lignes de répartition des paiements</field>
+        <field name="res_model">payment.allocation.line</field>
+        <field name="view_mode">tree,form,pivot,graph</field>
+        <field name="search_view_id" ref="view_payment_allocation_line_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Aucune ligne de répartition trouvée
+            </p>
+            <p>
+                Les lignes de répartition sont créées automatiquement lors de la validation
+                des paiements avec répartition automatique activée.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu Item (sera ajouté dans menu_views.xml) -->
+    <menuitem id="menu_payment_allocation_lines"
+              name="Répartitions de paiements"
+              parent="account.menu_finance_receivables"
+              action="action_payment_allocation_lines"
+              sequence="20"/>
+
+</odoo>

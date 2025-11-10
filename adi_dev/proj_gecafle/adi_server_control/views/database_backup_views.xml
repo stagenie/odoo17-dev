@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue formulaire du wizard de backup -->
+    <record id="view_database_backup_wizard_form" model="ir.ui.view">
+        <field name="name">database.backup.wizard.form</field>
+        <field name="model">database.backup.wizard</field>
+        <field name="arch" type="xml">
+            <form string="💾 Sauvegarde de Base de Données">
+                <div class="alert alert-info" role="alert">
+                    <h4>📊 Base de données actuelle</h4>
+                    <field name="database_name" readonly="1" nolabel="1"
+                           style="font-size: 18px; font-weight: bold; text-align: center;"/>
+                </div>
+
+                <group>
+                    <group string="Options de sauvegarde">
+                        <field name="backup_type" widget="radio"/>
+                        <field name="include_filestore"/>
+                    </group>
+                    <group string="Configuration">
+                        <field name="backup_path"
+                               invisible="backup_type != 'server'"
+                               required="backup_type == 'server'"
+                               placeholder="/home/odoo/backups"/>
+                    </group>
+                </group>
+
+                <div class="alert alert-warning mt-3" role="alert">
+                    <strong>⚠️ Important:</strong>
+                    <ul>
+                        <li>Format ZIP inclut la base de données SQL</li>
+                        <li>Si activé, inclut aussi les pièces jointes (filestore)</li>
+                        <li>La sauvegarde peut prendre plusieurs minutes selon la taille</li>
+                        <li>Pour le serveur, assurez-vous que le dossier existe et est accessible</li>
+                    </ul>
+                </div>
+
+                <footer>
+                    <button name="action_backup_database"
+                            string="🚀 Lancer la Sauvegarde"
+                            type="object"
+                            class="btn btn-primary"/>
+                    <button special="cancel"
+                            string="Annuler"
+                            class="btn btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action pour ouvrir le wizard -->
+    <record id="action_database_backup_wizard" model="ir.actions.act_window">
+        <field name="name">Sauvegarde Base de Données</field>
+        <field name="res_model">database.backup.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

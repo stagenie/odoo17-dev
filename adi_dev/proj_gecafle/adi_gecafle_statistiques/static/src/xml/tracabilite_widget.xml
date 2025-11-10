@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <!-- Template principal du widget de traçabilité -->
+    <t t-name="adi_gecafle_statistiques.TracabiliteWidget" owl="1">
+        <div class="o_tracabilite_widget">
+            <div class="container-fluid">
+                <!-- En-tête avec filtres -->
+                <div class="row mb-3 bg-light p-3 rounded">
+                    <div class="col-md-3">
+                        <label class="form-label">Date début:</label>
+                        <input type="date" class="form-control form-control-sm"
+                               t-att-value="props.date_debut"/>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Date fin:</label>
+                        <input type="date" class="form-control form-control-sm"
+                               t-att-value="props.date_fin"/>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Producteur:</label>
+                        <select class="form-select form-select-sm">
+                            <option value="">Tous</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">&nbsp;</label>
+                        <button class="btn btn-primary btn-sm d-block w-100">
+                            <i class="fa fa-search"/> Calculer
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Vue en deux colonnes -->
+                <div class="row">
+                    <!-- Colonne Réceptions -->
+                    <div class="col-md-6 pe-2">
+                        <div class="card">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0">
+                                    <i class="fa fa-download"/> Réceptions
+                                </h5>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                                    <table class="table table-sm table-hover mb-0">
+                                        <thead class="table-light sticky-top">
+                                            <tr>
+                                                <th width="60">N°</th>
+                                                <th>Date</th>
+                                                <th>Producteur</th>
+                                                <th>Produit</th>
+                                                <th>Qualité</th>
+                                                <th>Type</th>
+                                                <th width="50">Qté</th>
+                                                <th width="50">Dispo</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-foreach="props.receptions" t-as="reception" t-key="reception.id">
+                                                <tr t-att-class="{'table-active': state.selectedLineId === reception.id}"
+                                                    t-on-click="() => this.onLineClick(reception.id)">
+                                                    <td><t t-esc="reception.reception_id"/></td>
+                                                    <td><t t-esc="reception.date_reception"/></td>
+                                                    <td><t t-esc="reception.producteur"/></td>
+                                                    <td><t t-esc="reception.produit"/></td>
+                                                    <td><t t-esc="reception.qualite"/></td>
+                                                    <td><t t-esc="reception.type_colis"/></td>
+                                                    <td class="text-center">
+                                                        <t t-esc="reception.qte_entrante"/>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <span t-att-class="{
+                                                            'badge': true,
+                                                            'bg-success': reception.qte_restante === 0,
+                                                            'bg-warning': reception.qte_restante > 0 and reception.qte_restante &lt; reception.qte_entrante,
+                                                            'bg-info': reception.qte_restante === reception.qte_entrante
+                                                        }">
+                                                            <t t-esc="reception.qte_restante"/>
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                        <tfoot class="table-secondary">
+                                            <tr>
+                                                <td colspan="6" class="text-end fw-bold">Total:</td>
+                                                <td class="text-center fw-bold">
+                                                    <t t-esc="props.total_entrant"/>
+                                                </td>
+                                                <td class="text-center fw-bold">
+                                                    <t t-esc="props.total_restant"/>
+                                                </td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Colonne Ventes -->
+                    <div class="col-md-6 ps-2">
+                        <div class="card">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0">
+                                    <i class="fa fa-upload"/> Ventes du produit sélectionné
+                                </h5>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                                    <table class="table table-sm table-hover mb-0">
+                                        <thead class="table-light sticky-top">
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>N° Souche</th>
+                                                <th>Client</th>
+                                                <th>Produit</th>
+                                                <th>Qualité</th>
+                                                <th>Type</th>
+                                                <th width="50">Qté</th>
+                                                <th width="60">Poids</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-if="state.ventes.length > 0">
+                                                <t t-foreach="state.ventes" t-as="vente" t-key="vente.id">
+                                                    <tr>
+                                                        <td><t t-esc="vente.date_vente"/></td>
+                                                        <td><t t-esc="vente.vente_id"/></td>
+                                                        <td><t t-esc="vente.client"/></td>
+                                                        <td><t t-esc="vente.produit"/></td>
+                                                        <td><t t-esc="vente.qualite"/></td>
+                                                        <td><t t-esc="vente.type_colis"/></td>
+                                                        <td class="text-center">
+                                                            <t t-esc="vente.nombre_colis"/>
+                                                        </td>
+                                                        <td class="text-center">
+                                                            <t t-esc="vente.poids_net"/>
+                                                        </td>
+                                                    </tr>
+                                                </t>
+                                            </t>
+                                            <t t-else="">
+                                                <tr>
+                                                    <td colspan="8" class="text-center text-muted py-3">
+                                                        <i class="fa fa-info-circle"/>
+                                                        Sélectionnez une ligne de réception pour voir ses ventes
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                        <tfoot class="table-secondary" t-if="state.ventes.length > 0">
+                                            <tr>
+                                                <td colspan="6" class="text-end fw-bold">Total:</td>
+                                                <td class="text-center fw-bold">
+                                                    <t t-esc="state.ventes.reduce((sum, v) => sum + v.nombre_colis, 0)"/>
+                                                </td>
+                                                <td class="text-center fw-bold">
+                                                    <t t-esc="state.ventes.reduce((sum, v) => sum + v.poids_net, 0).toFixed(2)"/>
+                                                </td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Zone de détail en bas -->
+                <div class="row mt-3" t-if="state.selectedLineId">
+                    <div class="col-12">
+                        <div class="card border-primary">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">
+                                    <i class="fa fa-info-circle"/> Détails de la ligne sélectionnée
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <strong>Producteur:</strong>
+                                        <span class="ms-2" t-esc="getSelectedLine()?.producteur"/>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <strong>Réception:</strong>
+                                        <span class="ms-2" t-esc="getSelectedLine()?.reception_id"/>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <strong>Date:</strong>
+                                        <span class="ms-2" t-esc="getSelectedLine()?.date_reception"/>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <strong>Produit:</strong>
+                                        <span class="ms-2" t-esc="getSelectedLine()?.produit"/>
+                                    </div>
+                                </div>
+                                <div class="row mt-2">
+                                    <div class="col-md-3">
+                                        <div class="alert alert-info py-1 px-2 mb-0">
+                                            <strong>Qté Entrante:</strong>
+                                            <span class="float-end badge bg-info">
+                                                <t t-esc="getSelectedLine()?.qte_entrante || 0"/>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="alert alert-warning py-1 px-2 mb-0">
+                                            <strong>Qté Sortante:</strong>
+                                            <span class="float-end badge bg-warning">
+                                                <t t-esc="getSelectedLine()?.qte_sortante || 0"/>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div t-att-class="{
+                                            'alert': true,
+                                            'py-1': true,
+                                            'px-2': true,
+                                            'mb-0': true,
+                                            'alert-success': getSelectedLine()?.qte_restante === 0,
+                                            'alert-danger': getSelectedLine()?.qte_restante > 0
+                                        }">
+                                            <strong>Qté Restante:</strong>
+                                            <span t-att-class="{
+                                                'float-end': true,
+                                                'badge': true,
+                                                'bg-success': getSelectedLine()?.qte_restante === 0,
+                                                'bg-danger': getSelectedLine()?.qte_restante > 0
+                                            }">
+                                                <t t-esc="getSelectedLine()?.qte_restante || 0"/>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="alert alert-secondary py-1 px-2 mb-0">
+                                            <strong>Taux rotation:</strong>
+                                            <span class="float-end badge bg-secondary">
+                                                <t t-esc="calculateRotationRate()"/>%
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+
+</templates>

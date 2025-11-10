@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue formulaire héritée pour gecafle.vente -->
+    <record id="view_gecafle_vente_form_inherit_automation" model="ir.ui.view">
+        <field name="name">gecafle.vente.form.inherit.automation</field>
+        <field name="model">gecafle.vente</field>
+        <field name="inherit_id" ref="adi_gecafle_ventes.view_gecafle_vente_form"/>
+        <field name="arch" type="xml">
+            <!-- Ajout des champs d'automatisation (invisibles) -->
+            <xpath expr="//field[@name='state']" position="after">
+                <field name="invoice_automation_status" invisible="1"/>
+                <field name="invoice_automation_error" invisible="1"/>
+                <field name="invoice_auto_posted" invisible="1"/>
+            </xpath>
+
+            <!-- Ajout du bouton de réessai dans le header (conditionnel) -->
+            <xpath expr="//header" position="inside">
+                <button name="action_retry_invoice_posting"
+                        string="Réessayer Comptabilisation"
+                        type="object"
+                        class="btn-warning"
+                        icon="fa-refresh"
+                        invisible="invoice_automation_status != 'draft_fallback'"
+                        help="Réessayer de comptabiliser la facture créée en brouillon"/>
+            </xpath>
+
+            <!-- Ajout d'un groupe pour afficher le statut d'automatisation -->
+            <xpath expr="//sheet/group[1]" position="after">
+                <group string="Automatisation Facture"
+                       invisible="not invoice_automation_status or invoice_automation_status == 'pending'"
+                       class="alert alert-info">
+                    <group>
+                        <field name="invoice_automation_status"
+                               widget="badge"
+                               decoration-success="invoice_automation_status == 'success'"
+                               decoration-warning="invoice_automation_status == 'draft_fallback'"
+                               decoration-danger="invoice_automation_status == 'failed'"/>
+                        <field name="invoice_auto_posted" widget="boolean_toggle" readonly="1"/>
+                    </group>
+                    <group invisible="not invoice_automation_error">
+                        <field name="invoice_automation_error"
+                               readonly="1"
+                               widget="text"
+                               class="text-danger"/>
+                    </group>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Vue liste héritée pour afficher le statut -->
+    <record id="view_gecafle_vente_tree_inherit_automation" model="ir.ui.view">
+        <field name="name">gecafle.vente.tree.inherit.automation</field>
+        <field name="model">gecafle.vente</field>
+        <field name="inherit_id" ref="adi_gecafle_ventes.view_gecafle_vente_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='state']" position="after">
+                <field name="invoice_automation_status"
+                       optional="show"
+                       widget="badge"
+                       decoration-success="invoice_automation_status == 'success'"
+                       decoration-warning="invoice_automation_status == 'draft_fallback'"
+                       decoration-danger="invoice_automation_status == 'failed'"/>
+                <field name="invoice_auto_posted"
+                       optional="hide"
+                       widget="boolean"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Filtre de recherche -->
+    <record id="view_gecafle_vente_search_inherit_automation" model="ir.ui.view">
+        <field name="name">gecafle.vente.search.inherit.automation</field>
+        <field name="model">gecafle.vente</field>
+        <field name="inherit_id" ref="adi_gecafle_ventes.view_gecafle_vente_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='filter_valide']" position="after">
+                <separator/>
+                <filter string="Factures Auto-Comptabilisées"
+                        name="filter_auto_posted"
+                        domain="[('invoice_auto_posted', '=', True)]"/>
+                <filter string="Factures en Brouillon (Erreur)"
+                        name="filter_draft_fallback"
+                        domain="[('invoice_automation_status', '=', 'draft_fallback')]"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

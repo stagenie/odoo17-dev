@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<data noupdate="0">
+		<record id="account_analytic_plan_caisse" model="account.analytic.plan">
+			<field name="name">Caisse</field>
+			<field name="default_applicability">optional</field>
+		</record>
+
+		<record id="account_analytic_encais" model="account.analytic.account">
+			<field name="name">Encaissement</field>
+			<field name="plan_id" ref="account_analytic_plan_caisse"/>
+		</record>
+
+		<record id="account_analytic_decais" model="account.analytic.account">
+			<field name="name">Décaissement</field>
+			<field name="plan_id" ref="account_analytic_plan_caisse"/>
+		</record>
+        <record id="account_analytic_rec" model="account.analytic.account">
+			<field name="name">Recette</field>
+			<field name="plan_id" ref="account_analytic_plan_caisse"/>
+		</record>
+        <record id="account_analytic_dep" model="account.analytic.account">
+			<field name="name">Dépense</field>
+			<field name="plan_id" ref="account_analytic_plan_caisse"/>
+		</record>
+		<record id="account_analytic_avance" model="account.analytic.account">
+			<field name="name">Avance</field>
+			<field name="plan_id" ref="account_analytic_plan_caisse"/>
+		</record>
+		<record id="account_analytic_cancel_avance" model="account.analytic.account">
+			<field name="name">Annulation d'avance</field>
+			<field name="plan_id" ref="account_analytic_plan_caisse"/>
+		</record>
+		<record id="account_analytic_customer_paiement" model="account.analytic.account">
+			<field name="name">Paiement client</field>
+			<field name="plan_id" ref="account_analytic_plan_caisse"/>
+		</record>
+		<record id="account_analytic_customer_refund" model="account.analytic.account">
+			<field name="name">Remboursement client</field>
+			<field name="plan_id" ref="account_analytic_plan_caisse"/>
+		</record>
+		<record id="account_analytic_supplier_paiement" model="account.analytic.account">
+			<field name="name">Paiement Fournisseur</field>
+			<field name="plan_id" ref="account_analytic_plan_caisse"/>
+		</record>
+		<record id="account_analytic_supplier_refund" model="account.analytic.account">
+			<field name="name">Remboursement Fournisseur</field>
+			<field name="plan_id" ref="account_analytic_plan_caisse"/>
+		</record>
+	</data>
+</odoo>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Action serveur pour imprimer le bon de vente depuis la facture -->
+    <record id="action_print_bon_vente_from_invoice" model="ir.actions.server">
+        <field name="name">Imprimer Bon de Vente</field>
+        <field name="model_id" ref="account.model_account_move"/>
+        <field name="binding_model_id" ref="account.model_account_move"/>
+        <field name="state">code</field>
+        <field name="code">
+if records:
+    for record in records:
+        if record.gecafle_vente_id:
+            action = record.action_print_bon_vente()
+        </field>
+    </record>
+</odoo>

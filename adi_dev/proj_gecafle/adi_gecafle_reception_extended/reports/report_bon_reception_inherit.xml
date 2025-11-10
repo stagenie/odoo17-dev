@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- ========== BON DE RÉCEPTION NORMAL (FRANÇAIS) - AVEC TABLEAU ========== -->
+    <template id="report_bon_reception_template_inherit" inherit_id="adi_gecafle_receptions.report_bon_reception_template">
+
+        <!-- Remplacer toute la section du bas par un tableau structuré -->
+        <xpath expr="//div[@class='row mt-5']" position="replace">
+            <div class="row mt-5">
+                <div class="col-6">
+                    <!-- Informations utilisateur -->
+                    <table class="table table-sm">
+                        <tr>
+                            <td class="border-0">
+                                <strong>Utilisateur:</strong>
+                            </td>
+                            <td class="border-0">
+                                <span t-field="o.user_id.name"/>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div class="col-6">
+                    <!-- Tableau structuré pour les montants -->
+                    <table class="table table-sm">
+                        <tbody>
+                            <tr>
+                                <td class="text-right border-0">
+                                    <strong>Montant Avance:</strong>
+                                </td>
+                                <td class="text-right border-0">
+                                    <span t-field="o.avance_producteur"
+                                          t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                </td>
+                            </tr>
+
+                            <tr t-if="o.transport and o.transport > 0">
+                                <td class="text-right border-0">
+                                    <strong>Transport:</strong>
+                                </td>
+                                <td class="text-right border-0">
+                                    <span t-field="o.transport"
+                                          t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                </td>
+                            </tr>
+
+                            <tr t-if="o.montant_total_emballage_achete and o.montant_total_emballage_achete > 0">
+                                <td class="text-right border-0">
+                                    <strong>Emballages Achetés:</strong>
+                                </td>
+                                <td class="text-right border-0">
+                                    <span t-field="o.montant_total_emballage_achete"
+                                          t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- ========== BON DE RÉCEPTION DUPLICATA (FRANÇAIS) - AVEC TABLEAU ========== -->
+    <template id="report_bon_reception_duplicata_template_inherit" inherit_id="adi_gecafle_receptions.report_bon_reception_duplicata_template">
+
+        <!-- Remplacer toute la section du bas par un tableau structuré -->
+        <xpath expr="//div[@class='row mt-5']" position="replace">
+            <div class="row mt-5">
+                <div class="col-6">
+                    <!-- Informations utilisateur -->
+                    <table class="table table-sm">
+                        <tr>
+                            <td class="border-0">
+                                <strong>Utilisateur:</strong>
+                            </td>
+                            <td class="border-0">
+                                <span t-field="o.user_id.name"/>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div class="col-6">
+                    <!-- Tableau structuré pour les montants -->
+                    <table class="table table-sm">
+                        <tbody>
+                            <tr>
+                                <td class="text-right border-0">
+                                    <strong>Montant Avance:</strong>
+                                </td>
+                                <td class="text-right border-0">
+                                    <span t-field="o.avance_producteur"
+                                          t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                </td>
+                            </tr>
+
+                            <tr t-if="o.transport and o.transport > 0">
+                                <td class="text-right border-0">
+                                    <strong>Transport:</strong>
+                                </td>
+                                <td class="text-right border-0">
+                                    <span t-field="o.transport"
+                                          t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                </td>
+                            </tr>
+
+                            <tr t-if="o.montant_total_emballage_achete and o.montant_total_emballage_achete > 0">
+                                <td class="text-right border-0">
+                                    <strong>Emballages Achetés:</strong>
+                                </td>
+                                <td class="text-right border-0">
+                                    <span t-field="o.montant_total_emballage_achete"
+                                          t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </xpath>
+    </template>
+</odoo>

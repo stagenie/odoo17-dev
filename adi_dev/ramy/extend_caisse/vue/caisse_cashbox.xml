@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="account_bank_statement_cashbox_form_inherit_extend_caisse" model="ir.ui.view">
+        <field name="name">account.bank.statement.cashbox.view.form.inherit.extend_caisse</field>
+        <field name="model">account.bank.statement.cashbox</field>
+        <field name="inherit_id" ref="caisse.account_bank_statement_cashbox_form_inherit"/>
+        <field name="arch" type="xml">
+            <data>
+                <xpath expr="//label" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="//label[2]" position="attributes">
+                    <attribute name="string">Espéce</attribute>
+                </xpath>
+                <xpath expr="//field[@name='cashbox_lines_ids']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="//field[@name='cashbox_lines_coin_ids']/tree/field[@name='currency_id']" position="attributes">
+                    <attribute name="column_invisible">1</attribute>
+                </xpath>
+                <xpath expr="//field[@name='cashbox_lines_coin_ids']" position="after">
+                    <!-- Cheque -->
+                    <label for="cashbox_lines_cheque_ids" string="Chéque"/>
+                    <field name="cashbox_lines_cheque_ids">
+						<tree editable="bottom">
+							<field name="piece_num"/>
+							<field name="bank_id"/>
+							<field name="partner_id"/>
+							<field name="cheq_tpe_val" sum="Total Cheque"/>
+						</tree>
+					</field>
+
+                    <!-- TPE -->
+                    <label for="cashbox_lines_tpe_ids" string="TPE"/>
+                    <field name="cashbox_lines_tpe_ids">
+						<tree editable="bottom">
+							<field name="piece_num"/>
+							<field name="partner_id"/>
+							<field name="cheq_tpe_val" sum="Total TPE"/>
+						</tree>
+					</field>
+
+                    <!-- Total -->
+                    <div class="o_form_sheet">
+                        <div style="display: grid; grid-template-columns: auto 1fr; gap: 8px;">
+                            <label for="subtotal_espece">Espèces :</label>
+                            <field name="subtotal_espece" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+
+                            <label for="subtotal_cheque">Chèques :</label>
+                            <field name="subtotal_cheque" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+
+                            <label for="subtotal_tpe">TPE :</label>
+                            <field name="subtotal_tpe" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+
+                            <label for="total_general">Total général :</label>
+                            <field name="total_general" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                        </div>
+                    </div>
+                </xpath>
+
+            </data>
+        </field>
+    </record>
+
+</odoo>

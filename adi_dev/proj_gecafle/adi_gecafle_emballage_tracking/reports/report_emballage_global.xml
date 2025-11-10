@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Template Rapport Global CORRIGÉ -->
+    <template id="report_emballage_global_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="wizard">
+                <t t-set="report_data" t-value="wizard._prepare_report_data()"/>
+
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2 class="text-center">État Global des Emballages</h2>
+
+                        <div class="row mb-3">
+                            <div class="col-12 text-center">
+                                <strong>Période:</strong>
+                                Du <span t-field="wizard.date_debut"/>
+                                au <span t-field="wizard.date_fin"/>
+                            </div>
+                        </div>
+
+                        <!-- Statistiques globales -->
+                        <t t-if="report_data.get('stats')">
+                            <div class="row mb-4">
+                                <div class="col-4">
+                                    <div class="card">
+                                        <div class="card-body text-center">
+                                            <h5>Total Mouvements</h5>
+                                            <h3><t t-esc="report_data['stats'].get('total_mouvements', 0)"/></h3>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="card">
+                                        <div class="card-body text-center">
+                                            <h5>Total Entrées</h5>
+                                            <h3 class="text-success"><t t-esc="report_data['stats'].get('total_entrees', 0)"/></h3>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="card">
+                                        <div class="card-body text-center">
+                                            <h5>Total Sorties</h5>
+                                            <h3 class="text-danger"><t t-esc="report_data['stats'].get('total_sorties', 0)"/></h3>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+
+                        <!-- Tableau détaillé par emballage -->
+                        <h4>Détail par Emballage</h4>
+                        <table class="table table-sm table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Emballage</th>
+                                    <th class="text-center">Stock Initial</th>
+                                    <th class="text-center">Entrées</th>
+                                    <th class="text-center">Sorties</th>
+                                    <th class="text-center">Stock Final</th>
+                                    <th class="text-center">Chez Clients</th>
+                                    <th class="text-center">Chez Producteurs</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="report_data.get('emballages', [])" t-as="emb">
+                                    <tr>
+                                        <!-- CORRECTION : emballage est maintenant un string -->
+                                        <td><t t-esc="emb.get('emballage', '')"/></td>
+                                        <td class="text-center">
+                                            <t t-esc="emb.get('stock_initial', 0)"/>
+                                        </td>
+                                        <td class="text-center text-success">
+                                            <t t-esc="emb.get('entrees', 0)"/>
+                                        </td>
+                                        <td class="text-center text-danger">
+                                            <t t-esc="emb.get('sorties', 0)"/>
+                                        </td>
+                                        <td class="text-center">
+                                            <strong t-attf-class="#{emb.get('stock_disponible', 0) &lt; 0 and 'text-danger' or ''}">
+                                                <t t-esc="emb.get('stock_disponible', 0)"/>
+                                            </strong>
+                                        </td>
+                                        <td class="text-center">
+                                            <t t-esc="emb.get('stock_chez_clients', 0)"/>
+                                        </td>
+                                        <td class="text-center">
+                                            <t t-esc="emb.get('stock_chez_producteurs', 0)"/>
+                                        </td>
+                                    </tr>
+                                </t>
+
+                                <t t-if="not report_data.get('emballages')">
+                                    <tr>
+                                        <td colspan="7" class="text-center text-muted">
+                                            Aucune donnée trouvée pour cette période
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

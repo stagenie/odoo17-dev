@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue Tree pour le rapport détaillé -->
+    <record id="view_emballage_tracking_report_tree" model="ir.ui.view">
+        <field name="name">emballage.tracking.report.tree</field>
+        <field name="model">emballage.tracking.report</field>
+        <field name="arch" type="xml">
+            <tree string="Mouvements d'Emballages" create="false" edit="false" delete="false">
+                <field name="date"/>
+                <field name="partner_name"/>
+                <field name="partner_type"/>
+                <field name="emballage_name"/>
+                <field name="operation_type" widget="badge"
+                       decoration-success="operation_type == 'entree'"
+                       decoration-danger="operation_type == 'sortie'"/>
+                <field name="quantity" sum="Total"/>
+                <field name="reference"/>
+                <field name="source_document"/>
+                <field name="balance" optional="show"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vue Search -->
+    <record id="view_emballage_tracking_report_search" model="ir.ui.view">
+        <field name="name">emballage.tracking.report.search</field>
+        <field name="model">emballage.tracking.report</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="partner_name"/>
+                <field name="emballage_name"/>
+                <field name="reference"/>
+
+                <filter string="Producteurs" name="producteur"
+                        domain="[('partner_type','=','producteur')]"/>
+                <filter string="Clients" name="client"
+                        domain="[('partner_type','=','client')]"/>
+                <separator/>
+                <filter string="Entrées" name="entrees"
+                        domain="[('operation_type','=','entree')]"/>
+                <filter string="Sorties" name="sorties"
+                        domain="[('operation_type','=','sortie')]"/>
+                <separator/>
+                <filter string="Aujourd'hui" name="today"
+                        domain="[('date','=',context_today())]"/>
+                <filter string="Cette semaine" name="this_week"
+                        domain="[('date','>=', (context_today() - relativedelta(weeks=1)).strftime('%Y-%m-%d'))]"/>
+                <filter string="Ce mois" name="this_month"
+                        domain="[('date','>=', (context_today() + relativedelta(day=1)).strftime('%Y-%m-%d'))]"/>
+
+                <group expand="0" string="Grouper par">
+                    <filter string="Date" name="group_date" context="{'group_by':'date:day'}"/>
+                    <filter string="Partenaire" name="group_partner" context="{'group_by':'partner_name'}"/>
+                    <filter string="Type Partenaire" name="group_partner_type" context="{'group_by':'partner_type'}"/>
+                    <filter string="Emballage" name="group_emballage" context="{'group_by':'emballage_name'}"/>
+                    <filter string="Type Opération" name="group_operation" context="{'group_by':'operation_type'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Vue Pivot -->
+    <record id="view_emballage_tracking_report_pivot" model="ir.ui.view">
+        <field name="name">emballage.tracking.report.pivot</field>
+        <field name="model">emballage.tracking.report</field>
+        <field name="arch" type="xml">
+            <pivot string="Analyse des Mouvements" disable_linking="true">
+                <field name="partner_type" type="row"/>
+                <field name="emballage_name" type="row"/>
+                <field name="operation_type" type="col"/>
+                <field name="quantity" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Vue Graph -->
+    <record id="view_emballage_tracking_report_graph" model="ir.ui.view">
+        <field name="name">emballage.tracking.report.graph</field>
+        <field name="model">emballage.tracking.report</field>
+        <field name="arch" type="xml">
+            <graph string="Évolution des Mouvements" type="line">
+                <field name="date" interval="day"/>
+                <field name="quantity" type="measure"/>
+                <field name="operation_type" type="row"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Actions -->
+    <record id="action_emballage_tracking_report" model="ir.actions.act_window">
+        <field name="name">Mouvements d'Emballages</field>
+        <field name="res_model">emballage.tracking.report</field>
+        <field name="view_mode">tree,pivot,graph</field>
+        <field name="search_view_id" ref="view_emballage_tracking_report_search"/>
+        <field name="context">{'search_default_this_month': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_empty_folder">
+                Aucun mouvement d'emballage trouvé
+            </p>
+            <p>
+                Ce rapport affiche tous les mouvements d'emballages (entrées/sorties)
+                avec les producteurs et les clients.
+            </p>
+        </field>
+    </record>
+
+    <!-- Vue Tree pour le rapport de synthèse -->
+    <record id="view_emballage_tracking_summary_tree" model="ir.ui.view">
+        <field name="name">emballage.tracking.summary.report.tree</field>
+        <field name="model">emballage.tracking.summary.report</field>
+        <field name="arch" type="xml">
+            <tree string="Synthèse des Emballages" create="false" edit="false" delete="false">
+                <field name="partner_name"/>
+                <field name="partner_type" widget="badge"/>
+                <field name="emballage_name"/>
+                <field name="total_entrees" sum="Total"/>
+                <field name="total_sorties" sum="Total"/>
+                <field name="balance" sum="Total"
+                       decoration-success="balance > 0"
+                       decoration-danger="balance < 0"/>
+                <field name="last_movement_date"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vue Search pour la synthèse -->
+    <record id="view_emballage_tracking_summary_search" model="ir.ui.view">
+        <field name="name">emballage.tracking.summary.report.search</field>
+        <field name="model">emballage.tracking.summary.report</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="partner_name"/>
+                <field name="emballage_name"/>
+
+                <filter string="Solde positif" name="positive"
+                        domain="[('balance','>',0)]"/>
+                <filter string="Solde négatif" name="negative"
+                        domain="[('balance','<',0)]"/>
+                <separator/>
+                <filter string="Producteurs" name="producteur"
+                        domain="[('partner_type','=','producteur')]"/>
+                <filter string="Clients" name="client"
+                        domain="[('partner_type','=','client')]"/>
+
+                <group expand="0" string="Grouper par">
+                    <filter string="Type Partenaire" name="group_type"
+                            context="{'group_by':'partner_type'}"/>
+                    <filter string="Emballage" name="group_emballage"
+                            context="{'group_by':'emballage_name'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action pour la synthèse -->
+    <record id="action_emballage_tracking_summary" model="ir.actions.act_window">
+        <field name="name">Synthèse des Emballages</field>
+        <field name="res_model">emballage.tracking.summary.report</field>
+        <field name="view_mode">tree,pivot</field>
+        <field name="search_view_id" ref="view_emballage_tracking_summary_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_empty_folder">
+                Aucun solde d'emballage
+            </p>
+            <p>
+                Ce rapport affiche le solde des emballages par partenaire.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menus -->
+    <menuitem id="menu_emballage_tracking"
+              name="Tracking Emballages"
+              parent="adi_gecafle_ventes.menu_adi_gecafle_ventes"
+              sequence="70"/>
+
+    <menuitem id="menu_emballage_tracking_movements"
+              name="Mouvements"
+              parent="menu_emballage_tracking"
+              action="action_emballage_tracking_report"
+              sequence="10"/>
+
+    <menuitem id="menu_emballage_tracking_summary"
+              name="Synthèse"
+              parent="menu_emballage_tracking"
+              action="action_emballage_tracking_summary"
+              sequence="20"/>
+</odoo>

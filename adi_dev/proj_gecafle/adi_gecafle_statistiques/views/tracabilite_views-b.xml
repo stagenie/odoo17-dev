@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue formulaire Mouvement de Stock Journalier -->
+    <record id="view_gecafle_tracabilite_form" model="ir.ui.view">
+        <field name="name">gecafle.tracabilite.produits.form</field>
+        <field name="model">gecafle.tracabilite.produits</field>
+        <field name="arch" type="xml">
+            <form string="Mouvement de Stock Journalier">
+                <header>
+                    <button name="action_calculer"
+                            string="Calculer"
+                            type="object"
+                            class="btn-primary"
+                            icon="fa-calculator"
+                            invisible="state == 'calcule'"/>
+
+                    <button name="action_reset"
+                            string="Recalculer"
+                            type="object"
+                            invisible="state == 'brouillon'"/>
+
+                    <button name="%(action_report_tracabilite)d"
+                            string="Imprimer"
+                            type="action"
+                            class="btn-info"
+                            invisible="state == 'brouillon'"/>
+
+                    <field name="state" widget="statusbar"/>
+                </header>
+
+                <sheet>
+                    <div class="oe_title">
+                        <h1>Mouvement de Stock Journalier</h1>
+                        <field name="name" readonly="1" class="oe_inline"/>
+                    </div>
+
+                    <!-- Filtres de période -->
+                    <group col="4">
+                        <field name="date_debut" required="1"/>
+                        <field name="date_fin" required="1"/>
+                        <field name="producteur_id" options="{'no_create': True}"/>
+                        <field name="produit_id" options="{'no_create': True}"/>
+                    </group>
+
+                    <!-- Section principale avec réceptions et ventes -->
+                    <group string="Mouvements" invisible="state == 'brouillon'">
+                        <notebook>
+                            <!-- Page combinée Réceptions/Ventes -->
+                            <page string="Vue Journalière">
+                                <div class="row">
+                                    <!-- Colonne Réceptions -->
+                                    <div class="col-md-6">
+                                        <separator string="📥 Réceptions" class="bg-primary text-white p-2"/>
+                                        <field name="reception_line_ids" nolabel="1" readonly="1">
+                                            <tree create="false" edit="false" delete="false"
+                                                  decoration-success="qte_entrante > 100"
+                                                  decoration-warning="qte_entrante > 50 and qte_entrante &lt;= 100"
+                                                  limit="200">
+                                                <field name="numero_reception" string="N° Réception" width="80"/>
+                                                <field name="date" string="Date" widget="datetime" width="120"/>
+                                                <field name="producteur_id" string="Producteur"/>
+                                                <field name="produit_id" string="Désignation"/>
+                                                <field name="qualite_id" string="Qualité" optional="show"/>
+                                                <field name="type_colis_id" string="Type Colis"/>
+                                                <field name="qte_entrante" string="Nbre colis" sum="Total"/>
+                                            </tree>
+                                        </field>
+                                    </div>
+
+                                    <!-- Colonne Ventes -->
+                                    <div class="col-md-6">
+                                        <separator string="📤 Ventes" class="bg-success text-white p-2"/>
+                                        <field name="vente_line_ids" nolabel="1" readonly="1">
+                                            <tree create="false" edit="false" delete="false"
+                                                  decoration-info="qte_sortante > 0"
+                                                  limit="200">
+                                                <field name="date" string="Date" widget="datetime" width="120"/>
+                                                <field name="numero_vente" string="N° Souche" width="80"/>
+                                                <field name="client_id" string="Client"/>
+                                                <field name="produit_id" string="Désignation"/>
+                                                <field name="qualite_id" string="Qualité" optional="show"/>
+                                                <field name="type_colis_id" string="Type Colis"/>
+                                                <field name="qte_sortante" string="Nbre colis" sum="Total"/>
+                                            </tree>
+                                        </field>
+                                    </div>
+                                </div>
+
+                                <!-- Zone de synthèse en bas -->
+                                <group class="mt-4">
+                                    <group string="Synthèse" col="6">
+                                        <field name="total_entrant" widget="integer"/>
+                                        <field name="total_sortant" widget="integer"/>
+                                        <field name="total_restant" widget="integer"
+                                               decoration-success="total_restant == 0"
+                                               decoration-danger="total_restant != 0"/>
+                                    </group>
+                                </group>
+                            </page>
+
+                            <!-- Page Détails par produit -->
+                            <page string="Analyse par Produit" invisible="state == 'brouillon'">
+                                <group string="Statistiques par produit">
+                                    <!-- Ici on peut ajouter un pivot ou graph -->
+                                </group>
+                            </page>
+                        </notebook>
+                    </group>
+
+                    <!-- Zone d'information du bas (comme dans l'image) -->
+                    <group col="4" invisible="state == 'brouillon'">
+                        <separator string="Informations de synthèse" colspan="4"/>
+                        <group col="2">
+                            <field name="producteur_id" readonly="1" invisible="not producteur_id"/>
+                            <field name="produit_id" readonly="1" invisible="not produit_id"/>
+                        </group>
+                        <group col="2">
+                            <label for="total_entrant" string="Qté Entrante"/>
+                            <div>
+                                <field name="total_entrant" class="oe_inline"/>
+                                <span> colis</span>
+                            </div>
+                            <label for="total_sortant" string="Qté Sortante"/>
+                            <div>
+                                <field name="total_sortant" class="oe_inline"/>
+                                <span> colis</span>
+                            </div>
+                            <label for="total_restant" string="Qté restante"/>
+                            <div>
+                                <field name="total_restant" class="oe_inline"
+                                       style="font-weight: bold; color: green;"/>
+                                <span> colis</span>
+                            </div>
+                        </group>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vue Liste -->
+    <record id="view_gecafle_tracabilite_tree" model="ir.ui.view">
+        <field name="name">gecafle.tracabilite.produits.tree</field>
+        <field name="model">gecafle.tracabilite.produits</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="date_debut"/>
+                <field name="date_fin"/>
+                <field name="producteur_id" optional="show"/>
+                <field name="produit_id" optional="show"/>
+                <field name="total_entrant" sum="Total"/>
+                <field name="total_sortant" sum="Total"/>
+                <field name="total_restant" sum="Total"/>
+                <field name="state" widget="badge"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vue Recherche -->
+    <record id="view_gecafle_tracabilite_search" model="ir.ui.view">
+        <field name="name">gecafle.tracabilite.produits.search</field>
+        <field name="model">gecafle.tracabilite.produits</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="producteur_id"/>
+                <field name="produit_id"/>
+                <filter string="Calculé" name="calcule" domain="[('state','=','calcule')]"/>
+                <filter string="Brouillon" name="brouillon" domain="[('state','=','brouillon')]"/>
+                <separator/>
+                <filter string="Cette semaine" name="this_week"
+                        domain="[('date_debut','>=', (context_today() - datetime.timedelta(days=7)).strftime('%Y-%m-%d'))]"/>
+                <filter string="Ce mois" name="this_month"
+                        domain="[('date_debut','>=', (context_today().replace(day=1)).strftime('%Y-%m-%d'))]"/>
+                <group expand="0" string="Grouper par">
+                    <filter string="Producteur" name="group_producteur" context="{'group_by':'producteur_id'}"/>
+                    <filter string="Produit" name="group_produit" context="{'group_by':'produit_id'}"/>
+                    <filter string="État" name="group_state" context="{'group_by':'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_gecafle_tracabilite" model="ir.actions.act_window">
+        <field name="name">Mouvement de Stock Journalier</field>
+        <field name="res_model">gecafle.tracabilite.produits</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créer un nouveau mouvement de stock journalier
+            </p>
+            <p>
+                Ce module permet de suivre les entrées et sorties de stock
+                pour une période donnée.
+            </p>
+        </field>
+    </record>
+</odoo>

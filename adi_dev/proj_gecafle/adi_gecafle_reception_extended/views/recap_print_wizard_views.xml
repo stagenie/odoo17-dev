@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue formulaire du wizard -->
+    <record id="view_gecafle_recap_print_wizard_form" model="ir.ui.view">
+        <field name="name">gecafle.recap.print.wizard.form</field>
+        <field name="model">gecafle.recap.print.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Options d'impression du récapitulatif">
+                <sheet>
+                    <group>
+                        <field name="recap_id" invisible="1"/>
+                    </group>
+
+                    <notebook>
+                        <page string="Options de tri et regroupement">
+                            <group>
+                                <group string="Tri">
+                                    <field name="sort_by" widget="radio"/>
+                                </group>
+                                <group string="Regroupement">
+                                    <field name="group_by" widget="radio"/>
+                                    <field name="show_subtotals"
+                                           invisible="group_by == 'none'"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <page string="Options d'affichage">
+                            <group>
+                                <field name="report_type" widget="radio"/>
+                                <field name="show_commission_pct"/>
+                                <field name="show_details"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+
+                <footer>
+                    <button name="action_print_report"
+                            string="Imprimer"
+                            type="object"
+                            class="btn-primary"/>
+                    <button name="action_preview"
+                            string="Prévisualiser"
+                            type="object"
+                            class="btn-secondary"/>
+                    <button string="Annuler"
+                            class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action pour ouvrir le wizard -->
+    <record id="action_open_recap_print_wizard" model="ir.actions.act_window">
+        <field name="name">Options d'impression</field>
+        <field name="res_model">gecafle.recap.print.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{'default_recap_id': active_id}</field>
+    </record>
+</odoo>
