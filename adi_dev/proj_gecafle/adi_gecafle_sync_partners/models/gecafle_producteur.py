@@ -147,3 +147,25 @@ class GecafleProducteur(models.Model):
             'res_id': self.res_partner_id.id,
             'target': 'current',
         }
+
+    def action_view_partner_ledger(self):
+        """Ouvre le wizard du Partner Ledger pour le partenaire lié"""
+        self.ensure_one()
+        if not self.res_partner_id:
+            raise UserError(_("Aucun fournisseur Odoo n'est lié à ce producteur."))
+
+        return {
+            'name': _('Partner Ledger'),
+            'type': 'ir.actions.act_window',
+            'view_mode': 'form',
+            'res_model': 'account.report.partner.ledger',
+            'view_id': self.env.ref('accounting_pdf_reports.account_report_partner_ledger_view').id,
+            'target': 'new',
+            'context': {
+                'default_partner_ids': [(6, 0, [self.res_partner_id.id])],
+                'default_target_move': 'posted',
+                'default_result_selection': 'supplier',
+                'default_reconciled': True,
+                'hide_partner': True,
+            }
+        }

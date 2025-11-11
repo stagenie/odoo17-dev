@@ -42,6 +42,18 @@
                         <span class="o_stat_text">GECAFLE</span>
                     </div>
                 </button>
+
+                <!-- Bouton Partner Ledger -->
+                <button name="action_view_partner_ledger"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-book"
+                        groups="account.group_account_invoice">
+                    <div class="o_stat_info">
+                        <span class="o_stat_text">Partner</span>
+                        <span class="o_stat_text">Ledger</span>
+                    </div>
+                </button>
             </xpath>
 
             <!-- Onglet GECAFLE dans le notebook -->
