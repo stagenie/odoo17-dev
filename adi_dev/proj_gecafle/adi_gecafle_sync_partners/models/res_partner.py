@@ -297,3 +297,23 @@ class ResPartner(models.Model):
             'res_id': self.gecafle_producteur_id.id,
             'target': 'current',
         }
+
+    def action_view_partner_ledger(self):
+        """Ouvre le wizard du Partner Ledger pour ce partenaire"""
+        self.ensure_one()
+
+        return {
+            'name': _('Partner Ledger'),
+            'type': 'ir.actions.act_window',
+            'view_mode': 'form',
+            'res_model': 'account.report.partner.ledger',
+            'view_id': self.env.ref('accounting_pdf_reports.account_report_partner_ledger_view').id,
+            'target': 'new',
+            'context': {
+                'default_partner_ids': [(6, 0, [self.id])],
+                'default_target_move': 'posted',
+                'default_result_selection': 'customer_supplier',
+                'default_reconciled': True,
+                'hide_partner': True,
+            }
+        }

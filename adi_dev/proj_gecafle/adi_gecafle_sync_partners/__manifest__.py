@@ -23,6 +23,8 @@
         'adi_gecafle_ventes',
         'adi_gecafle_base_stock',
         'contacts',
+        'account',
+        'accounting_pdf_reports',
     ],
     'data': [
         'security/ir.model.access.csv',
