@@ -184,7 +184,7 @@
                        decoration-success="credit_note_payment_state == 'paid'"
                        decoration-warning="credit_note_payment_state == 'partial'"
                        decoration-danger="credit_note_payment_state in ['not_paid', False]"/>
-                <field name="est_imprimee" optional="show"/>
+                <field name="est_imprimee" optional="hide"/>
                  <field name="credit_note_id" optional="hide" invisible="1"/>
             </tree>
         </field>

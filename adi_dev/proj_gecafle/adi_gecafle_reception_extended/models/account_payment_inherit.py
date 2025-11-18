@@ -38,20 +38,5 @@ class AccountPayment(models.Model):
             else:
                 payment.type_de_paiement = 'standard'
 
-    def write(self, vals):
-        """Synchronise les montants avec les champs de la réception"""
-        res = super(AccountPayment, self).write(vals)
-
-        for payment in self:
-            if payment.reception_id and payment.state == 'posted':
-                # Synchronisation selon le type
-                if payment.is_advance_producer:
-                    payment.reception_id.avance_producteur = payment.amount
-                elif payment.is_advance_transport:
-                    payment.reception_id.transport = payment.amount  # Utilise le champ 'transport'
-                elif payment.is_payment_emballage:
-                    payment.reception_id.paiement_emballage = payment.amount
-
-                payment.reception_id.invalidate_recordset()
-
-        return res
+    # Note : Les méthodes write() et unlink() sont gérées dans adi_gecafle_receptions/models/account_payment.py
+    # pour gérer tous les types de paiements (avance, transport, emballage)

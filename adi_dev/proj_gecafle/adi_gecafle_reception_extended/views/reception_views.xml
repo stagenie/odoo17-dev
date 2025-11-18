@@ -7,19 +7,22 @@
         <field name="inherit_id" ref="adi_gecafle_receptions.view_gecafle_reception_form"/>
         <field name="arch" type="xml">
 
-            <xpath expr="//field[@name='transport']" position="after">
-                <field name="avance_transport"
+            <!-- Ajouter les champs transport et emballage après avance_producteur -->
+            <xpath expr="//field[@name='avance_producteur']" position="after">
+                <field name="transport"
                        readonly="1"
                        widget="monetary"
-                       invisible="not avance_transport"/>
+                       help="Frais de transport enregistrés via paiement validé"/>
                 <field name="paiement_emballage"
                        readonly="1"
                        widget="monetary"
-                       invisible="not paiement_emballage"/>
+                       help="Montant paiement emballage enregistré via paiement validé"/>
+                <field name="montant_total_emballage_achete" invisible="1"/>
             </xpath>
 
             <!-- Ajouter le bouton "Enregistrer Transport" après le bouton "Enregistrer Avance" -->
             <xpath expr="//button[@name='action_create_advance_payment']" position="after">
+                <!-- Bouton Transport (disponible dès le brouillon) -->
                 <button name="action_create_advance_transport_payment"
                         string="Enregistrer Transport"
                         type="object"
@@ -27,18 +30,15 @@
                         icon="fa-truck"
                         invisible="not id"
                         help="Ouvrir le formulaire de paiement pour enregistrer les frais de transport. Disponible une fois la réception créée."/>
+
                 <!-- Bouton Paiement Emballage -->
                 <button name="action_create_emballage_payment"
-                        string="Paiement Emballage"
+                        string="💰 Paiement Emballage"
                         type="object"
                         class="btn-success"
                         icon="fa-cube"
-                        invisible="state != 'confirmee' or montant_total_emballage_achete == 0"
-                        help="Enregistrer le paiement des emballages achetés"/>
-                <field name="paiement_emballage"
-                       readonly="1"
-                       widget="monetary"
-                       invisible="paiement_emballage == 0"/>
+                        invisible="montant_total_emballage_achete == 0"
+                        help="Enregistrer le paiement des emballages achetés au producteur"/>
 
                 <!-- Bouton Bon Emballage FR -->
                 <button name="action_print_emballages_fr"
@@ -49,7 +49,6 @@
                         invisible="not details_emballage_reception_ids or state != 'confirmee'"
                         help="Imprimer le bon d'emballages en français"/>
 
-
                 <!-- Bouton Bon Emballage AR -->
                 <button name="action_print_emballages_ar"
                         string="وصل التغليف"
@@ -58,14 +57,6 @@
                         icon="fa-box"
                         invisible="not details_emballage_reception_ids or state != 'confirmee'"
                         help="طباعة وصل التغليف بالعربية"/>
-            </xpath>
-
-            <!-- Ajouter le champ transport après avance_producteur -->
-            <xpath expr="//field[@name='avance_producteur']" position="after">
-                <field name="transport"
-                       widget="monetary"
-                       help="Frais de transport à déduire de la facture"/>
-                <field name="montant_total_emballage_achete" invisible="1"/>
             </xpath>
 
             <!-- Extension de la vue tree des détails emballage -->

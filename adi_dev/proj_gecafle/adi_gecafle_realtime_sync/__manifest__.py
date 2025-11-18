@@ -7,12 +7,13 @@
     'description': """
         Module de synchronisation temps réel pour GeCaFle
         ==================================================
-        
+
         Fonctionnalités:
         * Synchronisation automatique des réceptions vers les ventes
         * Rafraîchissement automatique sans F5
         * Communication multi-onglets en temps réel
-        * Utilisation du système de Bus Odoo (WebSocket/Longpolling)
+        * Utilisation d'un système de polling léger et fiable
+        * Aucune notification intrusive - rafraîchissement silencieux
     """,
     "author": "ADICOPS",
     "email": 'info@adicops.com',
@@ -21,7 +22,6 @@
     
     'depends': [
         'base',
-        'bus',
         'adi_gecafle_receptions',
         'adi_gecafle_ventes',
     ],
@@ -34,6 +34,7 @@
         'web.assets_backend': [
             'adi_gecafle_realtime_sync/static/src/js/realtime_sync_service.js',
             'adi_gecafle_realtime_sync/static/src/js/reception_realtime.js',
+            'adi_gecafle_realtime_sync/static/src/js/many2one_refresh.js',
         ],
     },
     

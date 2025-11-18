@@ -10,8 +10,10 @@ class GecafleReceptionExtended(models.Model):
     transport = fields.Monetary(
         string="Transport",
         currency_field='currency_id',
+        compute='_compute_transport_and_emballage_amounts',
+        store=True,
         readonly=True,
-        help="Ce champ est automatiquement mis à jour quand un paiement de frais de transport validé est lié à cette réception. Pour modifier, utilisez le bouton 'Enregistrer Transport' ou le smart button 'Paiements'."
+        help="Ce champ est automatiquement calculé depuis les paiements de transport validés liés à cette réception."
     )
 
     # Montant total des emballages achetés
@@ -32,6 +34,28 @@ class GecafleReceptionExtended(models.Model):
                 for line in record.details_emballage_reception_ids
                 if line.is_achete
             )
+
+    @api.depends('payment_ids', 'payment_ids.move_id.state', 'payment_ids.amount',
+                 'payment_ids.is_advance_transport', 'payment_ids.is_payment_emballage')
+    def _compute_transport_and_emballage_amounts(self):
+        """Calcule les montants de transport et emballage depuis les paiements validés"""
+        for record in self:
+            # Calculer transport
+            total_transport = sum(
+                payment.amount
+                for payment in record.payment_ids
+                if payment.is_advance_transport and payment.move_id and payment.move_id.state == 'posted'
+            )
+            record.transport = total_transport
+
+            # Calculer paiement emballage
+            total_emballage = sum(
+                payment.amount
+                for payment in record.payment_ids
+                if hasattr(payment, 'is_payment_emballage') and payment.is_payment_emballage
+                and payment.move_id and payment.move_id.state == 'posted'
+            )
+            record.paiement_emballage = total_emballage
 
     def action_confirm(self):
         """
@@ -175,14 +199,15 @@ class GecafleReceptionExtended(models.Model):
         return self.env.ref('adi_gecafle_reception_extended.action_report_emballages_reception_ar').report_action(
             self)
 
-    """ Paiement Emballage Acheté - Non implémenté pour l'instant"""
+    """ Paiement Emballage Acheté"""
     # AJOUT : Nouveau champ pour paiement emballage
     paiement_emballage = fields.Monetary(
         string="Paiement Emballage",
         currency_field='currency_id',
+        compute='_compute_transport_and_emballage_amounts',
+        store=True,
         readonly=True,
-        default=lambda self: self.montant_total_emballage_achete,
-        help="Montant du paiement emballage validé. Par défaut égal au montant total des emballages achetés."
+        help="Montant du paiement emballage validé. Calculé automatiquement depuis les paiements validés."
     )
 
     # Méthode pour créer un paiement emballage

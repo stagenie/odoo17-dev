@@ -136,7 +136,7 @@ class AccountMove(models.Model):
         self.ensure_one()
         if not self.gecafle_vente_id:
             raise UserError(_("Cette facture n'est pas liée à un bon de vente."))
-        self.gecafle_vente_id.est_imprimee = True
+
 
         return self.env.ref('adi_gecafle_ventes.action_report_gecafle_bon_vente').report_action(self.gecafle_vente_id)
 
@@ -147,9 +147,7 @@ class AccountMove(models.Model):
             raise UserError(_("Cette facture n'est pas liée à un bon de vente."))
 
         # Vérifier que le bon de vente a déjà été imprimé
-        if not self.gecafle_vente_id.est_imprimee:
-            raise UserError(
-                _("Le bon de vente original n'a pas encore été imprimé. Veuillez d'abord imprimer l'original."))
+
 
         # Utiliser l'action de duplicata
         return self.env.ref('adi_gecafle_ventes.action_report_gecafle_bon_vente_duplicata').with_context(

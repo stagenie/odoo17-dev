@@ -324,7 +324,7 @@ class GecafleAvoirClient(models.Model):
     def action_print_avoir(self):
         """Imprime l'avoir client"""
         self.ensure_one()
-        self.est_imprimee = True
+
         return self.env.ref('adi_gecafle_ventes.action_report_avoir_client').report_action(self)
 
     def action_create_credit_note(self):

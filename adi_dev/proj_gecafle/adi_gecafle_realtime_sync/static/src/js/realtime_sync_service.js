@@ -5,148 +5,137 @@ import { browser } from "@web/core/browser/browser";
 
 /**
  * Service de synchronisation temps réel pour GeCaFle
- * Écoute les notifications du bus et rafraîchit les vues automatiquement
+ * Utilise un système de polling simple pour vérifier les changements
+ * Pas de bus, pas de notifications - juste un rafraîchissement silencieux
  */
 export const realtimeSyncService = {
-    dependencies: ["bus_service", "notification", "action"],
+    dependencies: ["rpc", "action"],
 
-    start(env, { bus_service, notification, action }) {
-        console.log("[GeCaFle] Service de synchronisation temps réel démarré");
+    start(env, { rpc, action }) {
+        console.log("[GeCaFle Sync] Service démarré");
 
-        let receptionListeners = new Set();
-        let venteViews = new Set();
-
-        // S'abonner au canal de réceptions
-        bus_service.subscribe("gecafle_reception_sync", (message) => {
-            console.log("[GeCaFle] Notification reçue:", message);
-            handleReceptionChange(message);
-        });
-
-        // S'abonner aux notifications de type 'gecafle.reception.change'
-        bus_service.addEventListener("notification", ({ detail: notifications }) => {
-            for (const notification of notifications) {
-                if (notification.type === "gecafle.reception.change") {
-                    console.log("[GeCaFle] Changement de réception détecté:", notification.payload);
-                    handleReceptionChange(notification.payload);
-                }
-            }
-        });
+        let lastKnownTimestamp = null;
+        let pollingInterval = null;
+        let isPolling = false;
 
         /**
-         * Gère les changements de réception
+         * Vérifie si des réceptions ont changé
          */
-        function handleReceptionChange(message) {
-            const operation = message.operation;
-            const receptionId = message.reception_id;
+        async function checkForChanges() {
+            if (isPolling) return; // Éviter les appels concurrents
 
-            // Afficher une notification visuelle
-            let notifMessage = "";
-            if (operation === "create") {
-                notifMessage = `Nouvelle réception créée: ${message.reception_name || receptionId}`;
-            } else if (operation === "update") {
-                notifMessage = `Réception mise à jour: ${message.reception_name || receptionId}`;
-            } else if (operation === "delete") {
-                notifMessage = `Réception(s) supprimée(s)`;
-            }
-
-            if (notifMessage) {
-                notification.add(notifMessage, {
-                    type: "info",
-                    title: "Synchronisation GeCaFle",
-                    sticky: false,
+            isPolling = true;
+            try {
+                // Appel RPC pour obtenir le timestamp de la dernière modification
+                const currentTimestamp = await rpc('/web/dataset/call_kw/gecafle.reception/get_last_change_timestamp', {
+                    model: 'gecafle.reception',
+                    method: 'get_last_change_timestamp',
+                    args: [[]],
+                    kwargs: {}
                 });
-                
-                // Si on est dans une vue de vente en mode formulaire, 
-                // afficher un message supplémentaire
-                if (env.services.action && env.services.action.currentController) {
-                    const controller = env.services.action.currentController;
-                    if (controller.props && controller.props.resModel === 'gecafle.vente') {
-                        notification.add(
-                            "💡 Astuce: Rechargez le champ 'Réception' pour voir les nouvelles options disponibles",
-                            {
-                                type: "info",
-                                title: "GeCaFle",
-                                sticky: true,  // Reste visible
-                            }
-                        );
-                    }
+
+                // Si c'est la première vérification, juste sauvegarder le timestamp
+                if (lastKnownTimestamp === null) {
+                    lastKnownTimestamp = currentTimestamp;
+                    console.log("[GeCaFle Sync] Timestamp initial:", currentTimestamp);
+                    return;
                 }
+
+                // Si le timestamp a changé, rafraîchir les vues
+                if (currentTimestamp !== lastKnownTimestamp) {
+                    console.log("[GeCaFle Sync] Changement détecté! Rafraîchissement...");
+                    lastKnownTimestamp = currentTimestamp;
+                    await refreshVenteViews();
+                }
+
+            } catch (error) {
+                console.error("[GeCaFle Sync] Erreur lors de la vérification:", error);
+            } finally {
+                isPolling = false;
             }
-
-            // Rafraîchir les vues de vente
-            refreshVenteViews();
-
-            // Notifier les listeners enregistrés
-            receptionListeners.forEach((listener) => {
-                try {
-                    listener(message);
-                } catch (error) {
-                    console.error("[GeCaFle] Erreur dans le listener:", error);
-                }
-            });
         }
 
         /**
-         * Rafraîchit les vues de vente ouvertes
+         * Rafraîchit les vues de vente ouvertes (silencieusement)
          */
         async function refreshVenteViews() {
-            console.log("[GeCaFle] Rafraîchissement des vues de vente...");
-            
-            // Déclencher un événement personnalisé pour rafraîchir les vues
-            const event = new CustomEvent("gecafle_reception_updated", {
-                detail: { timestamp: Date.now() },
-            });
-            window.dispatchEvent(event);
-
-            // Forcer le rechargement de l'action courante pour recalculer les domaines Many2one
             try {
+                // Déclencher un événement personnalisé
+                const event = new CustomEvent("gecafle_reception_updated", {
+                    detail: { timestamp: Date.now() }
+                });
+                window.dispatchEvent(event);
+
+                // Essayer de rafraîchir la vue active si c'est une vente
                 const actionService = env.services.action;
                 if (actionService && actionService.currentController) {
                     const controller = actionService.currentController;
-                    
-                    // Vérifier si c'est une vue de vente
-                    if (controller.props && 
-                        (controller.props.resModel === 'gecafle.vente' || 
+
+                    if (controller.props &&
+                        (controller.props.resModel === 'gecafle.vente' ||
                          controller.props.resModel === 'gecafle.details_ventes')) {
-                        
-                        console.log("[GeCaFle] Vue de vente détectée, rechargement complet pour recalculer les domaines");
-                        
-                        // Méthode 1: Recharger le model
-                        if (controller.model && controller.model.load) {
-                            await controller.model.load();
-                        }
-                        
-                        // Méthode 2: Forcer le reload de l'action complète (recalcule les domaines)
-                        if (actionService.doAction) {
-                            const currentAction = controller.props.context;
-                            // On peut déclencher un soft reload ici si nécessaire
+
+                        console.log("[GeCaFle Sync] Vue de vente détectée, rafraîchissement silencieux");
+
+                        // Rafraîchir le modèle
+                        if (controller.model) {
+                            if (controller.model.load && typeof controller.model.load === 'function') {
+                                await controller.model.load();
+                            } else if (controller.model.root && controller.model.root.load) {
+                                await controller.model.root.load();
+                            }
                         }
                     }
                 }
             } catch (error) {
-                console.error("[GeCaFle] Erreur lors du rafraîchissement:", error);
+                console.error("[GeCaFle Sync] Erreur lors du rafraîchissement:", error);
             }
         }
 
         /**
-         * Enregistre un listener pour les changements de réception
+         * Démarre le polling
          */
-        function addReceptionListener(callback) {
-            receptionListeners.add(callback);
-            return () => receptionListeners.delete(callback);
+        function startPolling() {
+            if (pollingInterval) return; // Déjà démarré
+
+            console.log("[GeCaFle Sync] Démarrage du polling (toutes les 3 secondes)");
+
+            // Vérification initiale
+            checkForChanges();
+
+            // Polling toutes les 3 secondes
+            pollingInterval = setInterval(checkForChanges, 3000);
         }
 
         /**
-         * Enregistre une vue de vente
+         * Arrête le polling
          */
-        function registerVenteView(viewId) {
-            venteViews.add(viewId);
-            return () => venteViews.delete(viewId);
+        function stopPolling() {
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+                pollingInterval = null;
+                console.log("[GeCaFle Sync] Polling arrêté");
+            }
         }
 
+        // Démarrer le polling automatiquement
+        startPolling();
+
+        // Arrêter le polling quand la fenêtre est cachée (optimisation)
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                console.log("[GeCaFle Sync] Fenêtre cachée, pause du polling");
+                stopPolling();
+            } else {
+                console.log("[GeCaFle Sync] Fenêtre visible, reprise du polling");
+                startPolling();
+            }
+        });
+
         return {
-            addReceptionListener,
-            registerVenteView,
+            startPolling,
+            stopPolling,
+            checkForChanges,
             refreshVenteViews,
         };
     },

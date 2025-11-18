@@ -48,7 +48,7 @@
                            widget="monetary" options="{'currency_field': 'currency_id'}"
                     />
 
-                    <field name="est_imprimee" string="Imprimé?" optional="show"/>
+                    <field name="est_imprimee" string="Imprimé?" optional="hide"/>
 
                     <button name="action_print_bon_reception"
                             string="Imprimer" type="object"

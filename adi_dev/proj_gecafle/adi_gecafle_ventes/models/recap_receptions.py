@@ -271,7 +271,8 @@ class GecafleReceptionRecap(models.Model):
 
             record.payment_amount_due = total_amount - amount_paid
             record.payment_amount_paid = amount_paid
-            record.payment_percentage = (amount_paid / total_amount * 100) if total_amount else 0
+            # Ne PAS multiplier par 100 car le widget "percentage" le fait automatiquement
+            record.payment_percentage = (amount_paid / total_amount) if total_amount else 0
             record.payment_amount_total = record.payment_amount_due + record.payment_amount_paid
 
     """ """

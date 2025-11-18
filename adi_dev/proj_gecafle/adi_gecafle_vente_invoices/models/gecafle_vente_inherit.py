@@ -266,7 +266,8 @@ class GecafleVente(models.Model):
                 record.amount_paid = record.amount_total_signed - record.amount_residual_signed
 
                 if record.amount_total_signed:
-                    record.payment_percentage = (record.amount_paid / record.amount_total_signed) * 100
+                    # Ne PAS multiplier par 100 car le widget "percentage" le fait automatiquement
+                    record.payment_percentage = record.amount_paid / record.amount_total_signed
                 else:
                     record.payment_percentage = 0
             else:

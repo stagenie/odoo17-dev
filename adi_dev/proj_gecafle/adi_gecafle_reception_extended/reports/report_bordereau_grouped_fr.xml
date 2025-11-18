@@ -306,15 +306,17 @@
                                                     </td>
                                                 </tr>
                                             </t>
-                                            <tr t-if="o.transport">
-                                                <td class="text-right">
-                                                    <strong>Transport (-):</strong>
-                                                </td>
-                                                <td class="text-right text-danger">
-                                                    -
-                                                    <span t-field="o.transport"/>
-                                                </td>
-                                            </tr>
+                                            <t t-if="o.reception_id and o.reception_id.transport">
+                                                <tr>
+                                                    <td class="text-right">
+                                                        <strong>Transport (-):</strong>
+                                                    </td>
+                                                    <td class="text-right text-danger">
+                                                        -
+                                                        <span t-field="o.reception_id.transport"/>
+                                                    </td>
+                                                </tr>
+                                            </t>
                                             <tr t-if="o.montant_total_emballage_achete">
                                                 <td class="text-right">
                                                     <strong>Emballages Achetés (+):</strong>
@@ -324,16 +326,25 @@
                                                     <span t-field="o.montant_total_emballage_achete"/>
                                                 </td>
                                             </tr>
-                                            <tr class="table-primary">
-                                                <td class="text-right">
-                                                    <strong>NET À PAYER:</strong>
-                                                </td>
+                                            <tr class="table-success">
+                                                <td class="text-right"><strong>SOLDE PRODUCTEUR:</strong></td>
                                                 <td class="text-right">
                                                     <strong style="font-size: 1.2em;">
-                                                        <span t-field="o.net_a_payer"/>
+                                                        <span t-field="o.solde_fournisseur"/>
                                                     </strong>
                                                 </td>
                                             </tr>
+                                            <!--
+                                            <tr class="table-info">
+                                                <td class="text-right"><em>Montant Facture (sans paiements):</em></td>
+                                                <td class="text-right">
+                                                    <em>
+                                                        <span t-field="o.net_a_payer"/>
+                                                    </em>
+                                                </td>
+                                            </tr>
+                                            -->
+
                                         </tbody>
                                     </table>
                                 </div>

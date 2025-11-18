@@ -1,127 +1,128 @@
-# GeCaFle - Module de Synchronisation Temps Réel
+# GeCaFle - Synchronisation Temps Réel (V2 Simplifiée)
 
 ## 🎯 Objectif
-Ce module résout le problème de synchronisation entre les réceptions et les ventes en temps réel.
-Plus besoin d'appuyer sur F5 pour voir les nouvelles réceptions dans les ventes !
 
-## 📦 Installation
+Synchronisation automatique des réceptions vers les ventes en temps réel.
+**Plus besoin d'appuyer sur F5 !**
 
-### Étape 1: Copier le module
+## ✨ Nouvelle Version V2
+
+Cette version utilise une approche **simple et fiable**:
+- ❌ Pas de bus Odoo (source de problèmes)
+- ❌ Pas de notifications intrusives
+- ✅ Polling léger toutes les 3 secondes
+- ✅ Rafraîchissement silencieux
+- ✅ Fonctionne toujours, même avec plusieurs onglets/postes
+
+## 📦 Installation Rapide
+
 ```bash
-cp -r adi_gecafle_realtime_sync /chemin/vers/odoo/addons/
+cd /home/stadev/odoo17-dev/adi_dev/proj_gecafle
+./update_realtime_sync.sh
 ```
 
-### Étape 2: Redémarrer Odoo
+Puis redémarrer Odoo:
 ```bash
-sudo systemctl restart odoo
-# ou
-sudo service odoo restart
+python3 /home/stadev/odoo17-dev/odoo-bin -c /etc/odoo/odoo17.conf
 ```
-
-### Étape 3: Mettre à jour la liste des modules
-1. Aller dans Odoo
-2. Mode développeur: Settings → Activate Developer Mode
-3. Apps → Update Apps List
-
-### Étape 4: Installer le module
-1. Apps → Rechercher "GeCaFle - Synchronisation Temps Réel"
-2. Cliquer sur "Install"
-
-## ⚙️ Configuration
-
-### Vérifier que le Bus est activé
-Le module utilise le système de Bus d'Odoo. Vérifiez dans le fichier de configuration Odoo:
-
-```ini
-[options]
-# Pour WebSocket (recommandé, plus performant)
-gevent_port = 8072
-
-# OU pour Longpolling
-longpolling_port = 8072
-```
-
-Redémarrer Odoo après modification.
 
 ## 🚀 Fonctionnement
 
 ### Ce qui se passe automatiquement:
 
-1. **Création d'une réception** → Notification envoyée → Ventes rafraîchies
-2. **Modification d'une réception** → Notification envoyée → Ventes rafraîchies
-3. **Suppression d'une réception** → Notification envoyée → Ventes rafraîchies
-4. **Ajout/modification de lignes** → Notification envoyée → Ventes rafraîchies
+1. **Création d'une réception** → Timestamp mis à jour → Ventes rafraîchies en 3s max
+2. **Modification d'une réception** → Timestamp mis à jour → Ventes rafraîchies en 3s max
+3. **Suppression d'une réception** → Timestamp mis à jour → Ventes rafraîchies en 3s max
 
 ### Dans la pratique:
 
-**Avant (avec ce problème):**
-- Ouvrir réception
-- Enregistrer
-- Ouvrir vente dans nouvel onglet
+**Avant:**
+- Créer une réception
+- Ouvrir une vente
 - **Appuyer sur F5** 😫
 - Voir les réceptions
 
-**Après (avec ce module):**
-- Ouvrir réception
-- Enregistrer
-- Ouvrir vente dans nouvel onglet
+**Après (V2):**
+- Créer une réception
+- Ouvrir une vente
+- **Attendez 3 secondes** ⏱️
 - ✅ Les réceptions sont **automatiquement** visibles ! 🎉
 
 ## 🔧 Architecture Technique
 
 ### Backend (Python)
-- `models/reception_realtime.py`: Hérite du modèle `gecafle.reception`
-- Override des méthodes `create()`, `write()`, `unlink()`
-- Envoi de notifications via `bus.bus`
+- Stocke un timestamp à chaque modification de réception
+- Paramètre système: `gecafle.reception.last_change`
+- Méthode RPC: `get_last_change_timestamp()`
 
 ### Frontend (JavaScript)
-- `realtime_sync_service.js`: Service qui écoute le bus
-- `reception_realtime.js`: Patch des contrôleurs List/Form
-- Auto-refresh des vues de vente
+- Polling RPC toutes les 3 secondes
+- Compare le timestamp avec la dernière valeur connue
+- Si changement: rafraîchit les vues de vente
+- Pause automatique quand la fenêtre est cachée
 
 ### Communication
 ```
-[Réception créée] 
+[Réception créée]
     ↓
-[Python: _notify_reception_change()] 
+[Timestamp mis à jour en DB]
     ↓
-[bus.bus: Envoi notification] 
+[Polling JavaScript détecte le changement]
     ↓
-[JavaScript: Service écoute] 
-    ↓
-[Vue de vente rafraîchie automatiquement]
+[Vues de vente rafraîchies silencieusement]
 ```
 
 ## 🧪 Test
 
-1. Ouvrir un onglet avec la liste des ventes
-2. Ouvrir un autre onglet avec les réceptions
-3. Créer une nouvelle réception
-4. Revenir sur l'onglet des ventes
-5. ✅ La liste est automatiquement rafraîchie !
+1. Ouvrir deux onglets
+2. **Onglet 1:** Ouvrir une liste ou formulaire de vente
+3. **Onglet 2:** Créer une nouvelle réception
+4. **Onglet 1:** Attendez max 3 secondes
+5. ✅ La vue se rafraîchit automatiquement !
+
+Console (F12):
+```
+[GeCaFle Sync] Service démarré
+[GeCaFle Sync] Changement détecté! Rafraîchissement...
+```
 
 ## 📊 Performance
 
-- Utilise le système natif de Bus d'Odoo (WebSocket/Longpolling)
-- Consommation minimale de ressources
-- Pas de polling HTTP continu
-- Notifications ciblées uniquement
+- **Requête:** Très légère (~250 bytes toutes les 3s par utilisateur)
+- **Impact:** Négligeable même avec 100 utilisateurs
+- **Optimisation:** Pause automatique quand fenêtre cachée
+- **Délai max:** 3 secondes
 
 ## 🐛 Dépannage
 
-### Les notifications ne fonctionnent pas:
-1. Vérifier que le module `bus` est installé
-2. Vérifier la configuration du port dans odoo.conf
-3. Vérifier les logs Odoo: `tail -f /var/log/odoo/odoo.log`
-4. Vérifier la console JavaScript du navigateur (F12)
+### Le rafraîchissement ne fonctionne pas:
 
-### Les vues ne se rafraîchissent pas:
-1. Vider le cache du navigateur (Ctrl+Shift+Del)
-2. Vérifier la console JavaScript (F12)
-3. Vérifier que le module est bien installé
+1. Ouvrir la console (F12)
+2. Vérifier les logs `[GeCaFle Sync]`
+3. Vérifier le timestamp:
+   ```sql
+   SELECT value FROM ir_config_parameter
+   WHERE key = 'gecafle.reception.last_change';
+   ```
+
+### Erreur RPC:
+
+1. Vérifier que le module est bien installé
+2. Redémarrer Odoo
+3. Vider le cache navigateur (Ctrl+Shift+Delete)
+
+## 📖 Documentation Complète
+
+Voir: `../SYNCHRONISATION_SIMPLE_V2.md` dans le répertoire du projet
 
 ## 👨‍💻 Développé par
+
 **ADICOPS** - info@adicops.com
 
 ## 📝 Version
-17.1.0 - Compatible Odoo 17
+
+**17.1.0 (V2 - Polling Simple)** - Compatible Odoo 17
+
+---
+
+✅ Simple | ✅ Fiable | ✅ Silencieux | ✅ Performant

@@ -9,7 +9,7 @@ class GecafleVenteArabic(models.Model):
     def action_print_bon_vente_ar(self):
         """Imprime le bon de vente en arabe (normal)"""
         self.ensure_one()
-        self.est_imprimee = True
+
         # Utiliser l'action normale qui appelle report_bon_vente_normal_ar
         return self.env.ref('adi_arabic_reports.action_report_bon_vente_ar').report_action(self)
 
@@ -23,8 +23,6 @@ class GecafleVenteArabic(models.Model):
         """Imprime le duplicata du bon de vente en arabe"""
         self.ensure_one()
 
-        if not self.est_imprimee:
-            raise UserError(_("Vous devez d'abord imprimer le bon de vente original avant d'imprimer un duplicata."))
 
         # Utiliser l'action duplicata dédiée qui appelle report_bon_vente_duplicata_ar
         return self.env.ref('adi_arabic_reports.action_report_bon_vente_duplicata_ar').report_action(self)
@@ -36,7 +34,7 @@ class GecafleReceptionArabic(models.Model):
     def action_print_bon_reception_ar(self):
         """Imprime le bon de réception en arabe (normal)"""
         self.ensure_one()
-        self.est_imprimee = True
+
         # Utiliser l'action normale qui appelle report_bon_reception_normal_ar
         return self.env.ref('adi_arabic_reports.action_report_bon_reception_ar').report_action(self)
 
@@ -44,9 +42,7 @@ class GecafleReceptionArabic(models.Model):
         """Imprime le duplicata du bon de réception en arabe"""
         self.ensure_one()
 
-        if not self.est_imprimee:
-            raise UserError(
-                _("Vous devez d'abord imprimer le bon de réception original avant d'imprimer un duplicata."))
+
 
         # Utiliser l'action duplicata dédiée qui appelle report_bon_reception_duplicata_ar
         return self.env.ref('adi_arabic_reports.action_report_bon_reception_duplicata_ar').report_action(self)
@@ -60,7 +56,7 @@ class AccountMoveArabic(models.Model):
         self.ensure_one()
         if not self.gecafle_vente_id:
             raise UserError(_("Cette facture n'est pas liée à un bon de vente."))
-        self.gecafle_vente_id.est_imprimee = True
+
 
         return self.gecafle_vente_id.action_print_bon_vente_ar()
 

@@ -48,12 +48,22 @@ class GecafleReceptionRecapExtended(models.Model):
         help="Paiement emballage depuis la réception"
     )
 
-    # Nouveau champ calculé pour net à payer
+    # Champ calculé pour net à payer (montant de la facture)
     net_a_payer = fields.Monetary(
-        string="Net à Payer",
+        string="Net à Payer (Facture)",
         currency_field='currency_id',
         compute='_compute_net_a_payer',
-        store=True
+        store=True,
+        help="Montant de la facture fournisseur = Total Ventes - Commission + Emballages (SANS transport ni avances)"
+    )
+
+    # Solde fournisseur restant à payer
+    solde_fournisseur = fields.Monetary(
+        string="Solde Fournisseur",
+        currency_field='currency_id',
+        compute='_compute_solde_fournisseur',
+        store=True,
+        help="Montant restant dû au producteur après déduction de tous les paiements (avance + transport)"
     )
 
 
@@ -129,15 +139,10 @@ class GecafleReceptionRecapExtended(models.Model):
             'price_unit': -self.total_commission,
         }))
 
-        # Ligne 3 : Transport (négatif si existe)
-        if self.transport > 0:
-            invoice_lines.append((0, 0, {
-                'name': _("Frais de transport"),
-                'quantity': 1,
-                'price_unit': -self.transport,
-            }))
+        # IMPORTANT : Le transport n'est PAS ajouté à la facture
+        # Il est enregistré comme paiement séparé pour éviter la double déduction
 
-        # Ligne 4 : Emballages achetés (positif si existe)
+        # Ligne 3 : Emballages achetés (positif si existe)
         if self.montant_total_emballage_achete > 0:
             invoice_lines.append((0, 0, {
                 'name': _("Emballages achetés au producteur"),
@@ -145,19 +150,12 @@ class GecafleReceptionRecapExtended(models.Model):
                 'price_unit': self.montant_total_emballage_achete,
             }))
 
-        # Ligne 5 : Avance (négatif si existe)
-        if self.avance_producteur > 0:
-            invoice_lines.append((0, 0, {
-                'name': _("Avance producteur sur réception"),
-                'quantity': 1,
-                'price_unit': -self.avance_producteur,
-            }))
+        # IMPORTANT : Les avances et le transport NE SONT PAS ajoutés dans les lignes de facture
+        # Ils sont enregistrés comme paiements/acomptes séparés pour éviter la double déduction
 
-        # Calcul du net à payer
+        # Calcul du net à payer (SANS déduire avance ni transport)
         net_a_payer = (self.total_ventes
                        - self.total_commission
-                       - self.transport
-                       - self.avance_producteur
                        + self.montant_total_emballage_achete)
 
         # Créer la facture
@@ -175,19 +173,24 @@ class GecafleReceptionRecapExtended(models.Model):
                 ================
                 Total ventes: %s
                 Commission: -%s
-                Transport: -%s
                 Emballages achetés: +%s
-                Avance: -%s
                 ----------------
-                Net à payer: %s
+                Net à payer (facture): %s
+
+                Paiements déjà enregistrés (acomptes):
+                - Avance producteur: %s
+                - Transport: %s
+                ----------------
+                Solde fournisseur restant: %s
             """) % (
                 self.name,
                 self.total_ventes,
                 self.total_commission,
-                self.transport or 0,
                 self.montant_total_emballage_achete or 0,
+                net_a_payer,
                 self.avance_producteur or 0,
-                net_a_payer
+                self.transport or 0,
+                net_a_payer - (self.avance_producteur or 0) - (self.transport or 0)
             )
         }
 
@@ -198,20 +201,26 @@ class GecafleReceptionRecapExtended(models.Model):
         self.message_post(body=_("""
             Facture fournisseur créée avec succès.
 
-            Détails:
+            Composition de la facture:
             - Total ventes: %s
             - Commission: -%s
-            - Transport: -%s
-            - Emballages: +%s
-            - Avance: -%s
-            - Net à payer: %s
+            - Emballages achetés: +%s
+            ================
+            Net à payer (facture): %s
+
+            Paiements déjà enregistrés:
+            - Avance producteur: %s
+            - Transport: %s
+            ================
+            Solde fournisseur restant: %s
         """) % (
             self.total_ventes,
             self.total_commission,
-            self.transport or 0,
             self.montant_total_emballage_achete or 0,
+            net_a_payer,
             self.avance_producteur or 0,
-            net_a_payer
+            self.transport or 0,
+            net_a_payer - (self.avance_producteur or 0) - (self.transport or 0)
         ))
 
         return {
@@ -316,3 +325,64 @@ class GecafleReceptionRecapExtended(models.Model):
             result.extend(grouped_by_product[product_key])
 
         return result
+
+    @api.depends('reception_id',
+                 'reception_id.transport',
+                 'reception_id.avance_producteur',
+                 'reception_id.paiement_emballage',
+                 'reception_id.montant_total_emballage_achete')
+    def _compute_financial_details(self):
+        """Synchronise les détails financiers depuis la réception"""
+        for record in self:
+            if record.reception_id:
+                # Utiliser les champs existants de la réception
+                record.transport = record.reception_id.transport or 0.0
+                record.avance_producteur = record.reception_id.avance_producteur or 0.0
+
+                # Nouveau champ paiement_emballage
+                if hasattr(record.reception_id, 'paiement_emballage'):
+                    record.paiement_emballage = record.reception_id.paiement_emballage or 0.0
+                else:
+                    record.paiement_emballage = 0.0
+
+                # Montant des emballages achetés
+                record.montant_total_emballage_achete = record.reception_id.montant_total_emballage_achete or 0.0
+            else:
+                record.transport = 0.0
+                record.avance_producteur = 0.0
+                record.paiement_emballage = 0.0
+                record.montant_total_emballage_achete = 0.0
+
+    @api.depends('total_ventes',
+                 'total_commission',
+                 'montant_total_emballage_achete')
+    def _compute_net_a_payer(self):
+        """
+        Calcule le net à payer de la FACTURE FOURNISSEUR.
+
+        IMPORTANT : Le transport n'est PAS déduit car il est enregistré comme paiement séparé.
+        Les avances ne sont PAS déduites car elles sont gérées comme acomptes comptables.
+
+        Formule : Total Ventes - Commission + Emballages Achetés
+        """
+        for record in self:
+            record.net_a_payer = (
+                record.total_ventes
+                - record.total_commission
+                + record.montant_total_emballage_achete
+            )
+
+    @api.depends('net_a_payer', 'avance_producteur', 'transport')
+    def _compute_solde_fournisseur(self):
+        """
+        Calcule le SOLDE FOURNISSEUR réel.
+        C'est le montant de la facture MOINS tous les paiements déjà enregistrés.
+
+        Formule : Net à Payer (Facture) - Avance Producteur - Transport
+        """
+        for record in self:
+            record.solde_fournisseur = (
+                record.net_a_payer
+                - record.avance_producteur
+                - record.transport
+            )

@@ -24,10 +24,23 @@ class GecafleReceptionRecap(models.Model):
         store=True
     )
 
-    @api.depends('reception_id')
+    @api.depends('reception_id', 'reception_id.is_achat_valorise')
     def _compute_reception_is_valorisee(self):
         for record in self:
             record.reception_is_valorisee = record.reception_id.is_achat_valorise if record.reception_id else False
+
+    reception_has_invoice = fields.Boolean(
+        string="Réception a déjà une facture",
+        compute='_compute_reception_has_invoice',
+        store=True,
+        help="True si la réception valorisée a déjà une facture créée"
+    )
+
+    @api.depends('reception_id', 'reception_id.invoice_id')
+    def _compute_reception_has_invoice(self):
+        """Vérifie si la réception valorisée a déjà une facture"""
+        for record in self:
+            record.reception_has_invoice = bool(record.reception_id.invoice_id) if record.reception_id else False
 
     def action_create_vendor_invoice(self):
         """Surcharge pour bloquer la création depuis une réception valorisée"""

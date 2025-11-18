@@ -59,10 +59,19 @@ class GecafleReceptionValorisee(models.Model):
     )
 
     montant_net_a_payer = fields.Monetary(
-        string="Net à Payer",
+        string="Net à Payer (Facture)",
         compute='_compute_totaux_valorises',
         store=True,
-        currency_field='currency_id'
+        currency_field='currency_id',
+        help="Montant de la facture fournisseur (sans déduction des paiements)"
+    )
+
+    solde_fournisseur = fields.Monetary(
+        string="Solde Fournisseur",
+        compute='_compute_solde_fournisseur',
+        store=True,
+        currency_field='currency_id',
+        help="Montant restant dû au producteur après déduction de tous les paiements (avance + transport)"
     )
 
     # Lien vers la facture fournisseur
@@ -113,9 +122,10 @@ class GecafleReceptionValorisee(models.Model):
                     if line.is_achete  # Champ existant du module adi_reception_extended
                 )
 
-                # Net à payer = Total brut - Emballages - Remise
+                # Net à payer = Total brut + Emballages achetés - Remise
+                # IMPORTANT : Les emballages achetés au producteur sont AJOUTÉS (pas déduits)
                 record.montant_net_a_payer = (
-                        record.montant_total_brut -
+                        record.montant_total_brut +
                         record.montant_total_emballages -
                         record.remise_globale
                 )
@@ -127,6 +137,19 @@ class GecafleReceptionValorisee(models.Model):
                 record.montant_total_brut = 0
                 record.montant_total_emballages = 0
                 record.montant_net_a_payer = 0
+
+    @api.depends('montant_net_a_payer', 'avance_producteur', 'transport')
+    def _compute_solde_fournisseur(self):
+        """
+        Calcule le SOLDE FOURNISSEUR réel.
+        C'est le montant de la facture MOINS tous les paiements déjà enregistrés.
+
+        Formule : Net à Payer (Facture) - Avance Producteur - Transport
+        """
+        for record in self:
+            avance = record.avance_producteur if hasattr(record, 'avance_producteur') else 0.0
+            transport = record.transport if hasattr(record, 'transport') else 0.0
+            record.solde_fournisseur = record.montant_net_a_payer - avance - transport
 
     def action_create_supplier_invoice(self):
         """Crée une facture fournisseur à partir de la réception valorisée avec gestion des avances"""
@@ -159,12 +182,12 @@ class GecafleReceptionValorisee(models.Model):
                     'price_unit': line.prix_unitaire_achat,
                 }))
 
-        # Ligne pour les emballages achetés (en négatif car c'est une déduction)
+        # Ligne pour les emballages achetés (en POSITIF car on les ACHÈTE au producteur)
         if self.montant_total_emballages > 0:
             invoice_lines.append((0, 0, {
-                'name': _("Emballages achetés"),
+                'name': _("Emballages achetés au producteur"),
                 'quantity': 1,
-                'price_unit': -self.montant_total_emballages,
+                'price_unit': self.montant_total_emballages,  # Positif !
             }))
 
         # Ligne pour la remise si elle existe
@@ -175,19 +198,34 @@ class GecafleReceptionValorisee(models.Model):
                 'price_unit': -self.remise_globale,
             }))
 
-        # Créer la narration avec les détails des avances
+        # Créer la narration avec les détails
         narration_parts = [
             _("Facture créée depuis la réception valorisée %s") % self.name,
-            _("Net à payer: %s") % self.montant_net_a_payer
+            "",
+            _("Composition de la facture:"),
+            _("- Montant total brut: %s") % self.montant_total_brut,
+            _("- Emballages achetés: +%s") % self.montant_total_emballages,  # Positif !
+            _("- Remise accordée: -%s") % (self.remise_globale if self.remise_globale else 0),
+            "=" * 40,
+            _("Net à payer (facture): %s") % self.montant_net_a_payer,
+            "",
+            _("Paiements déjà enregistrés (acomptes):"),
         ]
 
-        # Ajouter les informations sur les avances si elles existent
-        if self.avance_producteur > 0:
-            narration_parts.append(_("Avance producteur: %s") % self.avance_producteur)
+        # Ajouter les paiements si ils existent
+        avance = self.avance_producteur if hasattr(self, 'avance_producteur') else 0.0
+        transport = self.transport if hasattr(self, 'transport') else 0.0
 
-        # Vérifier si le champ avance_transport existe
-        if hasattr(self, 'avance_transport') and self.avance_transport > 0:
-            narration_parts.append(_("Avance transport: %s") % self.avance_transport)
+        if avance > 0:
+            narration_parts.append(_("- Avance producteur: %s") % avance)
+        if transport > 0:
+            narration_parts.append(_("- Transport: %s") % transport)
+
+        if avance > 0 or transport > 0:
+            narration_parts.extend([
+                "=" * 40,
+                _("Solde fournisseur restant: %s") % self.solde_fournisseur
+            ])
 
         narration_text = '\n'.join(narration_parts)
 
@@ -208,14 +246,28 @@ class GecafleReceptionValorisee(models.Model):
         # Message de confirmation avec détails
         message_parts = [
             _("Facture fournisseur créée : %s") % invoice.name,
-            _("Montant total: %s") % self.montant_net_a_payer
+            "",
+            _("<strong>Composition de la facture:</strong>"),
+            _("- Montant total brut: %s") % self.montant_total_brut,
+            _("- Emballages achetés: +%s") % self.montant_total_emballages,  # Positif !
+            _("- Remise accordée: -%s") % (self.remise_globale if self.remise_globale else 0),
+            "=" * 40,
+            _("<strong>Net à payer (facture): %s</strong>") % self.montant_net_a_payer,
         ]
 
-        if self.avance_producteur > 0:
-            message_parts.append(_("Avance producteur à déduire: %s") % self.avance_producteur)
+        # Informations sur les paiements
+        avance = self.avance_producteur if hasattr(self, 'avance_producteur') else 0.0
+        transport = self.transport if hasattr(self, 'transport') else 0.0
 
-        if hasattr(self, 'avance_transport') and self.avance_transport > 0:
-            message_parts.append(_("Avance transport à déduire: %s") % self.avance_transport)
+        if avance > 0 or transport > 0:
+            message_parts.append("")
+            message_parts.append(_("<strong>Paiements déjà enregistrés:</strong>"))
+            if avance > 0:
+                message_parts.append(_("- Avance producteur: %s") % avance)
+            if transport > 0:
+                message_parts.append(_("- Transport: %s") % transport)
+            message_parts.append("=" * 40)
+            message_parts.append(_("<strong>Solde fournisseur restant: %s</strong>") % self.solde_fournisseur)
 
         self.message_post(body='<br/>'.join(message_parts))
 
@@ -262,6 +314,60 @@ class GecafleReceptionValorisee(models.Model):
             'res_id': self.invoice_id.id,
             'target': 'current',
         }
+
+    @api.depends('is_achat_valorise', 'invoice_id', 'invoice_id.payment_state',
+                 'recap_ids.state', 'recap_ids.invoice_id.payment_state',
+                 'recap_ids.bon_achat_id.state', 'recap_ids.net_a_payer')
+    def _compute_payment_state(self):
+        """
+        Override pour gérer le payment_state des réceptions valorisées.
+        Pour les réceptions valorisées, on utilise directement l'invoice_id de la réception.
+        Pour les réceptions normales, on utilise l'invoice_id du récap (comportement parent).
+        """
+        for record in self:
+            # Cas 1: Réception valorisée avec facture directe
+            if record.is_achat_valorise and record.invoice_id:
+                if record.invoice_id.payment_state == 'paid':
+                    record.payment_state = 'paid'
+                elif record.invoice_id.payment_state == 'partial':
+                    record.payment_state = 'partial'
+                else:
+                    record.payment_state = 'unpaid'
+            # Cas 2: Réception valorisée sans facture
+            elif record.is_achat_valorise and not record.invoice_id:
+                record.payment_state = 'not_invoiced'
+            # Cas 3: Réception normale - utiliser la logique parent
+            else:
+                super(GecafleReceptionValorisee, record)._compute_payment_state()
+
+    @api.depends('is_achat_valorise', 'montant_net_a_payer', 'invoice_id', 'invoice_id.amount_residual',
+                 'recap_ids.net_a_payer', 'recap_ids.invoice_id', 'recap_ids.bon_achat_id')
+    def _compute_payment_info(self):
+        """
+        Override pour gérer les montants de paiement des réceptions valorisées.
+        Pour les réceptions valorisées, on utilise montant_net_a_payer et l'invoice_id direct.
+        Pour les réceptions normales, on utilise la logique parent.
+        """
+        for record in self:
+            # Cas 1: Réception valorisée avec facture
+            if record.is_achat_valorise and record.invoice_id:
+                total_amount = record.montant_net_a_payer
+                amount_paid = total_amount - record.invoice_id.amount_residual
+
+                record.payment_amount_total = total_amount
+                record.payment_amount_paid = amount_paid
+                record.payment_amount_due = total_amount - amount_paid
+                # Ne PAS multiplier par 100 car le widget "percentage" le fait automatiquement
+                record.payment_percentage = (amount_paid / total_amount) if total_amount else 0
+            # Cas 2: Réception valorisée sans facture
+            elif record.is_achat_valorise and not record.invoice_id:
+                record.payment_amount_total = record.montant_net_a_payer
+                record.payment_amount_due = record.montant_net_a_payer
+                record.payment_amount_paid = 0
+                record.payment_percentage = 0
+            # Cas 3: Réception normale - utiliser la logique parent
+            else:
+                super(GecafleReceptionValorisee, record)._compute_payment_info()
 
     def action_print_bon_valorise(self):
         """Imprime le bon de réception valorisé en français"""
@@ -349,20 +455,21 @@ class GecafleReceptionValorisee(models.Model):
     def _onchange_is_achat_valorise(self):
         """Applique le comportement par défaut selon le type de réception"""
         if self.is_achat_valorise:
-            # Pour les réceptions valorisées : tout acheter par défaut
+            # Pour les réceptions valorisées : appliquer la logique intelligente
             for line in self.details_emballage_reception_ids:
-                # Ne modifier que si pas déjà défini pour éviter d'écraser les valeurs manuelles
-                if not line.is_achete:
+                if line.emballage_id:
                     # Appliquer la logique selon le type d'emballage
-                    if line.emballage_id and line.emballage_id.non_returnable:
+                    if line.emballage_id.non_returnable:
+                        # Emballage NON RENDU → Acheté
                         line.is_achete = True
                         if not line.qte_achetee:
                             line.qte_achetee = line.qte_sortantes or line.qte_entrantes or 0
                         if not line.prix_unitaire_achat:
                             line.prix_unitaire_achat = line.emballage_id.price_unit or 0
                     else:
-                        # Emballage consigné : non acheté par défaut
-                        line.is_achete = False
+                        # Emballage CONSIGNÉ (rendu) → Non acheté
+                        if not line.is_achete:  # Ne toucher que si pas déjà défini manuellement
+                            line.is_achete = False
         else:
             # Pour les réceptions non valorisées : ne rien acheter par défaut
             for line in self.details_emballage_reception_ids:

@@ -1,209 +1,102 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Extension de la vue formulaire du récapitulatif -->
+    <!-- Vue formulaire héritée pour le récap -->
     <record id="view_gecafle_reception_recap_form_inherit_extended" model="ir.ui.view">
         <field name="name">gecafle.reception.recap.form.inherit.extended</field>
         <field name="model">gecafle.reception.recap</field>
         <field name="inherit_id" ref="adi_gecafle_ventes.view_gecafle_reception_recap_form"/>
+        <field name="priority">99</field>
         <field name="arch" type="xml">
-            <!-- Ajout du bouton pour le wizard d'impression après le bouton de validation -->
-            <xpath expr="//header/field[@name='state']" position="after">
 
-                <!-- Bouton pour ouvrir le wizard d'impression -->
-                <button name="action_open_print_wizard"
-                        string="Imprimer Bordereau"
-                        type="object"
-                        class="btn-primary"
+            <!-- Ajouter le bouton wizard d'impression avancée dans le header -->
+            <xpath expr="//header/button[@name='action_validate']" position="after">
+                <button name="%(adi_gecafle_reception_extended.action_bordereau_print_wizard)d"
+                        string="🖨️ Imprimer Bordereau Avancé"
+                        type="action"
+                        class="btn-info"
                         icon="fa-print"
-                        help="Ouvrir les options d'impression du bordereau"/>
-
-            </xpath>
-            <!--            invisible="state != 'valide'"-->
-
-
-            <!-- Ajouter les champs invisibles pour transport et emballages -->
-            <xpath expr="//field[@name='reception_id']" position="after">
-                <field name="transport" invisible="1"/>
-                <field name="montant_total_emballage_achete" invisible="1"/>
-                <field name="avance_producteur" invisible="1"/>
+                        context="{'default_recap_id': id}"/>
             </xpath>
 
-            <!-- Nouvelle section détaillée du calcul après les champs existants -->
-            <xpath expr="//group[last()]" position="after">
-                <separator string="Détail du calcul du net à payer" class="mt-4"/>
-                <group col="4" class="mt-3">
-                    <group colspan="2">
-                        <field name="total_ventes"
-                               string="Total des ventes (+)"
+            <!-- Ajouter l'onglet Détails Financiers -->
+            <xpath expr="//page[@name='sale_lines']" position="after">
+                <page string="📊 Détails Financiers" name="financial_details">
+
+                    <!-- Section 1: Vue d'ensemble -->
+                    <group string="📈 Montants Principaux" col="4">
+                        <field name="total_ventes" widget="monetary"/>
+                        <field name="total_commission" widget="monetary"/>
+                        <field name="montant_total_emballage_achete"
                                widget="monetary"
-                               readonly="1"
-                               style="font-size: 1.1em;"/>
-                        <field name="total_commission"
-                               string="Commission (-)"
-                               widget="monetary"
-                               readonly="1"
-                               style="color: red;"/>
+                               readonly="1"/>
+                    </group>
+
+                    <!-- Section 2: Avances et paiements -->
+                    <group string="💰 Paiements Enregistrés (Acomptes)" col="4"
+                           class="alert alert-warning">
                         <field name="avance_producteur"
-                               string="Avance producteur (-)"
                                widget="monetary"
                                readonly="1"
                                invisible="avance_producteur == 0"
-                               style="color: red;"/>
-                    </group>
-                    <group colspan="2">
+                               help="Avance versée au producteur"/>
                         <field name="transport"
-                               string="Transport (-)"
                                widget="monetary"
                                readonly="1"
                                invisible="transport == 0"
-                               style="color: red;"/>
-                        <field name="montant_total_emballage_achete"
-                               string="Emballages achetés (+)"
+                               help="Frais de transport payés"/>
+                        <field name="paiement_emballage"
                                widget="monetary"
                                readonly="1"
-                               invisible="montant_total_emballage_achete == 0"
-                               style="color: green;"/>
-                        <separator colspan="2" style="border-top: 2px solid #333; margin: 10px 0;"/>
-                        <label for="net_a_payer" style="font-weight: bold; font-size: 1.3em;"/>
-                        <field name="net_a_payer"
-                               nolabel="1"
-                               widget="monetary"
-                               readonly="1"
-                               style="font-weight: bold; font-size: 1.3em; color: #2e7d32;"/>
-                    </group>
-                </group>
-            </xpath>
-
-            <!-- Amélioration du notebook avec destockages et observations -->
-            <xpath expr="//notebook" position="inside">
-                <page string="Observations &amp; Destockages" name="observations">
-                    <!-- Section Observations -->
-                    <group string="Observations" class="mb-4">
-                        <field name="observation"
-                               placeholder="Ajoutez vos notes et observations ici..."
-                        />
+                               invisible="paiement_emballage == 0"
+                               help="Paiement emballage enregistré"/>
                     </group>
 
-                    <!-- Section Destockages avec largeur complète -->
-                    <separator string="Produits Destockés" invisible="not has_destockage"/>
-                    <field name="destockage_line_ids"
-                           nolabel="1"
-                           readonly="1"
-                           invisible="not has_destockage">
-                        <tree string="Destockages"
-                              create="false"
-                              edit="false"
-                              delete="false">
-                            <field name="destockage_date" string="Date"/>
-                            <field name="designation_id" string="Produit"/>
-                            <field name="qualite_id" string="Qualité" optional="show"/>
-                            <field name="emballage_id" string="Type Colis" optional="show"/>
-                            <field name="qte_destockee" string="Quantité" sum="Total"/>
-                            <field name="observation" string="Motif"/>
-                        </tree>
-                    </field>
-                </page>
-
-                <!-- Page séparée pour calculs détaillés -->
-                <page string="Détails Financiers" name="financial_details">
-                    <group col="2">
-                        <group string="Ventes &amp; Commissions">
+                    <!-- Tableau récapitulatif détaillé -->
+                    <group string="📋 Calcul Détaillé du Net à Payer" col="2">
+                        <group string="Total des ventes">
                             <field name="total_ventes" widget="monetary" readonly="1"/>
-                            <field name="total_commission" widget="monetary" readonly="1"/>
-                            <field name="net_a_payer"
-                                   string="Net après commission"
+                        </group>
+                        <group string="Emballages Achetés (+)" invisible="montant_total_emballage_achete == 0">
+                            <field name="montant_total_emballage_achete"
+                                   widget="monetary"
+                                   readonly="1"
+                                   class="text-success"/>
+                        </group>
+                        <group string="Total commission">
+                            <field name="total_commission"
                                    widget="monetary"
                                    readonly="1"/>
                         </group>
-                        <group string="Ajustements">
+                        <group string="Avance Producteur (-)" invisible="avance_producteur == 0">
                             <field name="avance_producteur"
-                                   string="Avance producteur"
                                    widget="monetary"
-                                   readonly="1"/>
+                                   readonly="1"
+                                   class="text-danger"/>
+                        </group>
+                        <group string="Transport (-)" invisible="transport == 0">
                             <field name="transport"
                                    widget="monetary"
-                                   readonly="1"/>
-                            <field name="montant_total_emballage_achete"
-                                   string="Emballages achetés"
+                                   readonly="1"
+                                   class="text-danger"/>
+                        </group>
+                        <separator colspan="2"/>
+                        <group string="SOLDE FOURNISSEUR" class="oe_subtotal_footer">
+                            <field name="solde_fournisseur"
+                                   widget="monetary"
+                                   readonly="1"
+                                   class="oe_subtotal_footer_separator"
+                                   style="font-size: 1.3em;"/>
+                        </group>
+                        <group string="Net à Payer (Facture)" class="text-muted">
+                            <field name="net_a_payer"
                                    widget="monetary"
                                    readonly="1"/>
                         </group>
                     </group>
 
-                    <!-- Tableau récapitulatif -->
-                    <separator string="Calcul Final" class="mt-4"/>
-                    <div style="background: #f5f5f5; padding: 15px; border-radius: 5px;">
-                        <table class="table table-sm">
-                            <tbody>
-                                <tr>
-                                    <td width="60%">
-                                        <strong>Total ventes</strong>
-                                    </td>
-                                    <td class="text-right">
-                                        <field name="total_ventes" widget="monetary" nolabel="1" readonly="1"/>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <strong>Commission</strong>
-                                    </td>
-                                    <td class="text-right text-danger">
-                                        -
-                                        <field name="total_commission" widget="monetary" nolabel="1" readonly="1"/>
-                                    </td>
-                                </tr>
-                                <tr invisible="avance_producteur == 0">
-                                    <td>
-                                        <strong>Avance producteur</strong>
-                                    </td>
-                                    <td class="text-right text-danger">
-                                        -
-                                        <field name="avance_producteur" widget="monetary" nolabel="1" readonly="1"/>
-                                    </td>
-                                </tr>
-                                <tr invisible="transport == 0">
-                                    <td>
-                                        <strong>Transport</strong>
-                                    </td>
-                                    <td class="text-right text-danger">
-                                        -
-                                        <field name="transport" widget="monetary" nolabel="1" readonly="1"/>
-                                    </td>
-                                </tr>
-                                <tr invisible="montant_total_emballage_achete == 0">
-                                    <td>
-                                        <strong>Emballages achetés</strong>
-                                    </td>
-                                    <td class="text-right text-success">
-                                        +
-                                        <field name="montant_total_emballage_achete" widget="monetary" nolabel="1"
-                                               readonly="1"/>
-                                    </td>
-                                </tr>
-                                <tr style="border-top: 2px solid #333;">
-                                    <td>
-                                        <h5>
-                                            <strong>NET À PAYER</strong>
-                                        </h5>
-                                    </td>
-                                    <td class="text-right">
-                                        <h5 style="color: #2e7d32;">
-                                            <strong>
-                                                <field name="net_a_payer" widget="monetary" nolabel="1" readonly="1"/>
-                                            </strong>
-                                        </h5>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
                 </page>
             </xpath>
 
-            <!-- Ajout du champ has_destockage invisible -->
-            <xpath expr="//field[@name='state']" position="after">
-                <field name="has_destockage" invisible="1"/>
-            </xpath>
         </field>
     </record>
 </odoo>

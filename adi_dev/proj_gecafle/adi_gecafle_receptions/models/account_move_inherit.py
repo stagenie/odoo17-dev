@@ -1,41 +1,9 @@
 # -*- coding: utf-8 -*-
 from odoo import models, fields, api, _
-from odoo.exceptions import UserError
 
 
-class AccountMoveInherit(models.Model):
+class AccountMove(models.Model):
     _inherit = 'account.move'
-
-    def unlink(self):
-        """Override unlink pour gérer l'état du récapitulatif lors de la suppression"""
-        # Sauvegarder les récaps liés avant suppression
-        recaps_to_update = self.mapped('recap_id')
-
-        # Appeler la méthode parent pour supprimer
-        res = super(AccountMoveInherit, self).unlink()
-
-        # Mettre à jour l'état des récaps
-        for recap in recaps_to_update:
-            if recap and recap.state == 'facture' and not recap.invoice_id:
-                # Remettre en état validé si la facture était la seule
-                recap.state = 'valide'
-                recap.message_post(
-                    body=_("L'état a été remis à 'Validé' suite à la suppression de la facture associée."),
-                    subtype_xmlid='mail.mt_note'
-                )
-
-        return res
-
-    @api.ondelete(at_uninstall=False)
-    def _unlink_check_recap(self):
-        """Vérifie et met à jour l'état du récapitulatif lors de la suppression"""
-        for move in self:
-            if hasattr(move, 'recap_id') and move.recap_id:
-                if move.state != 'draft':
-                    raise UserError(_(
-                        "Impossible de supprimer la facture %s car elle n'est pas en brouillon. "
-                        "Annulez-la d'abord."
-                    ) % move.name)
 
     def action_post(self):
         """
@@ -46,7 +14,7 @@ class AccountMoveInherit(models.Model):
         _logger = logging.getLogger(__name__)
 
         # Appeler la méthode parent pour valider l'écriture
-        res = super(AccountMoveInherit, self).action_post()
+        res = super(AccountMove, self).action_post()
 
         # Synchroniser les paiements liés
         for move in self:
@@ -54,14 +22,12 @@ class AccountMoveInherit(models.Model):
             payments = self.env['account.payment'].search([('move_id', '=', move.id)])
 
             for payment in payments:
-                if hasattr(payment, 'reception_id') and payment.reception_id:
-                    _logger.info(f"[PAYMENT SYNC - POST] Processing payment {payment.id} for reception {payment.reception_id.id}")
-
+                if payment.reception_id:
                     # Déterminer le champ à mettre à jour
                     field_name = None
-                    if hasattr(payment, 'is_advance_producer') and payment.is_advance_producer:
+                    if payment.is_advance_producer:
                         field_name = 'avance_producteur'
-                    elif hasattr(payment, 'is_advance_transport') and payment.is_advance_transport:
+                    elif payment.is_advance_transport:
                         field_name = 'transport'
                     elif hasattr(payment, 'is_payment_emballage') and payment.is_payment_emballage:
                         field_name = 'paiement_emballage'
@@ -75,7 +41,6 @@ class AccountMoveInherit(models.Model):
                                 _logger.info(f"[PAYMENT SYNC - POST] Successfully updated {field_name} = {payment.amount} for reception {reception.id}")
                             else:
                                 # Fallback SQL
-                                _logger.warning(f"[PAYMENT SYNC - POST] Field {field_name} not found in model, using SQL")
                                 self.env.cr.execute(
                                     f'UPDATE gecafle_reception SET {field_name} = %s WHERE id = %s',
                                     (payment.amount, reception.id)
@@ -84,8 +49,6 @@ class AccountMoveInherit(models.Model):
                                 _logger.info(f"[PAYMENT SYNC - POST] SQL update successful for {field_name}")
                         except Exception as e:
                             _logger.error(f"[PAYMENT SYNC - POST] Error updating {field_name}: {e}")
-                            import traceback
-                            _logger.error(traceback.format_exc())
 
         return res
 
@@ -102,21 +65,20 @@ class AccountMoveInherit(models.Model):
         for move in self:
             payments = self.env['account.payment'].search([('move_id', '=', move.id)])
             for payment in payments:
-                if hasattr(payment, 'reception_id') and payment.reception_id:
+                if payment.reception_id:
                     field_name = None
-                    if hasattr(payment, 'is_advance_producer') and payment.is_advance_producer:
+                    if payment.is_advance_producer:
                         field_name = 'avance_producteur'
-                    elif hasattr(payment, 'is_advance_transport') and payment.is_advance_transport:
+                    elif payment.is_advance_transport:
                         field_name = 'transport'
                     elif hasattr(payment, 'is_payment_emballage') and payment.is_payment_emballage:
                         field_name = 'paiement_emballage'
 
                     if field_name:
                         payments_to_reset.append((payment.reception_id, field_name))
-                        _logger.info(f"[PAYMENT SYNC - DRAFT] Will reset {field_name} for reception {payment.reception_id.id}")
 
         # Appeler la méthode parent
-        res = super(AccountMoveInherit, self).button_draft()
+        res = super(AccountMove, self).button_draft()
 
         # Réinitialiser les montants dans les réceptions
         for reception, field_name in payments_to_reset:
@@ -150,11 +112,11 @@ class AccountMoveInherit(models.Model):
         for move in self:
             payments = self.env['account.payment'].search([('move_id', '=', move.id)])
             for payment in payments:
-                if hasattr(payment, 'reception_id') and payment.reception_id:
+                if payment.reception_id:
                     field_name = None
-                    if hasattr(payment, 'is_advance_producer') and payment.is_advance_producer:
+                    if payment.is_advance_producer:
                         field_name = 'avance_producteur'
-                    elif hasattr(payment, 'is_advance_transport') and payment.is_advance_transport:
+                    elif payment.is_advance_transport:
                         field_name = 'transport'
                     elif hasattr(payment, 'is_payment_emballage') and payment.is_payment_emballage:
                         field_name = 'paiement_emballage'
@@ -163,7 +125,7 @@ class AccountMoveInherit(models.Model):
                         payments_to_reset.append((payment.reception_id, field_name))
 
         # Appeler la méthode parent
-        res = super(AccountMoveInherit, self).button_cancel()
+        res = super(AccountMove, self).button_cancel()
 
         # Réinitialiser les montants dans les réceptions
         for reception, field_name in payments_to_reset:

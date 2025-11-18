@@ -35,7 +35,7 @@
                        decoration-info="state == 'brouillon'"
                        decoration-success="state == 'valide'"
                        decoration-danger="state == 'annule'"/>
-                <field name="est_imprimee" optional="show"/>
+                <field name="est_imprimee" optional="hide"/>
                 <button name="action_imprimer_bon_vente"
                         string="Imprimer" type="object"
                         icon="fa-print" class="btn-link"
@@ -126,7 +126,7 @@
                             invisible="state != 'valide'" class="btn-info"/>
                     <button name="action_imprimer_duplicata"
                             string="Imprimer Duplicata" type="object"
-                            invisible="state != 'valide' or not est_imprimee" class="btn-secondary"/>
+                             class="btn-secondary"/>
 
                     <!--
                     <button name="action_create_avoir"

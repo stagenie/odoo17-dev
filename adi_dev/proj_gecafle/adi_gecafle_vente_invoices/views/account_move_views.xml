@@ -43,7 +43,6 @@
                         type="object"
                         class="btn-secondary"
                         icon="fa-copy"
-                        invisible="not gecafle_vente_id or not gecafle_vente_id.est_imprimee"
                         groups="base.group_user"/>
 
             </xpath>

@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from email.policy import default
+
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
 import logging
@@ -39,7 +41,8 @@ class GecafleVenteResetWizard(models.TransientModel):
 
     confirmation = fields.Boolean(
         string="Je confirme vouloir remettre cette vente en brouillon",
-        required=True
+        required=True,
+        default= True
     )
 
     @api.depends('vente_id', 'vente_id.invoice_id')

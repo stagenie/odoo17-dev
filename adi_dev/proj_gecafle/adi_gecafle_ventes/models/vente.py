@@ -162,7 +162,7 @@ class GecafleVente(models.Model):
         """Imprime le bon de vente et le marque comme imprimé"""
         self.ensure_one()
         # Marquer comme imprimé
-        self.est_imprimee = True
+
 
         # Retourner l'action pour imprimer le rapport
         return self.env.ref('adi_gecafle_ventes.action_report_gecafle_bon_vente').report_action(self)
@@ -172,8 +172,7 @@ class GecafleVente(models.Model):
         self.ensure_one()
 
         # Vérifier que le bon a déjà été imprimé
-        if not self.est_imprimee:
-            raise UserError(_("Vous devez d'abord imprimer le bon de vente original avant d'imprimer un duplicata."))
+
 
         # Utiliser le rapport dédié au duplicata
         return self.env.ref('adi_gecafle_ventes.action_report_gecafle_bon_vente_duplicata').report_action(self)

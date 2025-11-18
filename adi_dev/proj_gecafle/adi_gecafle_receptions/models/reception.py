@@ -67,8 +67,10 @@ class GecafleReception(models.Model):
     avance_producteur = fields.Monetary(
         string="Montant Avance Producteur",
         currency_field='currency_id',
+        compute='_compute_payment_amounts',
+        store=True,
         readonly=True,
-        help="Ce champ est automatiquement mis à jour quand un paiement d'avance producteur validé est lié à cette réception. Pour modifier, utilisez le bouton 'Enregistrer Avance' ou le smart button 'Paiements'."
+        help="Ce champ est automatiquement calculé depuis les paiements d'avance producteur validés liés à cette réception."
     )
     verse_a = fields.Char(
         string="Versé à",
@@ -86,7 +88,7 @@ class GecafleReception(models.Model):
     def action_print_bon_reception(self):
         self.ensure_one()
         # Marquer la réception comme imprimée
-        self.write({'est_imprimee': True})
+
         # Retourner l'action du rapport défini ci-dessous
         return self.env.ref('adi_gecafle_receptions.action_report_bon_reception').report_action(self)
 
@@ -183,7 +185,6 @@ class GecafleReception(models.Model):
             for stock in rec.stock_ids:
                 stock.with_context(force_stock=True).unlink()  # Suppression des destockages associés pour chaque stock lié, en utilisant le contexte
             rec.stock_ids.with_context(force_stock=True).unlink()
-            rec.est_imprimee = False
             rec.state = 'annulee'
 
         return True
@@ -195,7 +196,7 @@ class GecafleReception(models.Model):
                 stock.with_context(force_stock=True).unlink()  #
             rec.stock_ids.with_context(force_stock=True).unlink()
             rec.write({'state': 'brouillon'})
-            rec.est_imprimee = False
+
             rec.state = 'brouillon'
         return True
 
@@ -454,6 +455,18 @@ class GecafleReception(models.Model):
         default=lambda self: self.env.company.currency_id,
         required=True
     )
+
+    @api.depends('payment_ids', 'payment_ids.move_id.state', 'payment_ids.amount', 'payment_ids.is_advance_producer')
+    def _compute_payment_amounts(self):
+        """Calcule le montant total des avances producteur validées"""
+        for record in self:
+            # Calculer la somme des paiements avance producteur validés
+            total_avance = sum(
+                payment.amount
+                for payment in record.payment_ids
+                if payment.is_advance_producer and payment.move_id and payment.move_id.state == 'posted'
+            )
+            record.avance_producteur = total_avance
 
     @api.depends('payment_ids')
     def _compute_payment_count(self):

@@ -50,8 +50,8 @@
                         icon="fa-book"
                         groups="account.group_account_invoice">
                     <div class="o_stat_info">
-                        <span class="o_stat_text">Partner</span>
-                        <span class="o_stat_text">Ledger</span>
+                        <span class="o_stat_text">Situation</span>
+                        <span class="o_stat_text">Partenaire</span>
                     </div>
                 </button>
             </xpath>

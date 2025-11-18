@@ -24,7 +24,7 @@
                         type="object"
                         class="btn-warning"
                         icon="fa-copy"
-                        invisible="state != 'valide' or not est_imprimee"/>
+                        />
 
 
             </xpath>
@@ -71,7 +71,6 @@
                         type="object"
                         class="oe_stat_button"
                         icon="fa-copy"
-                        invisible="not gecafle_vente_id or not gecafle_vente_id.est_imprimee"
                         groups="base.group_user">
                     <div class="o_field_widget o_stat_info">
                         <span class="o_stat_text">نسخة</span>
@@ -107,7 +106,6 @@
                         type="object"
                         class="btn-warning"
                         icon="fa-copy"
-                        invisible="state not in ('confirmee') or not est_imprimee"
                         groups="base.group_user"/>
             </xpath>
         </field>
