@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Vue formulaire vente avec bouton de remise en brouillon -->
+    <!-- Vue formulaire vente avec bouton de remise en brouillon et bordereaux -->
     <record id="view_gecafle_vente_form_inherit_control" model="ir.ui.view">
         <field name="name">gecafle.vente.form.inherit.control</field>
         <field name="model">gecafle.vente</field>
@@ -8,11 +8,91 @@
         <field name="arch" type="xml">
             <!-- Champs invisibles -->
             <xpath expr="//field[@name='state']" position="after">
-                 <field name="has_recap_lines" invisible="1"/>
+                <field name="has_recap_lines" invisible="1"/>
                 <field name="can_reset_to_draft" invisible="1"/>
                 <field name="has_avoirs" invisible="1"/>
                 <field name="avoir_count" invisible="1"/>
                 <field name="avoir_total_amount" invisible="1"/>
+                <!-- Champs pour les bordereaux -->
+                <field name="vente_reception_count" invisible="1"/>
+                <field name="reception_recap_count" invisible="1"/>
+            </xpath>
+
+            <!-- Smart buttons pour les réceptions et bordereaux -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <!-- Smart button pour les réceptions -->
+                <button name="action_view_vente_receptions"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-truck"
+                        invisible="vente_reception_count == 0">
+                    <field name="vente_reception_count"
+                           widget="statinfo"
+                           string="Réceptions"/>
+                </button>
+
+                <!-- Smart button pour les bordereaux (récapitulatifs) -->
+                <button name="action_view_reception_recaps"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-file-text-o"
+                        invisible="reception_recap_count == 0">
+                    <field name="reception_recap_count"
+                           widget="statinfo"
+                           string="Bordereaux"/>
+                </button>
+            </xpath>
+
+            <!-- Onglet pour afficher les bordereaux des réceptions -->
+            <xpath expr="//page[@name='notes']" position="after">
+                <page string="Bordereaux Réceptions" name="reception_recaps"
+                      invisible="reception_recap_count == 0">
+                    <group>
+                        <group string="Réceptions utilisées dans cette vente">
+                            <field name="vente_reception_ids" nolabel="1" readonly="1">
+                                <tree create="false" edit="false" delete="false">
+                                    <field name="name" string="N° Réception"/>
+                                    <field name="reception_date" string="Date"/>
+                                    <field name="producteur_id" string="Producteur"/>
+                                    <field name="state" string="État" widget="badge"
+                                           decoration-info="state == 'brouillon'"
+                                           decoration-success="state == 'confirmee'"
+                                           decoration-danger="state == 'annulee'"/>
+                                </tree>
+                            </field>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Bordereaux (Récapitulatifs) associés">
+                            <field name="reception_recap_ids" nolabel="1" readonly="1">
+                                <tree create="false" edit="false" delete="false">
+                                    <field name="name" string="N° Bordereau"/>
+                                    <field name="reception_id" string="Réception"/>
+                                    <field name="producteur_id" string="Producteur"/>
+                                    <field name="date_creation" string="Date création"/>
+                                    <field name="total_ventes" string="Total Ventes"
+                                           widget="monetary"
+                                           options="{'currency_field': 'currency_id'}"/>
+                                    <field name="total_commission" string="Commission"
+                                           widget="monetary"
+                                           options="{'currency_field': 'currency_id'}"/>
+                                    <field name="net_a_payer" string="Net à payer"
+                                           widget="monetary"
+                                           options="{'currency_field': 'currency_id'}"/>
+                                    <field name="state" string="État" widget="badge"
+                                           decoration-info="state == 'brouillon'"
+                                           decoration-success="state == 'valide'"
+                                           decoration-warning="state == 'facture'"/>
+                                    <field name="payment_state" string="Paiement" widget="badge"
+                                           decoration-success="payment_state == 'paid'"
+                                           decoration-warning="payment_state == 'partial'"
+                                           decoration-danger="payment_state == 'not_paid'"/>
+                                    <field name="currency_id" invisible="1"/>
+                                </tree>
+                            </field>
+                        </group>
+                    </group>
+                </page>
             </xpath>
 
             <!-- Bouton dans le header -->
