@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!--
+        Vue héritée pour ajouter les widgets de synchronisation temps réel
+        aux champs reception_id et detail_reception_id dans le formulaire de vente
+    -->
+    <record id="view_gecafle_vente_form_realtime" model="ir.ui.view">
+        <field name="name">gecafle.vente.form.realtime</field>
+        <field name="model">gecafle.vente</field>
+        <field name="inherit_id" ref="adi_gecafle_ventes.view_gecafle_vente_form"/>
+        <field name="priority">100</field>
+        <field name="arch" type="xml">
+            <!-- Ajouter le widget reception_realtime au champ reception_id -->
+            <xpath expr="//field[@name='detail_vente_ids']//field[@name='reception_id']" position="attributes">
+                <attribute name="widget">reception_realtime</attribute>
+            </xpath>
+
+            <!-- Ajouter le widget detail_reception_realtime au champ detail_reception_id -->
+            <xpath expr="//field[@name='detail_vente_ids']//field[@name='detail_reception_id']" position="attributes">
+                <attribute name="widget">detail_reception_realtime</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>
