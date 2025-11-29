@@ -36,6 +36,18 @@ class GecafleVente(models.Model):
         default=fields.Datetime.now,
         required=True
     )
+    date_vente_only = fields.Date(
+        string="Date de Vente",
+        compute="_compute_date_vente_only",
+        store=True,
+        help="Date de vente (sans l'heure) pour faciliter la recherche"
+    )
+
+    @api.depends('date_vente')
+    def _compute_date_vente_only(self):
+        for rec in self:
+            rec.date_vente_only = rec.date_vente.date() if rec.date_vente else False
+
     client_id = fields.Many2one(
         'gecafle.client',
         string="Client",

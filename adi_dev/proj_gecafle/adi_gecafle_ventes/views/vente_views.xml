@@ -51,9 +51,9 @@
         <field name="arch" type="xml">
             <search string="Recherche Ventes">
                 <!-- Champs de recherche basiques -->
+                <field name="date_vente_only" string="Date de Vente"/>
                 <field name="name" string="N° Souche"/>
                 <field name="client_id" string="Client"/>
-                <field name="date_vente" string="Date de vente"/>
                 <field name="user_id" string="Vendeur"/>
 
                 <!-- Recherche dans les lignes de vente -->

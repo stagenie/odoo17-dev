@@ -212,6 +212,7 @@
             <field name="model">gecafle.reception</field>
             <field name="arch" type="xml">
                 <search string="Recherche Réceptions">
+                    <field name="reception_date_only" string="Date de Réception"/>
                     <field name="name"/>
                     <field name="producteur_id"/>
                     <filter string="Brouillon" name="draft" domain="[('state','=','brouillon')]"/>

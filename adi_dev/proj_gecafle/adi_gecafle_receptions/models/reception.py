@@ -23,6 +23,17 @@ class GecafleReception(models.Model):
         default=fields.Datetime.now,
         tracking=True
     )
+    reception_date_only = fields.Date(
+        string="Date de Réception",
+        compute="_compute_reception_date_only",
+        store=True,
+        help="Date de réception (sans l'heure) pour faciliter la recherche"
+    )
+
+    @api.depends('reception_date')
+    def _compute_reception_date_only(self):
+        for rec in self:
+            rec.reception_date_only = rec.reception_date.date() if rec.reception_date else False
     user_id = fields.Many2one(
         'res.users',
         string="Utilisateur",
