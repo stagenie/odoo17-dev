@@ -300,4 +300,279 @@ class GecafleVenteControl(models.Model):
             }
         }
 
+    # ============================================
+    # Modification directe du prix sur ventes facturées
+    # ============================================
+
+    can_edit_price = fields.Boolean(
+        string="Peut modifier le prix",
+        compute='_compute_can_edit_price',
+        help="Indique si le prix des lignes peut être modifié directement"
+    )
+
+    has_vendor_invoice_on_recap = fields.Boolean(
+        string="A une facture fournisseur sur récap",
+        compute='_compute_can_edit_price',
+    )
+
+    @api.depends('state', 'invoice_id', 'invoice_id.payment_state', 'reception_recap_ids.invoice_id')
+    def _compute_can_edit_price(self):
+        """
+        Détermine si le prix peut être modifié directement.
+
+        Conditions pour autoriser :
+        1. Vente validée avec facture
+        2. Facture sans paiement (payment_state == 'not_paid')
+        3. Pas de facture fournisseur sur les récaps liées
+        """
+        for vente in self:
+            can_edit = False
+            has_vendor_invoice = False
+
+            if vente.state == 'valide' and vente.invoice_id:
+                # Vérifier si facture non payée
+                if vente.invoice_id.payment_state == 'not_paid':
+                    can_edit = True
+
+                    # Vérifier les récaps liées
+                    recaps = self.env['gecafle.reception.recap'].search([
+                        ('sale_line_ids.vente_id', '=', vente.id)
+                    ])
+
+                    for recap in recaps:
+                        if recap.invoice_id:
+                            can_edit = False
+                            has_vendor_invoice = True
+                            break
+
+            elif vente.state == 'brouillon':
+                # Toujours éditable en brouillon
+                can_edit = True
+
+            vente.can_edit_price = can_edit
+            vente.has_vendor_invoice_on_recap = has_vendor_invoice
+
+    def write(self, vals):
+        """
+        Surcharge pour autoriser la modification du prix sur les ventes facturées sans paiement.
+
+        Autorise la modification si :
+        - Le contexte 'allow_price_edit' ou 'allow_adjustment' est présent
+        - OU les seuls champs modifiés sont 'detail_vente_ids' avec uniquement des modifications de prix
+          ET les conditions sont remplies (facture non payée, pas de facture fournisseur sur récap)
+        """
+        # Si le contexte autorise déjà, on passe
+        if self.env.context.get('allow_price_edit') or self.env.context.get('allow_adjustment'):
+            return super(GecafleVenteControl, self.with_context(allow_adjustment=True)).write(vals)
+
+        # Vérifier si c'est une modification de prix autorisée via les lignes de vente
+        if 'detail_vente_ids' in vals and len(vals) == 1:
+            # Vérifier si toutes les modifications sont uniquement sur prix_unitaire
+            if self._is_only_price_modification(vals['detail_vente_ids']):
+                # Vérifier les conditions pour chaque vente
+                for record in self:
+                    can_edit, message = record._can_edit_price_on_lines()
+                    if not can_edit:
+                        raise UserError(message)
+
+                # Extraire les IDs des lignes modifiées et leurs anciens prix AVANT le write
+                lines_to_update = {}
+                for command in vals['detail_vente_ids']:
+                    if command[0] == 1 and 'prix_unitaire' in command[2]:
+                        line_id = command[1]
+                        line = self.env['gecafle.details_ventes'].browse(line_id)
+                        lines_to_update[line_id] = {
+                            'old_price': line.prix_unitaire,
+                            'new_price': command[2]['prix_unitaire'],
+                            'line': line,
+                        }
+
+                # Toutes les conditions sont remplies, autoriser la modification
+                result = super(GecafleVenteControl, self.with_context(allow_adjustment=True)).write(vals)
+
+                # Après le write, mettre à jour la facture et la récap
+                for line_id, data in lines_to_update.items():
+                    line = data['line']
+                    # Recharger la ligne pour avoir les valeurs recalculées
+                    line.invalidate_recordset()
+
+                    # Mettre à jour la facture
+                    self._update_invoice_line_for_price_change(line)
+
+                    # Mettre à jour la récap
+                    self._update_recap_for_price_change(line)
+
+                    # Logger la modification
+                    self._log_price_modification(line, data['old_price'], data['new_price'])
+
+                return result
+
+        return super(GecafleVenteControl, self).write(vals)
+
+    def _update_invoice_line_for_price_change(self, detail_line):
+        """Met à jour la ligne de facture correspondante après modification du prix."""
+        if not self.invoice_id:
+            return
+
+        invoice = self.invoice_id
+        was_posted = invoice.state == 'posted'
+
+        # Trouver la ligne de facture correspondante
+        invoice_line = invoice.invoice_line_ids.filtered(
+            lambda l: l.gecafle_detail_vente_id.id == detail_line.id
+        )
+
+        if not invoice_line:
+            _logger.warning(f"Ligne de facture non trouvée pour detail_vente {detail_line.id}")
+            return
+
+        try:
+            # Passer la facture en brouillon si postée
+            # Utiliser force_gecafle_update pour bypasser la protection
+            if was_posted:
+                invoice.with_context(force_gecafle_update=True).button_draft()
+
+            # Mettre à jour la ligne de facture
+            invoice_line.with_context(check_move_validity=False).write({
+                'price_unit': detail_line.prix_unitaire,
+                'prix_unitaire': detail_line.prix_unitaire,
+                'montant_net': detail_line.montant_net,
+                'montant_commission': detail_line.montant_commission,
+            })
+
+            # Revalider la facture si elle était postée
+            if was_posted:
+                invoice.with_context(force_gecafle_update=True).action_post()
+
+            _logger.info(f"Facture {invoice.name} mise à jour - prix={detail_line.prix_unitaire}")
+
+        except Exception as e:
+            _logger.error(f"Erreur mise à jour facture: {str(e)}")
+            raise UserError(_("Erreur lors de la mise à jour de la facture:\n%s") % str(e))
+
+    def _update_recap_for_price_change(self, detail_line):
+        """Met à jour les récaps producteur après modification du prix."""
+        # Chercher les récaps liées à cette réception
+        recaps = self.env['gecafle.reception.recap'].search([
+            ('reception_id', '=', detail_line.reception_id.id),
+            ('state', 'in', ['brouillon', 'valide'])
+        ])
+
+        for recap in recaps:
+            # Mettre à jour les lignes de vente dans la récap
+            sale_lines = recap.sale_line_ids.filtered(
+                lambda l: l.vente_id.id == self.id and
+                          l.produit_id.id == detail_line.produit_id.id and
+                          l.qualite_id.id == (detail_line.qualite_id.id if detail_line.qualite_id else False)
+            )
+
+            for sale_line in sale_lines:
+                sale_line.write({
+                    'prix_unitaire': detail_line.prix_unitaire,
+                    'montant_net': detail_line.montant_net,
+                    'montant_commission': detail_line.montant_commission,
+                })
+
+            # Regénérer les lignes récapitulatives
+            recap.generate_recap_lines()
+
+            _logger.info(f"Récap {recap.name} mise à jour - totaux recalculés")
+
+            # Message dans le chatter de la récap
+            recap.message_post(
+                body=_(
+                    "📝 Mise à jour automatique suite à modification de prix\n"
+                    "Vente: %s\nProduit: %s\nNouveau prix: %.2f"
+                ) % (self.name, detail_line.produit_id.name, detail_line.prix_unitaire),
+                message_type='notification'
+            )
+
+    def _log_price_modification(self, detail_line, old_price, new_price):
+        """Enregistre la modification de prix dans le chatter."""
+        self.message_post(
+            body=_(
+                "💰 <b>Modification de prix</b>\n"
+                "<ul>"
+                "<li>Produit: %s</li>"
+                "<li>Qualité: %s</li>"
+                "<li>Ancien prix: %.2f</li>"
+                "<li>Nouveau prix: %.2f</li>"
+                "<li>Nouveau montant net: %.2f</li>"
+                "</ul>"
+                "Facture et récap mises à jour automatiquement."
+            ) % (
+                detail_line.produit_id.name,
+                detail_line.qualite_id.name if detail_line.qualite_id else '-',
+                old_price,
+                new_price,
+                detail_line.montant_net
+            ),
+            message_type='comment'
+        )
+
+    def _is_only_price_modification(self, commands):
+        """
+        Vérifie si les commandes One2many ne modifient que le prix_unitaire.
+
+        Format des commandes :
+        - (0, 0, vals) : créer
+        - (1, id, vals) : modifier
+        - (2, id) : supprimer
+        - (4, id) : lier
+        - (5,) : supprimer tous les liens
+        - (6, 0, ids) : remplacer
+        """
+        allowed_fields = {'prix_unitaire'}
+
+        for command in commands:
+            if command[0] == 1:  # Modification d'une ligne existante
+                modified_fields = set(command[2].keys()) if len(command) > 2 and command[2] else set()
+                # Vérifier que seuls les champs autorisés sont modifiés
+                if not modified_fields.issubset(allowed_fields):
+                    return False
+            elif command[0] in (0, 2, 5, 6):  # Création, suppression, remplacement
+                # Ces opérations ne sont pas autorisées
+                return False
+            # command[0] == 4 (lier) est OK car ça ne modifie rien
+
+        return True
+
+    def _can_edit_price_on_lines(self):
+        """
+        Vérifie si la modification du prix est autorisée sur cette vente.
+
+        Conditions :
+        1. Vente validée avec facture
+        2. Facture non payée
+        3. Pas de facture fournisseur sur les récaps liées
+        """
+        self.ensure_one()
+
+        # Si pas validée ou pas de facture, on laisse passer (sera géré ailleurs)
+        if self.state != 'valide':
+            return True, "OK"
+
+        if not self.invoice_id:
+            return True, "OK"
+
+        # Vérifier si facture a des paiements
+        if self.invoice_id.payment_state != 'not_paid':
+            return False, _(
+                "Impossible de modifier le prix : la facture %s a des paiements.\n"
+                "État de paiement : %s"
+            ) % (self.invoice_id.name, self.invoice_id.payment_state)
+
+        # Vérifier les récaps liées
+        recaps = self.env['gecafle.reception.recap'].search([
+            ('sale_line_ids.vente_id', '=', self.id)
+        ])
+
+        for recap in recaps:
+            if recap.invoice_id:
+                return False, _(
+                    "Impossible de modifier le prix : le bordereau %s a une facture fournisseur (%s).\n"
+                    "Vous devez d'abord supprimer la facture fournisseur et ses paiements."
+                ) % (recap.name, recap.invoice_id.name)
+
+        return True, "OK"
 

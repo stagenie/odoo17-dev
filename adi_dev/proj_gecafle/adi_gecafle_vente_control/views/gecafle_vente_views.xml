@@ -16,6 +16,47 @@
                 <!-- Champs pour les bordereaux -->
                 <field name="vente_reception_count" invisible="1"/>
                 <field name="reception_recap_count" invisible="1"/>
+                <!-- Champ pour modification du prix -->
+                <field name="can_edit_price" invisible="1"/>
+                <field name="has_vendor_invoice_on_recap" invisible="1"/>
+            </xpath>
+
+            <!-- Alerte si facture fournisseur bloque la modification -->
+            <xpath expr="//sheet" position="inside">
+                <div class="alert alert-warning" role="alert"
+                     invisible="not has_vendor_invoice_on_recap or state != 'valide'">
+                    <strong>⚠️ Modification du prix bloquée</strong>
+                    <p>Une facture fournisseur existe sur le bordereau producteur lié à cette vente.</p>
+                    <p>Pour modifier le prix, vous devez d'abord supprimer la facture fournisseur et ses paiements depuis le bordereau.</p>
+                </div>
+            </xpath>
+
+            <!-- Remplacer le field detail_vente_ids pour permettre la modification du prix -->
+            <xpath expr="//field[@name='detail_vente_ids']" position="attributes">
+                <!-- Editable si brouillon OU si can_edit_price -->
+                <attribute name="readonly">state != 'brouillon' and not can_edit_price</attribute>
+            </xpath>
+
+            <!-- Rendre les champs readonly sauf prix_unitaire quand vente validée -->
+            <xpath expr="//field[@name='detail_vente_ids']/tree/field[@name='reception_id']" position="attributes">
+                <attribute name="readonly">parent.state != 'brouillon'</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name='detail_vente_ids']/tree/field[@name='detail_reception_id']" position="attributes">
+                <attribute name="readonly">parent.state != 'brouillon'</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name='detail_vente_ids']/tree/field[@name='nombre_colis']" position="attributes">
+                <attribute name="readonly">parent.state != 'brouillon'</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name='detail_vente_ids']/tree/field[@name='poids_brut']" position="attributes">
+                <attribute name="readonly">parent.state != 'brouillon'</attribute>
+            </xpath>
+
+            <!-- prix_unitaire reste éditable si can_edit_price -->
+            <xpath expr="//field[@name='detail_vente_ids']/tree/field[@name='prix_unitaire']" position="attributes">
+                <attribute name="readonly">parent.state != 'brouillon' and not parent.can_edit_price</attribute>
             </xpath>
 
             <!-- Smart buttons pour les réceptions et bordereaux -->

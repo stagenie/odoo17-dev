@@ -44,8 +44,7 @@
                             string="Confirmer la remise en brouillon"
                             type="object"
                             class="btn-danger"
-                            invisible="has_treasury_operations"
-                            confirm="Êtes-vous sûr? Cette action supprimera la facture et les paiements non relevés."/>
+                            invisible="has_treasury_operations"/>
                     <button string="Annuler" class="btn-secondary" special="cancel"/>
                 </footer>
             </form>

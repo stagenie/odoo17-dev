@@ -218,7 +218,31 @@ class GecafleVenteResetWizard(models.TransientModel):
                             "Veuillez la supprimer manuellement."
                         ))
 
-            # 3. REMISE EN BROUILLON DE LA VENTE
+            # 3. RESTAURATION DU STOCK gecafle.stock AVANT CHANGEMENT D'ÉTAT
+            # Restaurer les entrées gecafle.stock (modèle séparé, pas computed)
+            for line in self.vente_id.detail_vente_ids:
+                stock_entries = self.env['gecafle.stock'].search([
+                    ('reception_id', '=', line.reception_id.id),
+                    ('designation_id', '=', line.produit_id.id),
+                    ('qualite_id', '=', line.qualite_id.id),
+                    ('emballage_id', '=', line.type_colis_id.id)
+                ], order='id')
+
+                if stock_entries:
+                    qty_to_restore = line.nombre_colis
+                    for stock in stock_entries:
+                        if qty_to_restore <= 0:
+                            break
+                        stock.with_context(force_stock=True).write({
+                            'qte_disponible': stock.qte_disponible + qty_to_restore
+                        })
+                        _logger.info(
+                            f"Stock gecafle.stock restauré: +{qty_to_restore} pour {line.produit_id.name}"
+                        )
+                        qty_to_restore = 0
+
+            # 4. REMISE EN BROUILLON DE LA VENTE
+            # Le changement d'état déclenchera le recalcul des champs computed
             self.vente_id.with_context(allow_adjustment=True).write({
                 'state': 'brouillon',
                 'est_imprimee': False,
@@ -226,16 +250,41 @@ class GecafleVenteResetWizard(models.TransientModel):
                 'invoice_ids': [(5, 0, 0)]
             })
 
-            # 4. LIBÉRATION DES STOCKS
-            for line in self.vente_id.detail_vente_ids:
-                if hasattr(line, 'detail_reception_id') and line.detail_reception_id:
-                    try:
-                        if line.detail_reception_id.qte_colis_vendus >= line.nombre_colis:
-                            line.detail_reception_id.qte_colis_vendus -= line.nombre_colis
-                        else:
-                            line.detail_reception_id.qte_colis_vendus = 0
-                    except Exception as e:
-                        _logger.warning(f"Erreur lors de la libération du stock : {str(e)}")
+            # 5. FORCER LE RECALCUL DES STOCKS SUR LES LIGNES DE RÉCEPTION
+            # Les champs qte_colis_vendus et qte_colis_disponibles sont computed
+            # mais le trigger ORM peut ne pas se déclencher correctement
+            detail_reception_ids = self.vente_id.detail_vente_ids.mapped('detail_reception_id')
+            if detail_reception_ids:
+                # Invalider tout le cache de l'environnement pour forcer le recalcul
+                self.env.invalidate_all()
+
+                # Recalculer les quantités
+                detail_reception_ids._compute_quantities()
+
+                # Forcer la mise à jour en base avec SQL si nécessaire
+                for detail in detail_reception_ids:
+                    # Recalculer manuellement
+                    qte_vendus = sum(detail.detail_vente_ids.filtered(
+                        lambda v: v.vente_id.state == 'valide'
+                    ).mapped('nombre_colis'))
+                    qte_destockes = sum(detail.detail_destockage_ids.mapped('qte_destockee'))
+                    qte_disponibles = max(0, detail.qte_colis_recue - qte_vendus - qte_destockes)
+
+                    # Mise à jour directe en base pour éviter les problèmes de cache
+                    self.env.cr.execute("""
+                        UPDATE gecafle_details_reception
+                        SET qte_colis_vendus = %s,
+                            qte_colis_disponibles = %s
+                        WHERE id = %s
+                    """, (qte_vendus, qte_disponibles, detail.id))
+
+                    _logger.info(
+                        f"Stock ligne réception MIS À JOUR pour {detail.designation_id.name}: "
+                        f"vendus={qte_vendus}, disponibles={qte_disponibles}"
+                    )
+
+                # Invalider le cache après la mise à jour SQL
+                self.env.invalidate_all()
 
             # Message final
             self.vente_id.message_post(
@@ -249,7 +298,7 @@ class GecafleVenteResetWizard(models.TransientModel):
         except Exception as e:
             self.vente_id.message_post(
                 body=_("❌ Erreur lors de la remise en brouillon : %s") % str(e),
-                message_type='warning'
+                message_type='notification'
             )
             raise UserError(_(
                 "Erreur lors de la remise en brouillon:\n%s"
