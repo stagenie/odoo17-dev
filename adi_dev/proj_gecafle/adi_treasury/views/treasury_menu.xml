@@ -40,53 +40,69 @@
     </record>
 
 
-    <!-- Menu principal Trésorerie -->
+    <!-- ============================================== -->
+    <!-- MENU PRINCIPAL TRÉSORERIE -->
+    <!-- ============================================== -->
     <menuitem
             id="menu_treasury_root"
             name="Trésorerie"
             sequence="45"
             web_icon="adi_treasury,static/description/icon.png"/>
 
+    <!-- ============================================== -->
+    <!-- MENUS PRINCIPAUX (directement sous Trésorerie) -->
+    <!-- ============================================== -->
 
-    <!-- Sous-menu Trésorerie -->
+    <!-- Tableau de Bord - En premier -->
+    <menuitem
+            id="menu_treasury_dashboard"
+            name="Tableau de Bord"
+            parent="menu_treasury_root"
+            action="action_treasury_dashboard_server"
+            sequence="1"/>
+
+    <!-- Caisses -->
+    <menuitem
+            id="menu_treasury_cash_direct"
+            name="Caisses"
+            parent="menu_treasury_root"
+            action="adi_treasury.action_treasury_cash"
+            sequence="2"/>
+
+    <!-- Coffres-Forts -->
+    <menuitem
+            id="menu_treasury_safe_direct"
+            name="Coffres-Forts"
+            parent="menu_treasury_root"
+            action="action_treasury_safe"
+            sequence="3"/>
+
+    <!-- ============================================== -->
+    <!-- SOUS-MENU TRÉSORERIE (opérations détaillées) -->
+    <!-- ============================================== -->
     <menuitem
             id="menu_treasury_main"
             name="Trésorerie"
             parent="menu_treasury_root"
             sequence="10"/>
 
-    <!-- Menu Caisses -->
-    <menuitem
-            id="menu_treasury_cash"
-            name="Caisses"
-            parent="menu_treasury_main"
-            action="adi_treasury.action_treasury_cash"
-            sequence="10"/>
+    <!-- Transferts -->
     <menuitem
             id="menu_treasury_transfer"
             name="Transferts"
             parent="menu_treasury_main"
             action="action_treasury_transfer"
-            sequence="20"/>
-    <!-- Ajouter après le menu Caisses -->
+            sequence="10"/>
+
+    <!-- Opérations de caisse -->
     <menuitem
-            id="menu_treasury_safe"
-            name="Coffres-forts"
+            id="menu_treasury_cash_operation"
+            name="Opérations de caisse"
             parent="menu_treasury_main"
-            action="action_treasury_safe"
-            sequence="15"/>
+            action="action_treasury_cash_operation"
+            sequence="20"/>
 
-
-    <!-- Sous-menu Configuration (pour plus tard) -->
-    <menuitem
-            id="menu_treasury_configuration"
-            name="Configuration"
-            parent="menu_treasury_root"
-            sequence="100"
-            groups="base.group_system"
-    />
-
-    <!-- Menu Opérations de coffre -->
+    <!-- Opérations coffre -->
     <menuitem
             id="menu_treasury_safe_operation"
             name="Opérations coffre"
@@ -95,41 +111,28 @@
             sequence="25"
             groups="adi_treasury.group_treasury_manager"/>
 
+    <!-- Clôtures de caisse -->
+    <menuitem
+            id="menu_treasury_cash_closing"
+            name="Clôtures de caisse"
+            parent="menu_treasury_main"
+            action="action_treasury_cash_closing"
+            sequence="30"/>
 
-    <!-- Menu Configuration -->
+    <!-- ============================================== -->
+    <!-- CONFIGURATION -->
+    <!-- ============================================== -->
     <menuitem
             id="menu_treasury_config"
             name="Configuration"
-            parent="menu_treasury_main"
+            parent="menu_treasury_root"
             sequence="100"/>
 
-    <!-- Sous-menu Catégories -->
+    <!-- Catégories d'opérations -->
     <menuitem
             id="menu_treasury_operation_category"
             name="Catégories d'opérations"
             parent="menu_treasury_config"
             action="action_treasury_operation_category"
             sequence="10"/>
-
-    <!-- Menu Opérations de caisse -->
-
-
-    <menuitem
-            id="menu_treasury_cash_operation"
-            name="Opérations de caisse"
-            parent="menu_treasury_main"
-            action="action_treasury_cash_operation"
-            sequence="30"/>
-
-    <!-- Menu Clôtures -->
-    <menuitem
-            id="menu_treasury_cash_closing"
-            name="Clôtures de caisse"
-            parent="menu_treasury_main"
-            action="action_treasury_cash_closing"
-            sequence="35"/>
-
-    <!-- Menu Transferts -->
-
-    <!--      -->
 </odoo>

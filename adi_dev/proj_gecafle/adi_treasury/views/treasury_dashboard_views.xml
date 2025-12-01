@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue formulaire du tableau de bord simplifié -->
+    <record id="view_treasury_dashboard_form" model="ir.ui.view">
+        <field name="name">treasury.dashboard.form</field>
+        <field name="model">treasury.dashboard</field>
+        <field name="arch" type="xml">
+            <form string="Tableau de Bord Trésorerie" create="0" edit="0" delete="0">
+                <sheet>
+                    <!-- En-tête -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card bg-light">
+                                <div class="card-body py-3">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-8">
+                                            <h4 class="card-title mb-0">
+                                                <i class="fa fa-dashboard me-2"/>Tableau de Bord Trésorerie
+                                            </h4>
+                                        </div>
+                                        <div class="col-md-4 text-end">
+                                            <button name="action_refresh" type="object"
+                                                    class="btn btn-outline-secondary btn-sm">
+                                                <i class="fa fa-refresh me-1"/>Actualiser
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <field name="currency_id" invisible="1"/>
+                    <field name="date_from" invisible="1"/>
+                    <field name="date_to" invisible="1"/>
+
+                    <!-- ============ SECTION CAISSES ============ -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card border-primary">
+                                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-2">
+                                    <h5 class="mb-0">
+                                        <i class="fa fa-cash-register me-2"/>CAISSES
+                                    </h5>
+                                    <button name="%(adi_treasury.action_treasury_cash)d" type="action"
+                                            class="btn btn-light btn-sm">
+                                        <i class="fa fa-external-link me-1"/>Voir Caisses
+                                    </button>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <!-- Solde Global Caisses -->
+                                        <div class="col-md-3 mb-3">
+                                            <div class="card bg-success text-white h-100">
+                                                <div class="card-body text-center py-4">
+                                                    <h6 class="card-subtitle mb-2 text-white-50">SOLDE GLOBAL</h6>
+                                                    <h2 class="card-title mb-0 fw-bold">
+                                                        <field name="total_cash_balance" widget="monetary"/>
+                                                    </h2>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Liste des caisses en cards -->
+                                    <field name="cash_line_ids" nolabel="1" mode="kanban">
+                                        <kanban create="0" edit="0" delete="0" class="o_kanban_mobile">
+                                            <field name="name"/>
+                                            <field name="code"/>
+                                            <field name="current_balance"/>
+                                            <field name="currency_id"/>
+                                            <templates>
+                                                <t t-name="kanban-box">
+                                                    <div class="card bg-light m-1" style="min-width: 200px;">
+                                                        <div class="card-body text-center py-3">
+                                                            <h6 class="card-subtitle mb-2 text-muted">
+                                                                [<field name="code"/>] <field name="name"/>
+                                                            </h6>
+                                                            <h3 class="card-title mb-0 text-primary fw-bold">
+                                                                <field name="current_balance" widget="monetary"/>
+                                                            </h3>
+                                                        </div>
+                                                    </div>
+                                                </t>
+                                            </templates>
+                                        </kanban>
+                                    </field>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ============ SECTION COFFRES ============ -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card border-info">
+                                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center py-2">
+                                    <h5 class="mb-0">
+                                        <i class="fa fa-lock me-2"/>COFFRES
+                                    </h5>
+                                    <button name="%(adi_treasury.action_treasury_safe)d" type="action"
+                                            class="btn btn-light btn-sm">
+                                        <i class="fa fa-external-link me-1"/>Voir Coffres
+                                    </button>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <!-- Solde Global Coffres -->
+                                        <div class="col-md-3 mb-3">
+                                            <div class="card bg-success text-white h-100">
+                                                <div class="card-body text-center py-4">
+                                                    <h6 class="card-subtitle mb-2 text-white-50">SOLDE GLOBAL</h6>
+                                                    <h2 class="card-title mb-0 fw-bold">
+                                                        <field name="total_safe_balance" widget="monetary"/>
+                                                    </h2>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Liste des coffres en cards -->
+                                    <field name="safe_line_ids" nolabel="1" mode="kanban">
+                                        <kanban create="0" edit="0" delete="0" class="o_kanban_mobile">
+                                            <field name="name"/>
+                                            <field name="code"/>
+                                            <field name="current_balance"/>
+                                            <field name="currency_id"/>
+                                            <templates>
+                                                <t t-name="kanban-box">
+                                                    <div class="card bg-light m-1" style="min-width: 200px;">
+                                                        <div class="card-body text-center py-3">
+                                                            <h6 class="card-subtitle mb-2 text-muted">
+                                                                [<field name="code"/>] <field name="name"/>
+                                                            </h6>
+                                                            <h3 class="card-title mb-0 text-info fw-bold">
+                                                                <field name="current_balance" widget="monetary"/>
+                                                            </h3>
+                                                        </div>
+                                                    </div>
+                                                </t>
+                                            </templates>
+                                        </kanban>
+                                    </field>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action pour ouvrir le tableau de bord (via méthode Python) -->
+    <record id="action_treasury_dashboard_server" model="ir.actions.server">
+        <field name="name">Tableau de Bord Trésorerie</field>
+        <field name="model_id" ref="model_treasury_dashboard"/>
+        <field name="state">code</field>
+        <field name="code">action = model.action_open_dashboard()</field>
+    </record>
+
+</odoo>

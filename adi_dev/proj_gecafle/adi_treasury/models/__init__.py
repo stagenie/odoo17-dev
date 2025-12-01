@@ -9,4 +9,5 @@ from . import treasury_operation_category
 from . import treasury_cash_operation
 from . import treasury_cash_closing
 from . import account_payment
+from . import treasury_dashboard
 

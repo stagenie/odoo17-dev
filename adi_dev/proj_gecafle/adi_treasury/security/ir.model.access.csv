@@ -18,3 +18,10 @@ access_treasury_cash_closing_manager,treasury.cash.closing manager,model_treasur
 access_treasury_cash_closing_line_user,treasury.cash.closing.line user,model_treasury_cash_closing_line,group_treasury_user,1,0,0,0
 access_treasury_cash_closing_line_manager,treasury.cash.closing.line manager,model_treasury_cash_closing_line,group_treasury_manager,1,1,1,1
 
+access_treasury_dashboard_user,treasury.dashboard user,model_treasury_dashboard,group_treasury_user,1,1,1,1
+access_treasury_dashboard_manager,treasury.dashboard manager,model_treasury_dashboard,group_treasury_manager,1,1,1,1
+access_treasury_dashboard_cash_line_user,treasury.dashboard.cash.line user,model_treasury_dashboard_cash_line,group_treasury_user,1,1,1,1
+access_treasury_dashboard_cash_line_manager,treasury.dashboard.cash.line manager,model_treasury_dashboard_cash_line,group_treasury_manager,1,1,1,1
+access_treasury_dashboard_safe_line_user,treasury.dashboard.safe.line user,model_treasury_dashboard_safe_line,group_treasury_user,1,1,1,1
+access_treasury_dashboard_safe_line_manager,treasury.dashboard.safe.line manager,model_treasury_dashboard_safe_line,group_treasury_manager,1,1,1,1
+
