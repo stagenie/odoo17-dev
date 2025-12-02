@@ -1,5 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <!-- Format de papier A4 Paysage pour 2 x A5 côte à côte -->
+    <record id="paperformat_bordereau_ab" model="report.paperformat">
+        <field name="name">A4 Paysage (2xA5)</field>
+        <field name="default" eval="False"/>
+        <field name="format">A4</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">5</field>
+        <field name="margin_bottom">5</field>
+        <field name="margin_left">5</field>
+        <field name="margin_right">5</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">0</field>
+        <field name="dpi">90</field>
+    </record>
+
     <!-- 4 ACTIONS : 2 langues x 2 modes (groupé/simple) -->
 
     <!-- FRANÇAIS - REGROUPÉ -->
@@ -42,8 +57,26 @@
         <field name="print_report_name">'كشف - %s' % (object.name)</field>
     </record>
 
+    <!-- FRANÇAIS - BORDEREAU A,B (Duplicata sur une page A4 paysage) -->
+    <record id="action_report_bordereau_ab_fr" model="ir.actions.report">
+        <field name="name">Bordereau A,B (FR)</field>
+        <field name="model">gecafle.reception.recap</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_gecafle_reception_extended.report_bordereau_ab_fr</field>
+        <field name="report_file">adi_gecafle_reception_extended.report_bordereau_ab_fr</field>
+        <field name="print_report_name">'Bordereau A-B - %s' % (object.name)</field>
+        <field name="paperformat_id" ref="adi_gecafle_reception_extended.paperformat_bordereau_ab"/>
+    </record>
 
-
-
+    <!-- ARABE - BORDEREAU A,B (Duplicata sur une page A4 paysage) -->
+    <record id="action_report_bordereau_ab_ar" model="ir.actions.report">
+        <field name="name">كشف أ،ب</field>
+        <field name="model">gecafle.reception.recap</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_gecafle_reception_extended.report_bordereau_ab_ar</field>
+        <field name="report_file">adi_gecafle_reception_extended.report_bordereau_ab_ar</field>
+        <field name="print_report_name">'كشف أ-ب - %s' % (object.name)</field>
+        <field name="paperformat_id" ref="adi_gecafle_reception_extended.paperformat_bordereau_ab"/>
+    </record>
 
 </odoo>

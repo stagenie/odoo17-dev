@@ -26,9 +26,11 @@
         'reports/report_bordereau_simple_ar.xml',
         'reports/report_emballages_reception_fr.xml',
         'reports/report_emballages_reception_ar.xml',
+        'reports/report_bordereau_ab_fr.xml',
+        'reports/report_bordereau_ab_ar.xml',
         'reports/report_bon_reception_inherit.xml',  # NOUVEAU
         'reports/report_bon_reception_ar_inherit.xml',  # NOUVEAU
-        'reports/report_bon_reception_ticket_inherit.xml',  # Héritage ticket avec transport/emballage
+        'reports/report_bon_reception_ticket_inherit.xml',  # Transport/emballage maintenant dans le parent
     ],
     'application': True,
     'installable': True,

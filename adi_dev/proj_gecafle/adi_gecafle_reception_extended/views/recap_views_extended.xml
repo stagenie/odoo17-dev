@@ -16,6 +16,16 @@
                         class="btn-info"
                         icon="fa-print"
                         context="{'default_recap_id': id}"/>
+                <button name="%(adi_gecafle_reception_extended.action_report_bordereau_ab_fr)d"
+                        string="Bordereau A,B (FR)"
+                        type="action"
+                        class="btn-secondary"
+                        icon="fa-print"/>
+                <button name="%(adi_gecafle_reception_extended.action_report_bordereau_ab_ar)d"
+                        string="كشف أ،ب"
+                        type="action"
+                        class="btn-secondary"
+                        icon="fa-print"/>
             </xpath>
 
             <!-- Ajouter l'onglet Détails Financiers -->

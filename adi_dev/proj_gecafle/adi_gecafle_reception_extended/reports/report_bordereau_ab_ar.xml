@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Template principal Arabe -->
+    <template id="report_bordereau_ab_ar">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.basic_layout">
+                    <t t-set="company" t-value="o.env.company"/>
+                    <div class="page" dir="rtl" style="font-family: Tahoma, Arial, sans-serif; font-size: 12px; padding: 0; margin: 0;">
+                        <!-- Recuperation des lignes -->
+                        <t t-set="lines" t-value="o.get_lines_sorted_by_price_desc(grouped=True)"/>
+
+                        <!-- Calculs prealables -->
+                        <t t-set="total_colis" t-value="sum([l.get('nombre_colis', 0) for l in lines])"/>
+                        <t t-set="total_poids" t-value="sum([l.get('poids_net', 0) for l in lines])"/>
+                        <t t-set="total_montant" t-value="sum([l.get('montant_vente', 0) for l in lines])"/>
+                        <t t-set="total_commission" t-value="sum([l.get('montant_commission', 0) for l in lines])"/>
+
+                        <!-- Table pour forcer les deux colonnes cote a cote -->
+                        <table style="width: 100%; table-layout: fixed; border-collapse: collapse; direction: rtl;">
+                            <tr>
+                                <!-- PARTIE A (Droite en RTL) -->
+                                <td style="width: 50%; vertical-align: top; padding: 5px; border-left: 2px dashed #666;">
+                                    <t t-call="adi_gecafle_reception_extended.report_bordereau_ab_content_ar">
+                                        <t t-set="section_letter" t-value="'A'"/>
+                                    </t>
+                                </td>
+                                <!-- PARTIE B (Gauche en RTL) -->
+                                <td style="width: 50%; vertical-align: top; padding: 5px;">
+                                    <t t-call="adi_gecafle_reception_extended.report_bordereau_ab_content_ar">
+                                        <t t-set="section_letter" t-value="'B'"/>
+                                    </t>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <!-- Template du contenu d'une section en arabe -->
+    <template id="report_bordereau_ab_content_ar">
+        <!-- EN-TETE ENTREPRISE -->
+        <div style="text-align: center; border-bottom: 3px solid #333; padding-bottom: 8px; margin-bottom: 10px;">
+            <!-- Nom entreprise -->
+            <div style="font-size: 18px; font-weight: bold;">
+                <span t-field="company.name"/>
+            </div>
+            <!-- Slogan -->
+            <div style="font-size: 11px; font-style: italic; color: #555; margin: 5px 0;">
+                سوق الجملة للخضر والفواكه
+            </div>
+            <!-- Telephones -->
+            <div style="font-size: 11px;">
+                <t t-if="company.phone">هاتف: <span t-field="company.phone"/></t>
+                <t t-if="company.mobile"> / <span t-field="company.mobile"/></t>
+            </div>
+        </div>
+
+        <!-- LIGNE: Box A/B + N° Reception + Date -->
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 8px; direction: rtl;">
+            <tr>
+                <!-- Box A ou B -->
+                <td style="width: 50px; vertical-align: middle;">
+                    <div style="background: #333; color: #fff; font-size: 28px; font-weight: bold; text-align: center; padding: 8px 12px; border-radius: 5px;">
+                        <t t-esc="section_letter"/>
+                    </div>
+                </td>
+                <!-- N° Bordereau et Date -->
+                <td style="vertical-align: middle; padding-right: 10px;">
+                    <div style="font-size: 14px;">
+                        <strong>كشف رقم:</strong> <span style="font-size: 16px; font-weight: bold;" t-field="o.name"/>
+                    </div>
+                    <div style="font-size: 14px; margin-top: 3px;">
+                        <strong>التاريخ:</strong> <span style="font-size: 15px;" t-field="o.reception_id.reception_date" t-options='{"widget": "date"}'/>
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+        <!-- PRODUCTEUR en grand -->
+        <div style="background: #f0f0f0; border: 2px solid #333; padding: 10px; margin-bottom: 10px; text-align: center;">
+            <span style="font-size: 11px; color: #666;">المنتج:</span>
+            <div style="font-size: 20px; font-weight: bold; margin-top: 3px;">
+                <span t-field="o.producteur_id.name"/>
+            </div>
+            <t t-if="o.producteur_id.phone">
+                <div style="font-size: 12px; color: #555; margin-top: 2px;">
+                    هاتف: <span t-field="o.producteur_id.phone"/>
+                </div>
+            </t>
+        </div>
+
+        <!-- LIGNES DE RECEPTION -->
+        <div style="border: 2px solid #333; padding: 8px; margin-bottom: 10px; background: #fffde7;">
+            <div style="text-align: center; font-weight: bold; font-size: 13px; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-bottom: 8px;">
+                وصل الاستلام رقم <span t-field="o.reception_id.name"/>
+            </div>
+            <table style="width: 100%; border-collapse: collapse; font-size: 13px; direction: rtl;">
+                <thead>
+                    <tr style="background: #e0e0e0;">
+                        <th style="border: 1px solid #999; padding: 6px; text-align: center;">طرود</th>
+                        <th style="border: 1px solid #999; padding: 6px;">المنتج</th>
+                        <th style="border: 1px solid #999; padding: 6px;">الجودة</th>
+                        <th style="border: 1px solid #999; padding: 6px;">العبوة</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <t t-foreach="o.reception_id.details_reception_ids" t-as="rec_line">
+                        <tr>
+                            <td style="border: 1px solid #999; padding: 6px; text-align: center; font-weight: bold;">
+                                <span dir="ltr"><t t-esc="rec_line.qte_colis_recue"/></span>
+                            </td>
+                            <td style="border: 1px solid #999; padding: 6px;">
+                                <span t-field="rec_line.designation_id.name"/>
+                            </td>
+                            <td style="border: 1px solid #999; padding: 6px;">
+                                <span t-field="rec_line.qualite_id.name"/>
+                            </td>
+                            <td style="border: 1px solid #999; padding: 6px;">
+                                <span t-field="rec_line.type_colis_id.name"/>
+                            </td>
+                        </tr>
+                    </t>
+                </tbody>
+                <tfoot>
+                    <tr style="background: #e0e0e0; font-weight: bold;">
+                        <td style="border: 1px solid #999; padding: 6px; text-align: center; font-size: 14px;">
+                            <span dir="ltr"><t t-esc="sum(o.reception_id.details_reception_ids.mapped('qte_colis_recue'))"/></span>
+                        </td>
+                        <td colspan="3" style="border: 1px solid #999; padding: 6px;">
+                            مجموع العبوات: <span dir="ltr"><t t-esc="sum(o.reception_id.details_emballage_reception_ids.mapped('qte_entrantes'))"/></span>
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <!-- TABLEAU DES VENTES -->
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 14px; direction: rtl;">
+            <thead>
+                <tr style="background: #ddd;">
+                    <th style="border: 1px solid #333; padding: 8px 5px; text-align: center; width: 8%;">طرود</th>
+                    <th style="border: 1px solid #333; padding: 8px 5px; width: 28%;">نوع البضاعة</th>
+                    <th style="border: 1px solid #333; padding: 8px 5px; text-align: center; width: 10%;">م/ط</th>
+                    <th style="border: 1px solid #333; padding: 8px 5px; text-align: center; width: 13%;">الوزن</th>
+                    <th style="border: 1px solid #333; padding: 8px 5px; text-align: center; width: 13%;">السعر</th>
+                    <th style="border: 1px solid #333; padding: 8px 5px; text-align: center; width: 16%;">المبلغ</th>
+                </tr>
+            </thead>
+            <tbody>
+                <t t-foreach="lines" t-as="line">
+                    <tr>
+                        <td style="border: 1px solid #333; padding: 10px 5px; text-align: center; font-size: 15px; font-weight: bold;">
+                            <span dir="ltr"><t t-esc="line.get('nombre_colis', 0)"/></span>
+                        </td>
+                        <td style="border: 1px solid #333; padding: 10px 5px; font-size: 12px;">
+                            <t t-esc="line.get('produit_name', '')"/>
+                            <t t-if="line.get('qualite_name')">-<t t-esc="line.get('qualite_name', '')"/></t>
+                            <t t-if="line.get('type_colis_name')">(<t t-esc="line.get('type_colis_name', '')"/>)</t>
+                        </td>
+                        <td style="border: 1px solid #333; padding: 10px 5px; text-align: center;">
+                            <t t-if="line.get('nombre_colis', 0) > 0">
+                                <span dir="ltr"><t t-esc="'%.1f' % (line.get('poids_net', 0) / line.get('nombre_colis', 1))"/></span>
+                            </t>
+                        </td>
+                        <td style="border: 1px solid #333; padding: 10px 5px; text-align: center;">
+                            <span dir="ltr"><t t-esc="'%.2f' % line.get('poids_net', 0)"/></span>
+                        </td>
+                        <td style="border: 1px solid #333; padding: 10px 5px; text-align: center; font-weight: bold;">
+                            <span dir="ltr"><t t-esc="'%.2f' % line.get('prix_unitaire', 0)"/></span>
+                        </td>
+                        <td style="border: 1px solid #333; padding: 10px 5px; text-align: center; font-weight: bold;">
+                            <span dir="ltr"><t t-esc="'{:,.2f}'.format(line.get('montant_vente', 0))"/></span>
+                        </td>
+                    </tr>
+                </t>
+            </tbody>
+            <tfoot>
+                <tr style="background: #bbb; font-weight: bold;">
+                    <td style="border: 1px solid #333; padding: 10px 5px; text-align: center; font-size: 15px;"><span dir="ltr"><t t-esc="total_colis"/></span></td>
+                    <td style="border: 1px solid #333; padding: 10px 5px; font-size: 13px;">المجاميع</td>
+                    <td style="border: 1px solid #333; padding: 10px 5px; text-align: center;">
+                        <t t-if="total_colis > 0"><span dir="ltr"><t t-esc="'%.1f' % (total_poids / total_colis)"/></span></t>
+                    </td>
+                    <td style="border: 1px solid #333; padding: 10px 5px; text-align: center;"><span dir="ltr"><t t-esc="'%.2f' % total_poids"/></span></td>
+                    <td style="border: 1px solid #333; padding: 10px 5px;"></td>
+                    <td style="border: 1px solid #333; padding: 10px 5px; text-align: center; font-size: 15px;"><span dir="ltr"><t t-esc="'{:,.2f}'.format(total_montant)"/></span></td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <!-- DEDUCTIONS ET NET A PAYER -->
+        <div style="border: 3px solid #333; padding: 10px; background: #f9f9f9;">
+            <table style="width: 100%; font-size: 13px; direction: rtl;">
+                <tr>
+                    <td style="padding: 5px;"><strong>مجموع المبيعات:</strong></td>
+                    <td style="padding: 5px; text-align: left; font-size: 14px;"><span dir="ltr"><t t-esc="'{:,.2f}'.format(total_montant)"/> د.ج</span></td>
+                </tr>
+                <tr>
+                    <td style="padding: 5px;">العمولة (-):</td>
+                    <td style="padding: 5px; text-align: left; color: #c00; font-size: 14px;"><span dir="ltr">- <t t-esc="'{:,.2f}'.format(total_commission)"/> د.ج</span></td>
+                </tr>
+                <t t-if="o.reception_id and o.reception_id.avance_producteur">
+                    <tr>
+                        <td style="padding: 5px;">دفعة المنتج (-):</td>
+                        <td style="padding: 5px; text-align: left; color: #c00; font-size: 14px;"><span dir="ltr">- <span t-field="o.reception_id.avance_producteur"/> د.ج</span></td>
+                    </tr>
+                </t>
+                <t t-if="o.reception_id and o.reception_id.transport">
+                    <tr>
+                        <td style="padding: 5px;">النقل (-):</td>
+                        <td style="padding: 5px; text-align: left; color: #c00; font-size: 14px;"><span dir="ltr">- <span t-field="o.reception_id.transport"/> د.ج</span></td>
+                    </tr>
+                </t>
+                <t t-if="o.montant_total_emballage_achete and o.montant_total_emballage_achete > 0">
+                    <tr>
+                        <td style="padding: 5px;">العبوات المشتراة (+):</td>
+                        <td style="padding: 5px; text-align: left; color: #080; font-size: 14px;"><span dir="ltr">+ <span t-field="o.montant_total_emballage_achete"/> د.ج</span></td>
+                    </tr>
+                </t>
+            </table>
+            <!-- NET A PAYER -->
+            <div style="border-top: 3px solid #333; margin-top: 8px; padding-top: 10px; background: #c8e6c9;">
+                <table style="width: 100%; direction: rtl;">
+                    <tr>
+                        <td style="font-size: 15px;"><strong>الصافي للدفع:</strong></td>
+                        <td style="text-align: left; font-size: 20px; font-weight: bold;">
+                            <span dir="ltr"><span t-field="o.solde_fournisseur"/></span>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </template>
+</odoo>

@@ -162,7 +162,7 @@
             </div>
 
             <!-- ========== SECTION MONTANTS ========== -->
-            <div t-if="o.avance_producteur"
+            <div t-if="o.avance_producteur or o.transport or o.montant_total_emballage_achete"
                  style="border-bottom: 1px dashed #ccc; padding: 8px 0; margin-bottom: 5px;"
                  id="ticket_montants_section">
 
@@ -175,7 +175,23 @@
                     </span>
                 </div>
 
-                <!-- Placeholder pour héritage: transport et emballage ajoutés par adi_gecafle_reception_extended -->
+                <!-- Transport -->
+                <div t-if="o.transport" style="text-align: center; margin-bottom: 5px;">
+                    <strong>النقل: </strong>
+                    <span style="font-size: 12pt; font-weight: bold;">
+                        <span t-field="o.transport"
+                              t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                    </span>
+                </div>
+
+                <!-- Emballage acheté -->
+                <div t-if="o.montant_total_emballage_achete" style="text-align: center; margin-bottom: 5px;">
+                    <strong>العبوات المشتراة: </strong>
+                    <span style="font-size: 12pt; font-weight: bold;">
+                        <span t-field="o.montant_total_emballage_achete"
+                              t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                    </span>
+                </div>
             </div>
 
             <!-- ========== PIED DU TICKET ========== -->
