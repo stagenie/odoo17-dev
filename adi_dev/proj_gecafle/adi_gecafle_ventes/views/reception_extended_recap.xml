@@ -9,7 +9,20 @@
             <field name="state" position="after">
                 <field name="stock_epuise" invisible="1"/>
                 <field name="recap_count" invisible="1"/>
+                <field name="sale_status_badge" invisible="1"/>
             </field>
+
+            <!-- Bandeau d'état de vente (en haut à droite de la sheet) -->
+            <xpath expr="//sheet/div[@name='button_box']" position="before">
+                <widget name="web_ribbon" title="مباع" bg_color="bg-success"
+                        invisible="sale_status_badge != 'vendu'"/>
+                <widget name="web_ribbon" title="مفوتر" bg_color="bg-info"
+                        invisible="sale_status_badge != 'facture'"/>
+                <widget name="web_ribbon" title="دفع جزئي" bg_color="bg-warning"
+                        invisible="sale_status_badge != 'paiement_partiel'"/>
+                <widget name="web_ribbon" title="مدفوع" bg_color="bg-primary"
+                        invisible="sale_status_badge != 'paye'"/>
+            </xpath>
 
             <!-- Ajouter le bouton dans le button_box -->
             <div name="button_box" position="inside">

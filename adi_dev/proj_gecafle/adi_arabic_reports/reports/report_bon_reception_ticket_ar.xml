@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Format de papier Ticket (80mm) -->
+    <record id="paperformat_bon_reception_ticket" model="report.paperformat">
+        <field name="name">Ticket 80mm</field>
+        <field name="default" eval="False"/>
+        <field name="format">custom</field>
+        <field name="orientation">Portrait</field>
+        <field name="page_width">80</field>
+        <field name="page_height">200</field>
+        <field name="margin_top">3</field>
+        <field name="margin_bottom">3</field>
+        <field name="margin_left">2</field>
+        <field name="margin_right">2</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">0</field>
+        <field name="dpi">96</field>
+    </record>
+
+    <!-- ============ TEMPLATE DE CONTENU PARTAGÉ ============ -->
+    <template id="report_bon_reception_ticket_content_ar">
+        <t t-set="company" t-value="o.env.company"/>
+        <div class="article" dir="rtl"
+             style="font-family: Tahoma, Arial, sans-serif; width: 100%; padding: 5px; font-size: 12pt;">
+
+            <!-- ========== EN-TÊTE SOCIÉTÉ ========== -->
+            <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 8px;">
+                <!-- Nom de la société -->
+                <div style="font-size: 14pt; font-weight: bold;">
+                    <span t-field="company.name"/>
+                </div>
+                <!-- Adresse -->
+                <div t-if="company.street" style="font-size: 10pt; margin-top: 3px;">
+                    <span t-field="company.street"/>
+                    <t t-if="company.city"> - <span t-field="company.city"/></t>
+                </div>
+                <!-- Téléphones -->
+                <div style="font-size: 10pt; margin-top: 3px;">
+                    <t t-if="company.phone">
+                        <span>هاتف: </span><span t-field="company.phone"/>
+                    </t>
+                    <t t-if="company.mobile">
+                        <span> / </span><span t-field="company.mobile"/>
+                    </t>
+                </div>
+            </div>
+
+            <!-- Section DUPLICATA -->
+            <div t-if="is_duplicata"
+                 style="text-align: center; padding: 5px; margin-bottom: 8px; font-weight: bold; background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb;">
+                نسخة مكررة
+            </div>
+
+            <!-- Section états -->
+            <div t-if="o.state == 'annulee'"
+                 style="text-align: center; padding: 5px; margin-bottom: 8px; font-weight: bold; background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;">
+                استلام ملغى
+            </div>
+
+            <div t-if="o.state == 'brouillon'"
+                 style="text-align: center; padding: 5px; margin-bottom: 8px; font-weight: bold; background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba;">
+                مسودة
+            </div>
+
+            <!-- ========== TITRE ET NUMÉRO ========== -->
+            <div style="text-align: center; border-bottom: 2px dashed #000; padding-bottom: 8px; margin-bottom: 8px;">
+                <div style="font-size: 16pt; font-weight: bold; margin: 5px 0;">وصل الاستلام</div>
+                <div style="font-size: 18pt; font-weight: bold; color: #333;">
+                    <span t-field="o.name"/>
+                </div>
+                <div style="font-size: 11pt; margin-top: 5px;">
+                    <span t-field="o.reception_date"
+                          t-options="{'widget': 'datetime', 'format': 'dd/MM/yyyy HH:mm'}"/>
+                </div>
+            </div>
+
+            <!-- ========== INFORMATIONS PRODUCTEUR ========== -->
+            <div style="border-bottom: 1px dashed #ccc; padding: 8px 0; margin-bottom: 5px;">
+                <div>
+                    <strong>المنتج: </strong>
+                    <span t-field="o.producteur_id.name"/>
+                </div>
+                <div t-if="o.producteur_id.phone">
+                    <strong>الهاتف: </strong>
+                    <span t-field="o.producteur_id.phone"/>
+                </div>
+            </div>
+
+            <!-- ========== TABLEAU DES PRODUITS ========== -->
+            <div style="border-bottom: 1px dashed #ccc; padding: 8px 0; margin-bottom: 5px;">
+                <div style="text-align: center; margin-bottom: 5px; font-weight: bold;">المنتجات</div>
+                <table style="width: 100%; border-collapse: collapse; font-size: 10pt;">
+                    <thead>
+                        <tr style="background-color: #f0f0f0;">
+                            <th style="border: 1px solid #ddd; padding: 4px; text-align: center; width: 10%;">#</th>
+                            <th style="border: 1px solid #ddd; padding: 4px; text-align: center; width: 15%;">الكمية</th>
+                            <th style="border: 1px solid #ddd; padding: 4px; text-align: center;">التسمية / العبوة / الجودة</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="o.details_reception_ids" t-as="line">
+                            <tr>
+                                <td style="border: 1px solid #ddd; padding: 3px; text-align: center;">
+                                    <span t-field="line.num_seq"/>
+                                </td>
+                                <td style="border: 1px solid #ddd; padding: 3px; text-align: center;">
+                                    <span t-field="line.qte_colis_recue"/>
+                                </td>
+                                <td style="border: 1px solid #ddd; padding: 3px; text-align: right;">
+                                    <!-- Désignation -->
+                                    <strong><span t-field="line.designation_id.name"/></strong>
+                                    <!-- Type emballage et Qualité sur la même ligne -->
+                                    <div style="font-size: 9pt; color: #555;">
+                                        <t t-if="line.type_colis_id">
+                                            <span t-field="line.type_colis_id.name"/>
+                                        </t>
+                                        <t t-if="line.type_colis_id and line.qualite_id"> - </t>
+                                        <t t-if="line.qualite_id">
+                                            <span t-field="line.qualite_id.name"/>
+                                        </t>
+                                    </div>
+                                </td>
+                            </tr>
+                        </t>
+                        <tr t-if="not o.details_reception_ids">
+                            <td colspan="3" style="border: 1px solid #ddd; padding: 3px; text-align: center;">
+                                لا توجد منتجات
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- ========== TABLEAU DES EMBALLAGES ========== -->
+            <div t-if="o.details_emballage_reception_ids"
+                 style="border-bottom: 1px dashed #ccc; padding: 8px 0; margin-bottom: 5px;">
+                <div style="text-align: center; margin-bottom: 5px; font-weight: bold;">العبوات</div>
+                <table style="width: 100%; border-collapse: collapse; font-size: 10pt;">
+                    <thead>
+                        <tr style="background-color: #f0f0f0;">
+                            <th style="border: 1px solid #ddd; padding: 4px; text-align: center;">النوع</th>
+                            <th style="border: 1px solid #ddd; padding: 4px; text-align: center;">داخلة</th>
+                            <th style="border: 1px solid #ddd; padding: 4px; text-align: center;">خارجة</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="o.details_emballage_reception_ids" t-as="emb">
+                            <tr>
+                                <td style="border: 1px solid #ddd; padding: 3px; text-align: center;">
+                                    <span t-field="emb.emballage_id.name"/>
+                                </td>
+                                <td style="border: 1px solid #ddd; padding: 3px; text-align: center;">
+                                    <span t-field="emb.qte_entrantes"/>
+                                </td>
+                                <td style="border: 1px solid #ddd; padding: 3px; text-align: center;">
+                                    <span t-field="emb.qte_sortantes"/>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- ========== SECTION MONTANTS ========== -->
+            <div t-if="o.avance_producteur"
+                 style="border-bottom: 1px dashed #ccc; padding: 8px 0; margin-bottom: 5px;"
+                 id="ticket_montants_section">
+
+                <!-- Avance producteur -->
+                <div t-if="o.avance_producteur" style="text-align: center; margin-bottom: 5px;">
+                    <strong>المبلغ المدفوع: </strong>
+                    <span style="font-size: 14pt; font-weight: bold;">
+                        <span t-field="o.avance_producteur"
+                              t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                    </span>
+                </div>
+
+                <!-- Placeholder pour héritage: transport et emballage ajoutés par adi_gecafle_reception_extended -->
+            </div>
+
+            <!-- ========== PIED DU TICKET ========== -->
+            <div style="text-align: center; margin-top: 10px; padding-top: 8px; border-top: 2px dashed #000; font-size: 10pt;">
+                <div><span t-field="o.user_id.name"/></div>
+                <div style="margin-top: 5px;">شكرا لكم</div>
+            </div>
+        </div>
+    </template>
+
+    <!-- ============ TEMPLATE WRAPPER NORMAL ============ -->
+    <template id="report_bon_reception_ticket_ar">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <!-- Définir is_duplicata à False pour le rapport normal -->
+                <t t-set="is_duplicata" t-value="False"/>
+                <t t-call="adi_arabic_reports.report_bon_reception_ticket_content_ar"/>
+            </t>
+        </t>
+    </template>
+
+    <!-- ============ TEMPLATE WRAPPER DUPLICATA ============ -->
+    <template id="report_bon_reception_ticket_duplicata_ar">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <!-- Définir is_duplicata à True pour le duplicata -->
+                <t t-set="is_duplicata" t-value="True"/>
+                <t t-call="adi_arabic_reports.report_bon_reception_ticket_content_ar"/>
+            </t>
+        </t>
+    </template>
+
+    <!-- Action pour le rapport ticket normal -->
+    <record id="action_report_bon_reception_ticket_ar" model="ir.actions.report">
+        <field name="name">وصل الاستلام - تذكرة</field>
+        <field name="model">gecafle.reception</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_arabic_reports.report_bon_reception_ticket_ar</field>
+        <field name="report_file">adi_arabic_reports.report_bon_reception_ticket_ar</field>
+        <field name="paperformat_id" ref="adi_arabic_reports.paperformat_bon_reception_ticket"/>
+        <field name="print_report_name">'وصل الاستلام - %s' % (object.name or '').replace('/','-')</field>
+    </record>
+
+    <!-- Action pour le rapport ticket duplicata -->
+    <record id="action_report_bon_reception_ticket_duplicata_ar" model="ir.actions.report">
+        <field name="name">وصل الاستلام - تذكرة نسخة مكررة</field>
+        <field name="model">gecafle.reception</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_arabic_reports.report_bon_reception_ticket_duplicata_ar</field>
+        <field name="report_file">adi_arabic_reports.report_bon_reception_ticket_duplicata_ar</field>
+        <field name="paperformat_id" ref="adi_arabic_reports.paperformat_bon_reception_ticket"/>
+        <field name="print_report_name">'نسخة مكررة - وصل الاستلام - %s' % (object.name or '').replace('/','-')</field>
+    </record>
+</odoo>

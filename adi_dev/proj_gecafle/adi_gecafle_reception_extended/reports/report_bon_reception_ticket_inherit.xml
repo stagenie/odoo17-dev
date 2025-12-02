@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Héritage du template ticket pour ajouter transport et emballage acheté -->
+    <template id="report_bon_reception_ticket_ar_inherit"
+              inherit_id="adi_arabic_reports.report_bon_reception_ticket_content_ar">
+
+        <!-- Modifier la condition du div pour inclure transport et emballage -->
+        <xpath expr="//div[@id='ticket_montants_section']" position="attributes">
+            <attribute name="t-if">o.avance_producteur or o.transport or o.montant_total_emballage_achete</attribute>
+        </xpath>
+
+        <!-- Ajouter transport et emballage après l'avance producteur -->
+        <xpath expr="//div[@id='ticket_montants_section']/div[last()]" position="after">
+            <!-- Transport -->
+            <div t-if="o.transport" style="text-align: center; margin-bottom: 5px;">
+                <strong>النقل: </strong>
+                <span style="font-size: 12pt; font-weight: bold;">
+                    <span t-field="o.transport"
+                          t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                </span>
+            </div>
+
+            <!-- Emballage acheté -->
+            <div t-if="o.montant_total_emballage_achete" style="text-align: center; margin-bottom: 5px;">
+                <strong>العبوات المشتراة: </strong>
+                <span style="font-size: 12pt; font-weight: bold;">
+                    <span t-field="o.montant_total_emballage_achete"
+                          t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                </span>
+            </div>
+        </xpath>
+    </template>
+</odoo>

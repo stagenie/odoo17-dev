@@ -1,3 +1,5 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_vente_reset_wizard_manager,gecafle.vente.reset.wizard.manager,model_gecafle_vente_reset_wizard,group_vente_control_manager,1,1,1,1
-access_vente_reset_wizard_user,gecafle.vente.reset.wizard.user,model_gecafle_vente_reset_wizard,base.group_user,1,0,0,0
+access_vente_reset_wizard_admin,gecafle.vente.reset.wizard.admin,model_gecafle_vente_reset_wizard,base.group_system,1,1,1,1
+access_vente_reset_wizard_erp_manager,gecafle.vente.reset.wizard.erp_manager,model_gecafle_vente_reset_wizard,base.group_erp_manager,1,1,1,1
+access_vente_reset_wizard_user,gecafle.vente.reset.wizard.user,model_gecafle_vente_reset_wizard,base.group_user,1,1,1,1

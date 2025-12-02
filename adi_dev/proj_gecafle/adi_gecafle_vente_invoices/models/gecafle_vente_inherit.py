@@ -210,7 +210,28 @@ class GecafleVente(models.Model):
                 'target': 'current',
             }
 
-        # Nouveaux champs pour les informations de paiement
+        # Champ pour le bandeau d'état de facturation/paiement
+    invoice_status_badge = fields.Selection([
+        ('facture', 'مفوتر'),
+        ('paiement_partiel', 'دفع جزئي'),
+        ('paye', 'مدفوع'),
+    ], string="Badge Facturation", compute='_compute_invoice_status_badge', store=True)
+
+    @api.depends('invoice_id', 'invoice_id.state', 'invoice_id.payment_state')
+    def _compute_invoice_status_badge(self):
+        """Calcule le badge à afficher selon l'état de facturation/paiement"""
+        for record in self:
+            if not record.invoice_id or record.invoice_id.state == 'cancel':
+                record.invoice_status_badge = False
+            elif record.invoice_id.payment_state == 'paid':
+                record.invoice_status_badge = 'paye'
+            elif record.invoice_id.payment_state == 'partial':
+                record.invoice_status_badge = 'paiement_partiel'
+            else:
+                # Facture créée mais non payée (not_paid, in_payment)
+                record.invoice_status_badge = 'facture'
+
+    # Nouveaux champs pour les informations de paiement
     payment_state = fields.Selection(
         string="État du paiement",
         related='invoice_id.payment_state',

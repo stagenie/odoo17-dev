@@ -107,6 +107,23 @@
                         class="btn-warning"
                         icon="fa-copy"
                         groups="base.group_user"/>
+
+                <!-- Bouton Ticket Réception en Arabe (format 80mm) -->
+                <button name="action_print_bon_reception_ticket_ar"
+                        string="تذكرة"
+                        type="object"
+                        class="btn-success"
+                        icon="fa-ticket"
+                        invisible="state not in ('confirmee')"
+                        groups="base.group_user"/>
+
+                <!-- Bouton Ticket Duplicata Réception en Arabe (format 80mm) -->
+                <button name="action_print_bon_reception_ticket_duplicata_ar"
+                        string="تذكرة مكررة"
+                        type="object"
+                        class="btn-warning"
+                        icon="fa-copy"
+                        groups="base.group_user"/>
             </xpath>
         </field>
     </record>

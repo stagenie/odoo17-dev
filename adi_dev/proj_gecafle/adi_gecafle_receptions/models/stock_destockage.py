@@ -26,6 +26,21 @@ class GecafleStock(models.Model):
         related='reception_id.reception_date',
         store=True
     )
+    # Champ Date pour la recherche (sans heure)
+    search_date = fields.Date(
+        string="Rechercher Date",
+        compute='_compute_search_date',
+        store=True,
+        help="Date de réception (sans heure) pour la recherche"
+    )
+
+    @api.depends('reception_date')
+    def _compute_search_date(self):
+        for record in self:
+            if record.reception_date:
+                record.search_date = record.reception_date.date()
+            else:
+                record.search_date = False
     designation_id = fields.Many2one(
         'gecafle.produit',
         string="Produit",

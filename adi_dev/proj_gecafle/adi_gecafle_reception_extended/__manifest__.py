@@ -28,6 +28,7 @@
         'reports/report_emballages_reception_ar.xml',
         'reports/report_bon_reception_inherit.xml',  # NOUVEAU
         'reports/report_bon_reception_ar_inherit.xml',  # NOUVEAU
+        'reports/report_bon_reception_ticket_inherit.xml',  # Héritage ticket avec transport/emballage
     ],
     'application': True,
     'installable': True,

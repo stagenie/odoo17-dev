@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Héritage de la vue de recherche des factures (clients et fournisseurs) -->
+    <record id="view_account_invoice_filter_inherit_date" model="ir.ui.view">
+        <field name="name">account.invoice.search.inherit.date</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_account_invoice_filter"/>
+        <field name="priority">5</field>
+        <field name="arch" type="xml">
+            <!-- Ajouter le champ de recherche par date en première position -->
+            <xpath expr="//search/field[1]" position="before">
+                <field name="search_date" string="Rechercher Date"/>
+                <separator/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Héritage de la vue de recherche générale des écritures comptables -->
+    <record id="view_account_move_filter_inherit_date" model="ir.ui.view">
+        <field name="name">account.move.search.inherit.date</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_account_move_filter"/>
+        <field name="priority">5</field>
+        <field name="arch" type="xml">
+            <!-- Ajouter le champ de recherche par date en première position -->
+            <xpath expr="//search/field[1]" position="before">
+                <field name="search_date" string="Rechercher Date"/>
+                <separator/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

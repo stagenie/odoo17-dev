@@ -61,8 +61,10 @@
             <field name="model">gecafle.stock</field>
             <field name="arch" type="xml">
                 <search>
+                    <!-- Recherche par date en premier -->
+                    <field name="search_date" string="Rechercher Date"/>
+                    <separator/>
                     <field name="reception_id" string="N° de Réception"/>
-                    <field name="reception_date" string="Date de Réception"/>
                     <field name="producteur_id" string="Producteur"/>
                     <field name="designation_id" string="Produit"/>
                     <field name="emballage_id" string="Emballage"/>

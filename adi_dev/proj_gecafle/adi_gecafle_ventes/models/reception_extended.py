@@ -69,6 +69,30 @@ class GecafleReception(models.Model):
         default=lambda self: self.env.company.currency_id
     )
 
+    # Champ pour le bandeau d'état de vente/facturation
+    sale_status_badge = fields.Selection([
+        ('vendu', 'مباع'),
+        ('facture', 'مفوتر'),
+        ('paiement_partiel', 'دفع جزئي'),
+        ('paye', 'مدفوع'),
+    ], string="Badge État", compute='_compute_sale_status_badge', store=True)
+
+    @api.depends('stock_epuise', 'recap_ids', 'recap_ids.state', 'recap_ids.invoice_id',
+                 'recap_ids.invoice_id.payment_state', 'payment_state')
+    def _compute_sale_status_badge(self):
+        """Calcule le badge à afficher selon l'état de la réception"""
+        for record in self:
+            if record.payment_state == 'paid':
+                record.sale_status_badge = 'paye'
+            elif record.payment_state == 'partial':
+                record.sale_status_badge = 'paiement_partiel'
+            elif record.payment_state == 'unpaid':
+                record.sale_status_badge = 'facture'
+            elif record.stock_epuise:
+                record.sale_status_badge = 'vendu'
+            else:
+                record.sale_status_badge = False
+
     @api.depends('details_reception_ids.detail_vente_ids.vente_id.state')
     def _compute_has_linked_sales(self):
         """Vérifie si la réception a des ventes liées non annulées"""

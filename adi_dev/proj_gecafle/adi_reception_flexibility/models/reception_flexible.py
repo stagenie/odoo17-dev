@@ -136,9 +136,6 @@ class GecafleDetailsReceptionFlexible(models.Model):
                 if record.reception_id.state == 'confirmee':
                     record.reception_id.sync_emballages_with_reception()
 
-        # Invalider le cache
-        self.invalidate_cache()
-
         return result
 
     @api.model

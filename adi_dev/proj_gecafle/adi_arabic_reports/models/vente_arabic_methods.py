@@ -47,6 +47,20 @@ class GecafleReceptionArabic(models.Model):
         # Utiliser l'action duplicata dédiée qui appelle report_bon_reception_duplicata_ar
         return self.env.ref('adi_arabic_reports.action_report_bon_reception_duplicata_ar').report_action(self)
 
+    def action_print_bon_reception_ticket_ar(self):
+        """Imprime le bon de réception en format ticket (80mm)"""
+        self.ensure_one()
+
+        # Utiliser l'action ticket qui appelle report_bon_reception_ticket_ar
+        return self.env.ref('adi_arabic_reports.action_report_bon_reception_ticket_ar').report_action(self)
+
+    def action_print_bon_reception_ticket_duplicata_ar(self):
+        """Imprime le duplicata du bon de réception en format ticket (80mm)"""
+        self.ensure_one()
+
+        # Utiliser l'action ticket duplicata qui appelle report_bon_reception_ticket_duplicata_ar
+        return self.env.ref('adi_arabic_reports.action_report_bon_reception_ticket_duplicata_ar').report_action(self)
+
 
 class AccountMoveArabic(models.Model):
     _inherit = 'account.move'

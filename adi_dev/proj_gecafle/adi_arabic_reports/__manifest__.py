@@ -27,6 +27,7 @@
     'data': [
          'reports/report_bon_vente_ar.xml',
         'reports/report_bon_reception_ar.xml',
+        'reports/report_bon_reception_ticket_ar.xml',
         'reports/report_recap_ventes_ar.xml',
         'reports/report_recap_ventes_commission_ar.xml',
         'reports/report_ventes_details_ar.xml',
