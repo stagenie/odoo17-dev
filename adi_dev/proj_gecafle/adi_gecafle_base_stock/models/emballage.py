@@ -9,7 +9,7 @@ class GecafleEmballage(models.Model):
     name = fields.Char(string='Nom de l\'emballage', required=True, index=True, translate=True)
     weight = fields.Float(string='Poids en Kilos', digits='Stock Weight')
     price_unit = fields.Float(string='Prix Unitaire', digits='Product Price')
-    non_returnable = fields.Boolean(string='Non rendu', default=False)
+    non_returnable = fields.Boolean(string='Non rendu', default=True)
     
     quantity_initial = fields.Integer(string='Quantité initiale', default=0)
     creation_date = fields.Date(string='Date création', default=fields.Date.context_today)

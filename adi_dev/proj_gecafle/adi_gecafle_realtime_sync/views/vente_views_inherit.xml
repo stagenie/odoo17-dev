@@ -10,13 +10,13 @@
         <field name="inherit_id" ref="adi_gecafle_ventes.view_gecafle_vente_form"/>
         <field name="priority">100</field>
         <field name="arch" type="xml">
-            <!-- Ajouter le widget reception_realtime au champ reception_id -->
-            <xpath expr="//field[@name='detail_vente_ids']//field[@name='reception_id']" position="attributes">
+            <!-- Remplacer le champ reception_id avec le widget realtime -->
+            <xpath expr="//field[@name='detail_vente_ids']/tree/field[@name='reception_id']" position="attributes">
                 <attribute name="widget">reception_realtime</attribute>
             </xpath>
 
-            <!-- Ajouter le widget detail_reception_realtime au champ detail_reception_id -->
-            <xpath expr="//field[@name='detail_vente_ids']//field[@name='detail_reception_id']" position="attributes">
+            <!-- Remplacer le champ detail_reception_id avec le widget realtime -->
+            <xpath expr="//field[@name='detail_vente_ids']/tree/field[@name='detail_reception_id']" position="attributes">
                 <attribute name="widget">detail_reception_realtime</attribute>
             </xpath>
         </field>

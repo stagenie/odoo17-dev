@@ -6,7 +6,8 @@ import { useService } from "@web/core/utils/hooks";
 
 /**
  * Patch du ListController pour broadcaster les changements de réception
- * Capture les sauvegardes dans les trees editables
+ *
+ * Capture les sauvegardes dans les listes éditables (trees éditables).
  */
 patch(ListController.prototype, {
     setup() {
@@ -14,43 +15,43 @@ patch(ListController.prototype, {
 
         const resModel = this.props.resModel;
 
-        // Seulement pour les réceptions et les lignes de réception
+        // Activer uniquement pour les réceptions et lignes de réception
         if (resModel === "gecafle.reception" || resModel === "gecafle.details_reception") {
             this._isReceptionList = true;
 
             try {
-                this._broadcastService = useService("gecafle_broadcast");
+                this._syncService = useService("gecafle_sync");
             } catch (e) {
-                console.warn("[GeCaFle] Service broadcast non disponible dans ListController");
-                this._broadcastService = null;
+                console.warn("[GeCaFle Patch List] Service gecafle_sync non disponible");
+                this._syncService = null;
             }
         }
     },
 
     /**
-     * Override de onClickSave pour les listes éditables
+     * Override onClickSave pour les listes éditables
      */
     async onClickSave() {
         const result = await super.onClickSave(...arguments);
 
         if (this._isReceptionList) {
-            this._broadcastReceptionChange("save");
+            this._broadcastChange("save");
         }
 
         return result;
     },
 
     /**
-     * Override de createRecord pour les nouvelles lignes
+     * Override createRecord pour les nouvelles lignes
      */
     async createRecord(params) {
         const result = await super.createRecord(params);
 
         if (this._isReceptionList && result) {
-            // Attendre un peu pour que la sauvegarde soit complète
+            // Petit délai pour que la sauvegarde soit complète
             setTimeout(() => {
-                this._broadcastReceptionChange("create");
-            }, 500);
+                this._broadcastChange("create");
+            }, 300);
         }
 
         return result;
@@ -59,35 +60,46 @@ patch(ListController.prototype, {
     /**
      * Broadcast le changement
      */
-    _broadcastReceptionChange(action) {
-        console.log(`[GeCaFle] Liste réception: ${action}, broadcast du changement`);
+    _broadcastChange(action) {
+        console.log(`[GeCaFle Patch List] ${action}, broadcast du changement`);
 
-        if (this._broadcastService) {
-            this._broadcastService.broadcastChange({
+        if (this._syncService) {
+            this._syncService.broadcastChange({
                 model: this.props.resModel,
                 action: action,
             });
         } else {
-            try {
+            this._fallbackBroadcast(action);
+        }
+    },
+
+    /**
+     * Fallback si le service n'est pas disponible
+     */
+    _fallbackBroadcast(action) {
+        const message = {
+            type: "reception_changed",
+            timestamp: Date.now().toString(),
+            model: this.props.resModel,
+            action: action,
+        };
+
+        try {
+            if (typeof BroadcastChannel !== "undefined") {
                 const channel = new BroadcastChannel("gecafle_reception_sync");
-                channel.postMessage({
-                    type: "reception_changed",
-                    timestamp: Date.now().toString(),
-                    model: this.props.resModel,
-                    action: action,
-                });
+                channel.postMessage(message);
                 channel.close();
-            } catch (e) {
-                localStorage.setItem(
-                    "gecafle_reception_change",
-                    JSON.stringify({
-                        type: "reception_changed",
-                        timestamp: Date.now().toString(),
-                    })
-                );
             }
+        } catch (e) {
+            // Ignorer
+        }
+
+        try {
+            localStorage.setItem("gecafle_reception_change", JSON.stringify(message));
+        } catch (e) {
+            // Ignorer
         }
     },
 });
 
-console.log("[GeCaFle] Patch ListController pour réceptions appliqué");
+console.log("[GeCaFle] Patch ListController appliqué");

@@ -3,11 +3,12 @@
 import { FormController } from "@web/views/form/form_controller";
 import { patch } from "@web/core/utils/patch";
 import { useService } from "@web/core/utils/hooks";
-import { onMounted } from "@odoo/owl";
 
 /**
  * Patch du FormController pour broadcaster les changements de réception
- * Quand une réception est créée/modifiée, on notifie tous les onglets
+ *
+ * Quand une réception ou une ligne de réception est sauvegardée,
+ * ce patch notifie tous les onglets pour qu'ils rafraîchissent leurs données.
  */
 patch(FormController.prototype, {
     setup() {
@@ -15,84 +16,91 @@ patch(FormController.prototype, {
 
         const resModel = this.props.resModel;
 
-        // Seulement pour les réceptions et les lignes de réception
+        // Activer uniquement pour les réceptions et lignes de réception
         if (resModel === "gecafle.reception" || resModel === "gecafle.details_reception") {
             this._isReceptionForm = true;
 
-            // Essayer d'obtenir le service broadcast
             try {
-                this._broadcastService = useService("gecafle_broadcast");
+                this._syncService = useService("gecafle_sync");
             } catch (e) {
-                console.warn("[GeCaFle] Service broadcast non disponible");
-                this._broadcastService = null;
+                console.warn("[GeCaFle Patch] Service gecafle_sync non disponible");
+                this._syncService = null;
             }
         }
     },
 
     /**
-     * Override de saveButtonClicked pour broadcaster après sauvegarde
+     * Override saveButtonClicked pour broadcaster après sauvegarde
      */
     async saveButtonClicked(params = {}) {
         const result = await super.saveButtonClicked(params);
 
-        // Si c'est une réception et que la sauvegarde a réussi
         if (this._isReceptionForm && result !== false) {
-            this._broadcastReceptionChange();
+            this._broadcastChange("save");
         }
 
         return result;
     },
 
     /**
-     * Override de save pour capturer toutes les sauvegardes
+     * Override save pour capturer toutes les sauvegardes
      */
     async save(params = {}) {
         const result = await super.save(params);
 
-        // Si c'est une réception et que la sauvegarde a réussi
         if (this._isReceptionForm && result !== false) {
-            this._broadcastReceptionChange();
+            this._broadcastChange("save");
         }
 
         return result;
     },
 
     /**
-     * Broadcast le changement de réception
+     * Broadcast le changement à tous les onglets
      */
-    _broadcastReceptionChange() {
-        console.log("[GeCaFle] Réception modifiée, broadcast du changement");
+    _broadcastChange(action) {
+        console.log(`[GeCaFle Patch] Réception ${action}, broadcast du changement`);
 
-        if (this._broadcastService) {
-            this._broadcastService.broadcastChange({
+        if (this._syncService) {
+            this._syncService.broadcastChange({
                 model: this.props.resModel,
                 resId: this.model.root.resId,
-                action: "save",
+                action: action,
             });
         } else {
-            // Fallback: utiliser directement BroadcastChannel
-            try {
+            // Fallback direct via BroadcastChannel
+            this._fallbackBroadcast(action);
+        }
+    },
+
+    /**
+     * Fallback si le service n'est pas disponible
+     */
+    _fallbackBroadcast(action) {
+        const message = {
+            type: "reception_changed",
+            timestamp: Date.now().toString(),
+            model: this.props.resModel,
+            resId: this.model.root.resId,
+            action: action,
+        };
+
+        try {
+            if (typeof BroadcastChannel !== "undefined") {
                 const channel = new BroadcastChannel("gecafle_reception_sync");
-                channel.postMessage({
-                    type: "reception_changed",
-                    timestamp: Date.now().toString(),
-                    model: this.props.resModel,
-                    resId: this.model.root.resId,
-                    action: "save",
-                });
+                channel.postMessage(message);
                 channel.close();
-            } catch (e) {
-                // Fallback localStorage
-                localStorage.setItem(
-                    "gecafle_reception_change",
-                    JSON.stringify({
-                        type: "reception_changed",
-                        timestamp: Date.now().toString(),
-                    })
-                );
             }
+        } catch (e) {
+            // Ignorer
+        }
+
+        try {
+            localStorage.setItem("gecafle_reception_change", JSON.stringify(message));
+        } catch (e) {
+            // Ignorer
         }
     },
 });
 
-console.log("[GeCaFle] Patch FormController pour réceptions appliqué");
+console.log("[GeCaFle] Patch FormController appliqué");
