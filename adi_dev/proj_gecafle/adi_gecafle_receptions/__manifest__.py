@@ -15,6 +15,7 @@
         'views/destockage_views.xml',
         'views/gecafle_emballage_prod.xml',
         'reports/report_bon_reception.xml',
+        'reports/report_stock_list.xml',
         #"views/adi_gecafle_destockage_views.xml"
     ],
     "installable": True,

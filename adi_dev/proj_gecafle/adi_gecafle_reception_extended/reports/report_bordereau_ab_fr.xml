@@ -9,12 +9,18 @@
                     <div class="page" style="font-family: 'DejaVu Sans', Arial, sans-serif; font-size: 12px; padding: 0; margin: 0;">
                         <!-- Recuperation des lignes -->
                         <t t-set="lines" t-value="o.get_lines_sorted_by_price_desc(grouped=True)"/>
+                        <t t-set="reception_lines" t-value="o.reception_id.details_reception_ids"/>
 
                         <!-- Calculs prealables -->
                         <t t-set="total_colis" t-value="sum([l.get('nombre_colis', 0) for l in lines])"/>
                         <t t-set="total_poids" t-value="sum([l.get('poids_net', 0) for l in lines])"/>
                         <t t-set="total_montant" t-value="sum([l.get('montant_vente', 0) for l in lines])"/>
                         <t t-set="total_commission" t-value="sum([l.get('montant_commission', 0) for l in lines])"/>
+
+                        <!-- Calcul du nombre total de lignes pour ajustement -->
+                        <t t-set="nb_lines" t-value="len(lines) + len(reception_lines)"/>
+                        <!-- Mode compact si plus de 8 lignes au total -->
+                        <t t-set="compact" t-value="nb_lines > 8"/>
 
                         <!-- Table pour forcer les deux colonnes cote a cote -->
                         <table style="width: 100%; table-layout: fixed; border-collapse: collapse;">
@@ -42,83 +48,83 @@
     <!-- Template du contenu d'une section -->
     <template id="report_bordereau_ab_content_fr">
         <!-- EN-TETE ENTREPRISE -->
-        <div style="text-align: center; border-bottom: 3px solid #333; padding-bottom: 8px; margin-bottom: 10px;">
+        <div t-attf-style="text-align: center; border-bottom: 3px solid #333; padding-bottom: {{ '5px' if compact else '10px' }}; margin-bottom: {{ '8px' if compact else '12px' }};">
             <!-- Nom entreprise -->
-            <div style="font-size: 18px; font-weight: bold;">
+            <div t-attf-style="font-size: {{ '18px' if compact else '22px' }}; font-weight: bold;">
                 <span t-field="company.name"/>
             </div>
             <!-- Slogan -->
-            <div style="font-size: 11px; font-style: italic; color: #555; margin: 5px 0;">
+            <div t-attf-style="font-size: {{ '10px' if compact else '13px' }}; font-style: italic; color: #555; margin: {{ '3px' if compact else '5px' }} 0;">
                 Marche de Gros des Fruits et Legumes
             </div>
             <!-- Telephones -->
-            <div style="font-size: 11px;">
+            <div t-attf-style="font-size: {{ '10px' if compact else '13px' }};">
                 <t t-if="company.phone">Tel: <span t-field="company.phone"/></t>
                 <t t-if="company.mobile"> / <span t-field="company.mobile"/></t>
             </div>
         </div>
 
         <!-- LIGNE: Box A/B + N° Reception + Date -->
-        <table style="width: 100%; border-collapse: collapse; margin-bottom: 8px;">
+        <table t-attf-style="width: 100%; border-collapse: collapse; margin-bottom: {{ '5px' if compact else '8px' }};">
             <tr>
                 <!-- Box A ou B -->
                 <td style="width: 50px; vertical-align: middle;">
-                    <div style="background: #333; color: #fff; font-size: 28px; font-weight: bold; text-align: center; padding: 8px 12px; border-radius: 5px;">
+                    <div t-attf-style="background: #333; color: #fff; font-size: {{ '24px' if compact else '28px' }}; font-weight: bold; text-align: center; padding: {{ '6px 10px' if compact else '8px 12px' }}; border-radius: 5px;">
                         <t t-esc="section_letter"/>
                     </div>
                 </td>
                 <!-- N° Bordereau et Date -->
                 <td style="vertical-align: middle; padding-left: 10px;">
-                    <div style="font-size: 14px;">
-                        <strong>Bordereau N.:</strong> <span style="font-size: 16px; font-weight: bold;" t-field="o.name"/>
+                    <div t-attf-style="font-size: {{ '12px' if compact else '14px' }};">
+                        <strong>BR N°:</strong> <span t-attf-style="font-size: {{ '14px' if compact else '16px' }}; font-weight: bold;" t-field="o.reception_id.name"/>
                     </div>
-                    <div style="font-size: 14px; margin-top: 3px;">
-                        <strong>Date:</strong> <span style="font-size: 15px;" t-field="o.reception_id.reception_date" t-options='{"widget": "date"}'/>
+                    <div t-attf-style="font-size: {{ '12px' if compact else '14px' }}; margin-top: 2px;">
+                        <strong>Date:</strong> <span t-attf-style="font-size: {{ '13px' if compact else '15px' }};" t-field="o.reception_id.reception_date" t-options='{"widget": "date"}'/>
                     </div>
                 </td>
             </tr>
         </table>
 
         <!-- PRODUCTEUR en grand -->
-        <div style="background: #f0f0f0; border: 2px solid #333; padding: 10px; margin-bottom: 10px; text-align: center;">
-            <span style="font-size: 11px; color: #666;">Producteur:</span>
-            <div style="font-size: 20px; font-weight: bold; margin-top: 3px;">
+        <div t-attf-style="background: #f0f0f0; border: 2px solid #333; padding: {{ '6px' if compact else '10px' }}; margin-bottom: {{ '8px' if compact else '10px' }}; text-align: center;">
+            <span t-attf-style="font-size: {{ '10px' if compact else '11px' }}; color: #666;">Producteur:</span>
+            <div t-attf-style="font-size: {{ '16px' if compact else '20px' }}; font-weight: bold; margin-top: 2px;">
                 <span t-field="o.producteur_id.name"/>
             </div>
             <t t-if="o.producteur_id.phone">
-                <div style="font-size: 12px; color: #555; margin-top: 2px;">
+                <div t-attf-style="font-size: {{ '10px' if compact else '12px' }}; color: #555; margin-top: 1px;">
                     Tel: <span t-field="o.producteur_id.phone"/>
                 </div>
             </t>
         </div>
 
         <!-- LIGNES DE RECEPTION -->
-        <div style="border: 2px solid #333; padding: 8px; margin-bottom: 10px; background: #fffde7;">
-            <div style="text-align: center; font-weight: bold; font-size: 13px; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-bottom: 8px;">
+        <div t-attf-style="border: 2px solid #333; padding: {{ '5px' if compact else '8px' }}; margin-bottom: {{ '8px' if compact else '10px' }}; background: #fffde7;">
+            <div t-attf-style="text-align: center; font-weight: bold; font-size: {{ '11px' if compact else '13px' }}; border-bottom: 1px solid #ccc; padding-bottom: 3px; margin-bottom: 5px;">
                 BON DE RECEPTION N. <span t-field="o.reception_id.name"/>
             </div>
-            <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+            <table t-attf-style="width: 100%; border-collapse: collapse; font-size: {{ '11px' if compact else '13px' }};">
                 <thead>
                     <tr style="background: #e0e0e0;">
-                        <th style="border: 1px solid #999; padding: 6px; text-align: center;">Colis</th>
-                        <th style="border: 1px solid #999; padding: 6px;">Produit</th>
-                        <th style="border: 1px solid #999; padding: 6px;">Qualite</th>
-                        <th style="border: 1px solid #999; padding: 6px;">Emballage</th>
+                        <th t-attf-style="border: 1px solid #999; padding: {{ '3px' if compact else '6px' }}; text-align: center;">Colis</th>
+                        <th t-attf-style="border: 1px solid #999; padding: {{ '3px' if compact else '6px' }};">Produit</th>
+                        <th t-attf-style="border: 1px solid #999; padding: {{ '3px' if compact else '6px' }};">Qualite</th>
+                        <th t-attf-style="border: 1px solid #999; padding: {{ '3px' if compact else '6px' }};">Emballage</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <t t-foreach="o.reception_id.details_reception_ids" t-as="rec_line">
+                    <t t-foreach="reception_lines" t-as="rec_line">
                         <tr>
-                            <td style="border: 1px solid #999; padding: 6px; text-align: center; font-weight: bold;">
+                            <td t-attf-style="border: 1px solid #999; padding: {{ '3px' if compact else '6px' }}; text-align: center; font-weight: bold;">
                                 <t t-esc="rec_line.qte_colis_recue"/>
                             </td>
-                            <td style="border: 1px solid #999; padding: 6px;">
+                            <td t-attf-style="border: 1px solid #999; padding: {{ '3px' if compact else '6px' }};">
                                 <span t-field="rec_line.designation_id.name"/>
                             </td>
-                            <td style="border: 1px solid #999; padding: 6px;">
+                            <td t-attf-style="border: 1px solid #999; padding: {{ '3px' if compact else '6px' }};">
                                 <span t-field="rec_line.qualite_id.name"/>
                             </td>
-                            <td style="border: 1px solid #999; padding: 6px;">
+                            <td t-attf-style="border: 1px solid #999; padding: {{ '3px' if compact else '6px' }};">
                                 <span t-field="rec_line.type_colis_id.name"/>
                             </td>
                         </tr>
@@ -126,10 +132,10 @@
                 </tbody>
                 <tfoot>
                     <tr style="background: #e0e0e0; font-weight: bold;">
-                        <td style="border: 1px solid #999; padding: 6px; text-align: center; font-size: 14px;">
-                            <t t-esc="sum(o.reception_id.details_reception_ids.mapped('qte_colis_recue'))"/>
+                        <td t-attf-style="border: 1px solid #999; padding: {{ '3px' if compact else '6px' }}; text-align: center; font-size: {{ '12px' if compact else '14px' }};">
+                            <t t-esc="sum(reception_lines.mapped('qte_colis_recue'))"/>
                         </td>
-                        <td colspan="3" style="border: 1px solid #999; padding: 6px;">
+                        <td colspan="3" t-attf-style="border: 1px solid #999; padding: {{ '3px' if compact else '6px' }};">
                             Total Emballages: <t t-esc="sum(o.reception_id.details_emballage_reception_ids.mapped('qte_entrantes'))"/>
                         </td>
                     </tr>
@@ -138,40 +144,40 @@
         </div>
 
         <!-- TABLEAU DES VENTES -->
-        <table style="width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 14px;">
+        <table t-attf-style="width: 100%; border-collapse: collapse; margin-bottom: {{ '8px' if compact else '12px' }}; font-size: {{ '12px' if compact else '14px' }};">
             <thead>
                 <tr style="background: #ddd;">
-                    <th style="border: 1px solid #333; padding: 8px 5px; text-align: center; width: 8%;">Colis</th>
-                    <th style="border: 1px solid #333; padding: 8px 5px; width: 28%;">Nature Marchandise</th>
-                    <th style="border: 1px solid #333; padding: 8px 5px; text-align: center; width: 10%;">Moy/C</th>
-                    <th style="border: 1px solid #333; padding: 8px 5px; text-align: right; width: 13%;">Poids</th>
-                    <th style="border: 1px solid #333; padding: 8px 5px; text-align: right; width: 13%;">Prix</th>
-                    <th style="border: 1px solid #333; padding: 8px 5px; text-align: right; width: 16%;">Montant</th>
+                    <th t-attf-style="border: 1px solid #333; padding: {{ '5px 3px' if compact else '8px 5px' }}; text-align: center; width: 8%;">Colis</th>
+                    <th t-attf-style="border: 1px solid #333; padding: {{ '5px 3px' if compact else '8px 5px' }}; width: 28%;">Nature Marchandise</th>
+                    <th t-attf-style="border: 1px solid #333; padding: {{ '5px 3px' if compact else '8px 5px' }}; text-align: center; width: 10%;">Moy/C</th>
+                    <th t-attf-style="border: 1px solid #333; padding: {{ '5px 3px' if compact else '8px 5px' }}; text-align: right; width: 13%;">Poids</th>
+                    <th t-attf-style="border: 1px solid #333; padding: {{ '5px 3px' if compact else '8px 5px' }}; text-align: right; width: 13%;">Prix</th>
+                    <th t-attf-style="border: 1px solid #333; padding: {{ '5px 3px' if compact else '8px 5px' }}; text-align: right; width: 16%;">Montant</th>
                 </tr>
             </thead>
             <tbody>
                 <t t-foreach="lines" t-as="line">
                     <tr>
-                        <td style="border: 1px solid #333; padding: 10px 5px; text-align: center; font-size: 15px; font-weight: bold;">
+                        <td t-attf-style="border: 1px solid #333; padding: {{ '6px 3px' if compact else '10px 5px' }}; text-align: center; font-size: {{ '13px' if compact else '15px' }}; font-weight: bold;">
                             <t t-esc="line.get('nombre_colis', 0)"/>
                         </td>
-                        <td style="border: 1px solid #333; padding: 10px 5px; font-size: 12px;">
+                        <td t-attf-style="border: 1px solid #333; padding: {{ '6px 3px' if compact else '10px 5px' }}; font-size: {{ '10px' if compact else '12px' }};">
                             <t t-esc="line.get('produit_name', '')"/>
                             <t t-if="line.get('qualite_name')">-<t t-esc="line.get('qualite_name', '')"/></t>
                             <t t-if="line.get('type_colis_name')">(<t t-esc="line.get('type_colis_name', '')"/>)</t>
                         </td>
-                        <td style="border: 1px solid #333; padding: 10px 5px; text-align: center;">
+                        <td t-attf-style="border: 1px solid #333; padding: {{ '6px 3px' if compact else '10px 5px' }}; text-align: center;">
                             <t t-if="line.get('nombre_colis', 0) > 0">
                                 <t t-esc="'%.1f' % (line.get('poids_net', 0) / line.get('nombre_colis', 1))"/>
                             </t>
                         </td>
-                        <td style="border: 1px solid #333; padding: 10px 5px; text-align: right;">
+                        <td t-attf-style="border: 1px solid #333; padding: {{ '6px 3px' if compact else '10px 5px' }}; text-align: right;">
                             <t t-esc="'%.2f' % line.get('poids_net', 0)"/>
                         </td>
-                        <td style="border: 1px solid #333; padding: 10px 5px; text-align: right; font-weight: bold;">
+                        <td t-attf-style="border: 1px solid #333; padding: {{ '6px 3px' if compact else '10px 5px' }}; text-align: right; font-weight: bold;">
                             <t t-esc="'%.2f' % line.get('prix_unitaire', 0)"/>
                         </td>
-                        <td style="border: 1px solid #333; padding: 10px 5px; text-align: right; font-weight: bold;">
+                        <td t-attf-style="border: 1px solid #333; padding: {{ '6px 3px' if compact else '10px 5px' }}; text-align: right; font-weight: bold;">
                             <t t-esc="'{:,.2f}'.format(line.get('montant_vente', 0))"/>
                         </td>
                     </tr>
@@ -179,54 +185,54 @@
             </tbody>
             <tfoot>
                 <tr style="background: #bbb; font-weight: bold;">
-                    <td style="border: 1px solid #333; padding: 10px 5px; text-align: center; font-size: 15px;"><t t-esc="total_colis"/></td>
-                    <td style="border: 1px solid #333; padding: 10px 5px; font-size: 13px;">TOTAUX</td>
-                    <td style="border: 1px solid #333; padding: 10px 5px; text-align: center;">
+                    <td t-attf-style="border: 1px solid #333; padding: {{ '6px 3px' if compact else '10px 5px' }}; text-align: center; font-size: {{ '13px' if compact else '15px' }};"><t t-esc="total_colis"/></td>
+                    <td t-attf-style="border: 1px solid #333; padding: {{ '6px 3px' if compact else '10px 5px' }}; font-size: {{ '11px' if compact else '13px' }};">TOTAUX</td>
+                    <td t-attf-style="border: 1px solid #333; padding: {{ '6px 3px' if compact else '10px 5px' }}; text-align: center;">
                         <t t-if="total_colis > 0"><t t-esc="'%.1f' % (total_poids / total_colis)"/></t>
                     </td>
-                    <td style="border: 1px solid #333; padding: 10px 5px; text-align: right;"><t t-esc="'%.2f' % total_poids"/></td>
-                    <td style="border: 1px solid #333; padding: 10px 5px;"></td>
-                    <td style="border: 1px solid #333; padding: 10px 5px; text-align: right; font-size: 15px;"><t t-esc="'{:,.2f}'.format(total_montant)"/></td>
+                    <td t-attf-style="border: 1px solid #333; padding: {{ '6px 3px' if compact else '10px 5px' }}; text-align: right;"><t t-esc="'%.2f' % total_poids"/></td>
+                    <td t-attf-style="border: 1px solid #333; padding: {{ '6px 3px' if compact else '10px 5px' }};"></td>
+                    <td t-attf-style="border: 1px solid #333; padding: {{ '6px 3px' if compact else '10px 5px' }}; text-align: right; font-size: {{ '13px' if compact else '15px' }};"><t t-esc="'{:,.2f}'.format(total_montant)"/></td>
                 </tr>
             </tfoot>
         </table>
 
         <!-- DEDUCTIONS ET NET A PAYER -->
-        <div style="border: 3px solid #333; padding: 10px; background: #f9f9f9;">
-            <table style="width: 100%; font-size: 13px;">
+        <div t-attf-style="border: 3px solid #333; padding: {{ '6px' if compact else '10px' }}; background: #f9f9f9;">
+            <table t-attf-style="width: 100%; font-size: {{ '11px' if compact else '13px' }};">
                 <tr>
-                    <td style="padding: 5px;"><strong>Total Ventes:</strong></td>
-                    <td style="padding: 5px; text-align: right; font-size: 14px;"><t t-esc="'{:,.2f}'.format(total_montant)"/> DA</td>
+                    <td t-attf-style="padding: {{ '3px' if compact else '5px' }};"><strong>Total Ventes:</strong></td>
+                    <td t-attf-style="padding: {{ '3px' if compact else '5px' }}; text-align: right; font-size: {{ '12px' if compact else '14px' }};"><t t-esc="'{:,.2f}'.format(total_montant)"/> DA</td>
                 </tr>
                 <tr>
-                    <td style="padding: 5px;">Commission (-):</td>
-                    <td style="padding: 5px; text-align: right; color: #c00; font-size: 14px;">- <t t-esc="'{:,.2f}'.format(total_commission)"/> DA</td>
+                    <td t-attf-style="padding: {{ '3px' if compact else '5px' }};">Commission (-):</td>
+                    <td t-attf-style="padding: {{ '3px' if compact else '5px' }}; text-align: right; color: #c00; font-size: {{ '12px' if compact else '14px' }};">- <t t-esc="'{:,.2f}'.format(total_commission)"/> DA</td>
                 </tr>
                 <t t-if="o.reception_id and o.reception_id.avance_producteur">
                     <tr>
-                        <td style="padding: 5px;">Avance Producteur (-):</td>
-                        <td style="padding: 5px; text-align: right; color: #c00; font-size: 14px;">- <span t-field="o.reception_id.avance_producteur"/> DA</td>
+                        <td t-attf-style="padding: {{ '3px' if compact else '5px' }};">Avance Producteur (-):</td>
+                        <td t-attf-style="padding: {{ '3px' if compact else '5px' }}; text-align: right; color: #c00; font-size: {{ '12px' if compact else '14px' }};">- <span t-field="o.reception_id.avance_producteur"/> DA</td>
                     </tr>
                 </t>
                 <t t-if="o.reception_id and o.reception_id.transport">
                     <tr>
-                        <td style="padding: 5px;">Transport (-):</td>
-                        <td style="padding: 5px; text-align: right; color: #c00; font-size: 14px;">- <span t-field="o.reception_id.transport"/> DA</td>
+                        <td t-attf-style="padding: {{ '3px' if compact else '5px' }};">Transport (-):</td>
+                        <td t-attf-style="padding: {{ '3px' if compact else '5px' }}; text-align: right; color: #c00; font-size: {{ '12px' if compact else '14px' }};">- <span t-field="o.reception_id.transport"/> DA</td>
                     </tr>
                 </t>
                 <t t-if="o.montant_total_emballage_achete and o.montant_total_emballage_achete > 0">
                     <tr>
-                        <td style="padding: 5px;">Emballages Achetes (+):</td>
-                        <td style="padding: 5px; text-align: right; color: #080; font-size: 14px;">+ <span t-field="o.montant_total_emballage_achete"/> DA</td>
+                        <td t-attf-style="padding: {{ '3px' if compact else '5px' }};">Emballages Achetes (+):</td>
+                        <td t-attf-style="padding: {{ '3px' if compact else '5px' }}; text-align: right; color: #080; font-size: {{ '12px' if compact else '14px' }};">+ <span t-field="o.montant_total_emballage_achete"/> DA</td>
                     </tr>
                 </t>
             </table>
             <!-- NET A PAYER -->
-            <div style="border-top: 3px solid #333; margin-top: 8px; padding-top: 10px; background: #c8e6c9;">
+            <div t-attf-style="border-top: 3px solid #333; margin-top: {{ '5px' if compact else '8px' }}; padding-top: {{ '6px' if compact else '10px' }}; background: #c8e6c9;">
                 <table style="width: 100%;">
                     <tr>
-                        <td style="font-size: 15px;"><strong>NET A PAYER:</strong></td>
-                        <td style="text-align: right; font-size: 20px; font-weight: bold;">
+                        <td t-attf-style="font-size: {{ '13px' if compact else '15px' }};"><strong>NET A PAYER:</strong></td>
+                        <td t-attf-style="text-align: right; font-size: {{ '16px' if compact else '20px' }}; font-weight: bold;">
                             <span t-field="o.solde_fournisseur"/>
                         </td>
                     </tr>

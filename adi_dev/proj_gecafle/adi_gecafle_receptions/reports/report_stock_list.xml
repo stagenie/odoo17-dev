@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Format de papier A4 Portrait -->
+    <record id="paperformat_stock_list" model="report.paperformat">
+        <field name="name">Liste de Stock A4</field>
+        <field name="default" eval="False"/>
+        <field name="format">A4</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">10</field>
+        <field name="margin_bottom">10</field>
+        <field name="margin_left">10</field>
+        <field name="margin_right">10</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">0</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <!-- Template du rapport Liste de Stock - Francais -->
+    <template id="report_stock_list_template">
+        <t t-call="web.html_container">
+            <t t-call="web.basic_layout">
+                <t t-set="company" t-value="docs[0].env.company if docs else env.company"/>
+                <div class="page" style="font-family: 'DejaVu Sans', Arial, sans-serif; font-size: 11px; padding: 10px;">
+
+                    <!-- EN-TETE -->
+                    <div style="text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 15px;">
+                        <div style="font-size: 18px; font-weight: bold;">
+                            <span t-field="company.name"/>
+                        </div>
+                        <div style="font-size: 12px; font-style: italic; color: #555; margin: 5px 0;">
+                            Marche de Gros des Fruits et Legumes
+                        </div>
+                        <div style="font-size: 11px;">
+                            <t t-if="company.phone">Tel: <span t-field="company.phone"/></t>
+                            <t t-if="company.mobile"> / <span t-field="company.mobile"/></t>
+                        </div>
+                    </div>
+
+                    <!-- TITRE DU RAPPORT -->
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <h2 style="font-size: 20px; font-weight: bold; margin: 0; border: 2px solid #333; display: inline-block; padding: 8px 30px; background: #f0f0f0;">
+                            LISTE DE STOCK
+                        </h2>
+                        <div style="font-size: 11px; margin-top: 8px; color: #666;">
+                            Imprime le: <span t-esc="datetime.datetime.now().strftime('%d/%m/%Y %H:%M')"/>
+                        </div>
+                    </div>
+
+                    <!-- Calcul des totaux -->
+                    <t t-set="total_qte" t-value="sum(docs.mapped('qte_disponible'))"/>
+
+                    <!-- TABLEAU DES STOCKS -->
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px;">
+                        <thead>
+                            <tr style="background: #333; color: #fff;">
+                                <th style="border: 1px solid #333; padding: 8px; text-align: center; width: 5%;">#</th>
+                                <th style="border: 1px solid #333; padding: 8px; width: 12%;">N. Reception</th>
+                                <th style="border: 1px solid #333; padding: 8px; width: 10%;">Date</th>
+                                <th style="border: 1px solid #333; padding: 8px; width: 18%;">Producteur</th>
+                                <th style="border: 1px solid #333; padding: 8px; width: 20%;">Produit</th>
+                                <th style="border: 1px solid #333; padding: 8px; width: 12%;">Qualite</th>
+                                <th style="border: 1px solid #333; padding: 8px; width: 13%;">Emballage</th>
+                                <th style="border: 1px solid #333; padding: 8px; text-align: center; width: 10%;">Qte Dispo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="docs" t-as="stock">
+                                <tr t-attf-style="background: {{ '#f9f9f9' if stock_index % 2 == 0 else '#fff' }};">
+                                    <td style="border: 1px solid #999; padding: 6px; text-align: center;">
+                                        <t t-esc="stock_index + 1"/>
+                                    </td>
+                                    <td style="border: 1px solid #999; padding: 6px;">
+                                        <span t-field="stock.reception_id.name"/>
+                                    </td>
+                                    <td style="border: 1px solid #999; padding: 6px; text-align: center;">
+                                        <span t-field="stock.reception_date" t-options='{"widget": "date"}'/>
+                                    </td>
+                                    <td style="border: 1px solid #999; padding: 6px;">
+                                        <span t-field="stock.producteur_id.name"/>
+                                    </td>
+                                    <td style="border: 1px solid #999; padding: 6px; font-weight: bold;">
+                                        <span t-field="stock.designation_id.name"/>
+                                    </td>
+                                    <td style="border: 1px solid #999; padding: 6px;">
+                                        <span t-field="stock.qualite_id.name"/>
+                                    </td>
+                                    <td style="border: 1px solid #999; padding: 6px;">
+                                        <span t-field="stock.emballage_id.name"/>
+                                    </td>
+                                    <td style="border: 1px solid #999; padding: 6px; text-align: center; font-weight: bold; font-size: 12px;">
+                                        <span t-field="stock.qte_disponible"/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                        <tfoot>
+                            <tr style="background: #333; color: #fff; font-weight: bold;">
+                                <td colspan="7" style="border: 1px solid #333; padding: 8px; text-align: right; font-size: 13px;">
+                                    TOTAL (<t t-esc="len(docs)"/> lignes):
+                                </td>
+                                <td style="border: 1px solid #333; padding: 8px; text-align: center; font-size: 14px;">
+                                    <t t-esc="total_qte"/>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                    <!-- PIED DE PAGE -->
+                    <div style="text-align: center; margin-top: 20px; padding-top: 10px; border-top: 1px solid #ccc; font-size: 10px; color: #666;">
+                        <span t-field="company.name"/> - Liste de Stock
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+
+    <!-- Template du rapport Liste de Stock - Arabe -->
+    <template id="report_stock_list_template_ar">
+        <t t-call="web.html_container">
+            <t t-call="web.basic_layout">
+                <t t-set="company" t-value="docs[0].env.company if docs else env.company"/>
+                <div class="page" dir="rtl" style="font-family: Tahoma, Arial, sans-serif; font-size: 11px; padding: 10px;">
+
+                    <!-- EN-TETE -->
+                    <div style="text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 15px;">
+                        <div style="font-size: 18px; font-weight: bold;">
+                            <span t-field="company.name"/>
+                        </div>
+                        <div style="font-size: 12px; font-style: italic; color: #555; margin: 5px 0;">
+                            سوق الجملة للخضر والفواكه
+                        </div>
+                        <div style="font-size: 11px;">
+                            <t t-if="company.phone">هاتف: <span t-field="company.phone"/></t>
+                            <t t-if="company.mobile"> / <span t-field="company.mobile"/></t>
+                        </div>
+                    </div>
+
+                    <!-- TITRE DU RAPPORT -->
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <h2 style="font-size: 20px; font-weight: bold; margin: 0; border: 2px solid #333; display: inline-block; padding: 8px 30px; background: #f0f0f0;">
+                            قائمة المخزون
+                        </h2>
+                        <div style="font-size: 11px; margin-top: 8px; color: #666;">
+                            طبع في: <span dir="ltr" t-esc="datetime.datetime.now().strftime('%d/%m/%Y %H:%M')"/>
+                        </div>
+                    </div>
+
+                    <!-- Calcul des totaux -->
+                    <t t-set="total_qte" t-value="sum(docs.mapped('qte_disponible'))"/>
+
+                    <!-- TABLEAU DES STOCKS -->
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px; direction: rtl;">
+                        <thead>
+                            <tr style="background: #333; color: #fff;">
+                                <th style="border: 1px solid #333; padding: 8px; text-align: center; width: 5%;">#</th>
+                                <th style="border: 1px solid #333; padding: 8px; width: 12%;">رقم الاستلام</th>
+                                <th style="border: 1px solid #333; padding: 8px; width: 10%;">التاريخ</th>
+                                <th style="border: 1px solid #333; padding: 8px; width: 18%;">المنتج</th>
+                                <th style="border: 1px solid #333; padding: 8px; width: 20%;">المادة</th>
+                                <th style="border: 1px solid #333; padding: 8px; width: 12%;">الجودة</th>
+                                <th style="border: 1px solid #333; padding: 8px; width: 13%;">العبوة</th>
+                                <th style="border: 1px solid #333; padding: 8px; text-align: center; width: 10%;">الكمية</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="docs" t-as="stock">
+                                <tr t-attf-style="background: {{ '#f9f9f9' if stock_index % 2 == 0 else '#fff' }};">
+                                    <td style="border: 1px solid #999; padding: 6px; text-align: center;">
+                                        <span dir="ltr"><t t-esc="stock_index + 1"/></span>
+                                    </td>
+                                    <td style="border: 1px solid #999; padding: 6px;">
+                                        <span t-field="stock.reception_id.name"/>
+                                    </td>
+                                    <td style="border: 1px solid #999; padding: 6px; text-align: center;">
+                                        <span dir="ltr" t-field="stock.reception_date" t-options='{"widget": "date"}'/>
+                                    </td>
+                                    <td style="border: 1px solid #999; padding: 6px;">
+                                        <span t-field="stock.producteur_id.name"/>
+                                    </td>
+                                    <td style="border: 1px solid #999; padding: 6px; font-weight: bold;">
+                                        <span t-field="stock.designation_id.name"/>
+                                    </td>
+                                    <td style="border: 1px solid #999; padding: 6px;">
+                                        <span t-field="stock.qualite_id.name"/>
+                                    </td>
+                                    <td style="border: 1px solid #999; padding: 6px;">
+                                        <span t-field="stock.emballage_id.name"/>
+                                    </td>
+                                    <td style="border: 1px solid #999; padding: 6px; text-align: center; font-weight: bold; font-size: 12px;">
+                                        <span dir="ltr" t-field="stock.qte_disponible"/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                        <tfoot>
+                            <tr style="background: #333; color: #fff; font-weight: bold;">
+                                <td colspan="7" style="border: 1px solid #333; padding: 8px; text-align: left; font-size: 13px;">
+                                    المجموع (<span dir="ltr"><t t-esc="len(docs)"/></span> سطر):
+                                </td>
+                                <td style="border: 1px solid #333; padding: 8px; text-align: center; font-size: 14px;">
+                                    <span dir="ltr"><t t-esc="total_qte"/></span>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                    <!-- PIED DE PAGE -->
+                    <div style="text-align: center; margin-top: 20px; padding-top: 10px; border-top: 1px solid #ccc; font-size: 10px; color: #666;">
+                        <span t-field="company.name"/> - قائمة المخزون
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+
+    <!-- Action de rapport - Francais -->
+    <record id="action_report_stock_list" model="ir.actions.report">
+        <field name="name">Liste de Stock</field>
+        <field name="model">gecafle.stock</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_gecafle_receptions.report_stock_list_template</field>
+        <field name="report_file">adi_gecafle_receptions.report_stock_list_template</field>
+        <field name="paperformat_id" ref="adi_gecafle_receptions.paperformat_stock_list"/>
+        <field name="print_report_name">'Liste_Stock_%s' % (datetime.datetime.now().strftime('%Y%m%d_%H%M'))</field>
+        <field name="binding_model_id" ref="adi_gecafle_receptions.model_gecafle_stock"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <!-- Action de rapport - Arabe -->
+    <record id="action_report_stock_list_ar" model="ir.actions.report">
+        <field name="name">قائمة المخزون</field>
+        <field name="model">gecafle.stock</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_gecafle_receptions.report_stock_list_template_ar</field>
+        <field name="report_file">adi_gecafle_receptions.report_stock_list_template_ar</field>
+        <field name="paperformat_id" ref="adi_gecafle_receptions.paperformat_stock_list"/>
+        <field name="print_report_name">'قائمة_المخزون_%s' % (datetime.datetime.now().strftime('%Y%m%d_%H%M'))</field>
+        <field name="binding_model_id" ref="adi_gecafle_receptions.model_gecafle_stock"/>
+        <field name="binding_type">report</field>
+    </record>
+</odoo>
