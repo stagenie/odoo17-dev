@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Inherit account.move form view to add delete button -->
+    <record id="view_move_form_delete_button" model="ir.ui.view">
+        <field name="name">account.move.form.delete.button</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="priority">100</field>
+        <field name="arch" type="xml">
+            <!-- Add delete button in the header for cancelled invoices -->
+            <xpath expr="//header" position="inside">
+                <button name="action_delete_cancelled_invoice"
+                        string="🗑️ Supprimer définitivement"
+                        type="object"
+                        class="btn-danger"
+                        invisible="state != 'cancel' or move_type not in ('out_invoice', 'out_refund', 'in_invoice', 'in_refund')"
+                        confirm="Êtes-vous sûr de vouloir supprimer définitivement cette facture ? Cette action est irréversible et dissociera tous les documents liés (bordereaux, etc.)."/>
+            </xpath>
+
+            <!-- Add info banner for cancelled invoices -->
+            <xpath expr="//sheet" position="before">
+                <div class="alert alert-info" role="alert"
+                     invisible="state != 'cancel' or move_type not in ('out_invoice', 'out_refund', 'in_invoice', 'in_refund')">
+                    <strong>ℹ️ Facture annulée</strong> - Cette facture peut être supprimée définitivement via le bouton "Supprimer définitivement".
+                    La suppression dissociera automatiquement les bordereaux et documents liés.
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Add delete button in tree view for cancelled invoices -->
+    <record id="view_move_tree_delete_button" model="ir.ui.view">
+        <field name="name">account.move.tree.delete.button</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_tree"/>
+        <field name="priority">100</field>
+        <field name="arch" type="xml">
+            <xpath expr="//tree" position="attributes">
+                <attribute name="delete">false</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Server action for bulk delete from tree view -->
+    <record id="action_delete_cancelled_invoices" model="ir.actions.server">
+        <field name="name">Supprimer les factures annulées</field>
+        <field name="model_id" ref="account.model_account_move"/>
+        <field name="binding_model_id" ref="account.model_account_move"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">
+if records:
+    cancelled = records.filtered(lambda r: r.state == 'cancel' and r.move_type in ('out_invoice', 'out_refund', 'in_invoice', 'in_refund'))
+    if cancelled:
+        for inv in cancelled:
+            inv.action_delete_cancelled_invoice()
+    else:
+        raise UserError("Aucune facture annulée sélectionnée. Seules les factures annulées peuvent être supprimées.")
+        </field>
+    </record>
+
+</odoo>

@@ -29,6 +29,9 @@ class AccountMoveInherit(models.Model):
     @api.ondelete(at_uninstall=False)
     def _unlink_check_recap(self):
         """Vérifie et met à jour l'état du récapitulatif lors de la suppression"""
+        # Permettre la suppression si force_delete est dans le contexte
+        if self.env.context.get('force_delete'):
+            return
         for move in self:
             if hasattr(move, 'recap_id') and move.recap_id:
                 if move.state != 'draft':
