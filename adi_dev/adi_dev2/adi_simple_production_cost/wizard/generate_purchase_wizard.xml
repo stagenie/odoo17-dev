@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Vue Formulaire Wizard -->
+    <record id="ron_generate_purchase_wizard_view_form" model="ir.ui.view">
+        <field name="name">ron.generate.purchase.wizard.form</field>
+        <field name="model">ron.generate.purchase.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Générer Achats">
+                <group>
+                    <field name="daily_production_id" readonly="1"/>
+                    <field name="production_date"/>
+                    <field name="currency_id" invisible="1"/>
+                </group>
+
+                <group string="Produits Finis">
+                    <group>
+                        <field name="qty_solo"/>
+                        <field name="cost_solo"/>
+                    </group>
+                    <group>
+                        <field name="qty_classico"/>
+                        <field name="cost_classico"/>
+                    </group>
+                </group>
+
+                <group string="Options">
+                    <field name="create_finished_purchase"/>
+                    <field name="create_scrap_purchase"/>
+                    <field name="auto_confirm_purchase"/>
+                    <field name="auto_receive"/>
+                </group>
+
+                <footer>
+                    <button name="action_generate" string="Générer" type="object" class="btn-primary"/>
+                    <button string="Annuler" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action Wizard -->
+    <record id="ron_generate_purchase_wizard_action" model="ir.actions.act_window">
+        <field name="name">Générer Achats</field>
+        <field name="res_model">ron.generate.purchase.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="model_ron_daily_production"/>
+        <field name="binding_view_types">form</field>
+    </record>
+
+</odoo>

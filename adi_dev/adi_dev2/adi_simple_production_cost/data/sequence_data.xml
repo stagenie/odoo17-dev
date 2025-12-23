@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Séquence Production Journalière -->
+    <record id="sequence_ron_daily_production" model="ir.sequence">
+        <field name="name">Production Journalière RON</field>
+        <field name="code">ron.daily.production</field>
+        <field name="prefix">PROD/%(year)s/</field>
+        <field name="padding">4</field>
+        <field name="number_next">1</field>
+        <field name="number_increment">1</field>
+    </record>
+
+</odoo>

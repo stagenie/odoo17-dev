@@ -1,0 +1,15 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_ron_production_config_user,ron.production.config.user,model_ron_production_config,group_ron_production_user,1,0,0,0
+access_ron_production_config_manager,ron.production.config.manager,model_ron_production_config,group_ron_production_manager,1,1,1,1
+access_ron_daily_production_user,ron.daily.production.user,model_ron_daily_production,group_ron_production_user,1,1,1,0
+access_ron_daily_production_manager,ron.daily.production.manager,model_ron_daily_production,group_ron_production_manager,1,1,1,1
+access_ron_consumption_line_user,ron.consumption.line.user,model_ron_consumption_line,group_ron_production_user,1,1,1,1
+access_ron_consumption_line_manager,ron.consumption.line.manager,model_ron_consumption_line,group_ron_production_manager,1,1,1,1
+access_ron_scrap_line_user,ron.scrap.line.user,model_ron_scrap_line,group_ron_production_user,1,1,1,1
+access_ron_scrap_line_manager,ron.scrap.line.manager,model_ron_scrap_line,group_ron_production_manager,1,1,1,1
+access_ron_finished_product_user,ron.finished.product.user,model_ron_finished_product,group_ron_production_user,1,1,1,1
+access_ron_finished_product_manager,ron.finished.product.manager,model_ron_finished_product,group_ron_production_manager,1,1,1,1
+access_ron_packaging_line_user,ron.packaging.line.user,model_ron_packaging_line,group_ron_production_user,1,1,1,1
+access_ron_packaging_line_manager,ron.packaging.line.manager,model_ron_packaging_line,group_ron_production_manager,1,1,1,1
+access_ron_generate_purchase_wizard_user,ron.generate.purchase.wizard.user,model_ron_generate_purchase_wizard,group_ron_production_user,1,1,1,1
+access_ron_generate_purchase_wizard_manager,ron.generate.purchase.wizard.manager,model_ron_generate_purchase_wizard,group_ron_production_manager,1,1,1,1

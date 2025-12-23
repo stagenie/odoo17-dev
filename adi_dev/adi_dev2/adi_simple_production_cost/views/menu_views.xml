@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ==================== MENUS ==================== -->
+
+    <!-- Menu Principal -->
+    <menuitem id="spc_production_menu_root"
+              name="Coût Production"
+              web_icon="adi_simple_production_cost,static/description/icon.png"
+              sequence="100"/>
+
+    <!-- Menu Production -->
+    <menuitem id="spc_production_menu_production"
+              name="Production"
+              parent="spc_production_menu_root"
+              sequence="10"/>
+
+    <menuitem id="spc_daily_production_menu"
+              name="Production Journalière"
+              parent="spc_production_menu_production"
+              action="ron_daily_production_action"
+              sequence="10"/>
+
+    <!-- Menu Rapports -->
+    <menuitem id="spc_production_menu_reports"
+              name="Rapports"
+              parent="spc_production_menu_root"
+              sequence="20"/>
+
+    <menuitem id="spc_production_menu_analysis"
+              name="Analyse des Coûts"
+              parent="spc_production_menu_reports"
+              action="ron_daily_production_action"
+              sequence="10"/>
+
+    <!-- Menu Configuration -->
+    <menuitem id="spc_production_menu_config"
+              name="Configuration"
+              parent="spc_production_menu_root"
+              groups="base.group_system"
+              sequence="99"/>
+
+    <menuitem id="spc_production_config_menu"
+              name="Paramètres"
+              parent="spc_production_menu_config"
+              action="ron_production_config_action_open"
+              sequence="10"/>
+
+</odoo>

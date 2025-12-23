@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ==================== CATÉGORIE ==================== -->
+    <record id="module_category_simple_production_cost" model="ir.module.category">
+        <field name="name">Coût de Production</field>
+        <field name="description">Gestion simplifiée du coût de production</field>
+        <field name="sequence">100</field>
+    </record>
+
+    <!-- ==================== GROUPES ==================== -->
+
+    <!-- Utilisateur Production -->
+    <record id="group_ron_production_user" model="res.groups">
+        <field name="name">Utilisateur Coût Production</field>
+        <field name="category_id" ref="module_category_simple_production_cost"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+        <field name="comment">Peut créer et modifier les productions journalières</field>
+    </record>
+
+    <!-- Manager Production -->
+    <record id="group_ron_production_manager" model="res.groups">
+        <field name="name">Responsable Coût Production</field>
+        <field name="category_id" ref="module_category_simple_production_cost"/>
+        <field name="implied_ids" eval="[(4, ref('group_ron_production_user'))]"/>
+        <field name="comment">Peut valider les productions et accéder à la configuration</field>
+    </record>
+
+</odoo>

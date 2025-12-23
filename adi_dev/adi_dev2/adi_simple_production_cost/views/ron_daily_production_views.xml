@@ -1,0 +1,333 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ==================== PRODUCTION JOURNALIÈRE ==================== -->
+
+    <!-- Vue Formulaire -->
+    <record id="ron_daily_production_view_form" model="ir.ui.view">
+        <field name="name">ron.daily.production.form</field>
+        <field name="model">ron.daily.production</field>
+        <field name="arch" type="xml">
+            <form string="Production Journalière">
+                <header>
+                    <button name="action_confirm" string="Confirmer"
+                            type="object" class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_calculate" string="Calculer les Coûts"
+                            type="object" class="btn-primary"
+                            invisible="state != 'confirmed'"/>
+                    <button name="action_validate" string="Valider et Générer Documents"
+                            type="object" class="btn-success"
+                            invisible="state != 'calculated'"/>
+                    <button name="action_done" string="Terminer"
+                            type="object" class="btn-success"
+                            invisible="state != 'validated'"/>
+                    <button name="action_reset_draft" string="Remettre en Brouillon"
+                            type="object"
+                            invisible="state in ('draft', 'done')"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,confirmed,calculated,validated,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="%(stock.action_picking_tree_all)d"
+                                type="action" class="oe_stat_button" icon="fa-truck"
+                                invisible="not picking_consumption_id">
+                            <field name="picking_consumption_id" invisible="1"/>
+                            <span>BL Consommation</span>
+                        </button>
+                        <button name="%(purchase.purchase_rfq)d"
+                                type="action" class="oe_stat_button" icon="fa-shopping-cart"
+                                invisible="not purchase_finished_id">
+                            <field name="purchase_finished_id" invisible="1"/>
+                            <span>Achat Prod. Finis</span>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="production_date"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <!-- Onglet Consommations -->
+                        <page string="Consommations" name="consumptions">
+                            <field name="consumption_line_ids">
+                                <tree editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="product_id"/>
+                                    <field name="quantity"/>
+                                    <field name="product_uom_id"/>
+                                    <field name="weight_per_unit"/>
+                                    <field name="weight_kg" sum="Total Poids"/>
+                                    <field name="unit_cost"/>
+                                    <field name="total_cost" sum="Total Coût"/>
+                                    <field name="stock_available"/>
+                                    <field name="notes"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                </tree>
+                            </field>
+                            <group class="oe_subtotal_footer">
+                                <field name="total_consumption_weight"
+                                       class="oe_subtotal_footer_separator"/>
+                                <field name="total_consumption_cost"
+                                       class="oe_subtotal_footer_separator"/>
+                                <field name="cost_per_kg"
+                                       class="oe_subtotal_footer_separator oe_right"/>
+                            </group>
+                        </page>
+
+                        <!-- Onglet Rebuts et Pâte -->
+                        <page string="Rebuts et Pâte" name="scraps">
+                            <field name="scrap_line_ids">
+                                <tree editable="bottom">
+                                    <field name="scrap_type"/>
+                                    <field name="product_id"/>
+                                    <field name="weight_kg" sum="Total Poids"/>
+                                    <field name="cost_per_kg"/>
+                                    <field name="total_cost" sum="Total Coût"/>
+                                    <field name="reason"/>
+                                    <field name="notes"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                </tree>
+                            </field>
+                            <group col="4">
+                                <group string="Rebuts">
+                                    <field name="scrap_sellable_weight"/>
+                                    <field name="scrap_sellable_cost"/>
+                                    <field name="scrap_unsellable_weight"/>
+                                    <field name="scrap_unsellable_cost"/>
+                                </group>
+                                <group string="Pâte">
+                                    <field name="paste_recoverable_weight"/>
+                                    <field name="paste_recoverable_cost"/>
+                                    <field name="paste_unrecoverable_weight"/>
+                                    <field name="paste_unrecoverable_cost"/>
+                                </group>
+                            </group>
+                            <group class="oe_subtotal_footer">
+                                <field name="total_scrap_weight"
+                                       class="oe_subtotal_footer_separator"/>
+                                <field name="total_scrap_cost"
+                                       class="oe_subtotal_footer_separator oe_right"/>
+                            </group>
+                        </page>
+
+                        <!-- Onglet Produits Finis -->
+                        <page string="Produits Finis" name="finished">
+                            <field name="finished_product_ids">
+                                <tree editable="bottom">
+                                    <field name="product_type"/>
+                                    <field name="quantity" sum="Total Cartons"/>
+                                    <field name="units_per_carton"/>
+                                    <field name="total_units" sum="Total Unités"/>
+                                    <field name="weight_per_carton"/>
+                                    <field name="total_weight" sum="Total Poids"/>
+                                    <field name="unit_cost"/>
+                                    <field name="total_cost" sum="Total Coût"/>
+                                    <field name="sale_price"/>
+                                    <field name="margin"/>
+                                    <field name="margin_percent"/>
+                                    <field name="total_margin" sum="Marge Totale"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                </tree>
+                            </field>
+                            <group col="4">
+                                <group string="SOLO">
+                                    <field name="qty_solo_cartons"/>
+                                    <field name="cost_solo_per_carton"/>
+                                    <field name="total_solo_cost"/>
+                                </group>
+                                <group string="CLASSICO">
+                                    <field name="qty_classico_cartons"/>
+                                    <field name="cost_classico_per_carton"/>
+                                    <field name="total_classico_cost"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- Onglet Emballage -->
+                        <page string="Emballage" name="packaging">
+                            <field name="packaging_line_ids">
+                                <tree editable="bottom">
+                                    <field name="packaging_type"/>
+                                    <field name="product_id"/>
+                                    <field name="quantity"/>
+                                    <field name="product_uom_id"/>
+                                    <field name="unit_cost"/>
+                                    <field name="total_cost" sum="Total Coût"/>
+                                    <field name="linked_to_production"/>
+                                    <field name="notes"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                </tree>
+                            </field>
+                            <group col="4">
+                                <group string="Détail Coûts Emballage">
+                                    <field name="packaging_carton_cost"/>
+                                    <field name="packaging_plastic_cost"/>
+                                    <field name="packaging_other_cost"/>
+                                </group>
+                                <group string="Total">
+                                    <field name="total_packaging_cost" class="oe_subtotal_footer_separator"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- Onglet Résumé -->
+                        <page string="Résumé des Coûts" name="summary">
+                            <group col="4">
+                                <group string="Consommation Matières">
+                                    <field name="total_consumption_weight"/>
+                                    <field name="total_consumption_cost"/>
+                                    <field name="cost_per_kg"/>
+                                </group>
+                                <group string="Emballage">
+                                    <field name="packaging_carton_cost"/>
+                                    <field name="packaging_plastic_cost"/>
+                                    <field name="total_packaging_cost"/>
+                                </group>
+                                <group string="Pertes">
+                                    <field name="total_scrap_weight"/>
+                                    <field name="total_scrap_cost"/>
+                                    <field name="paste_recoverable_weight"/>
+                                </group>
+                                <group string="Production Bonne">
+                                    <field name="good_weight"/>
+                                    <field name="total_good_cost"/>
+                                    <field name="cost_per_kg_good"/>
+                                </group>
+                            </group>
+                            <group>
+                                <group string="Documents">
+                                    <field name="picking_consumption_id"/>
+                                    <field name="purchase_finished_id"/>
+                                    <field name="purchase_scrap_id"/>
+                                </group>
+                            </group>
+                            <field name="notes" placeholder="Notes et observations..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vue Liste -->
+    <record id="ron_daily_production_view_tree" model="ir.ui.view">
+        <field name="name">ron.daily.production.tree</field>
+        <field name="model">ron.daily.production</field>
+        <field name="arch" type="xml">
+            <tree string="Productions Journalières" decoration-info="state == 'draft'"
+                  decoration-warning="state == 'confirmed'"
+                  decoration-success="state == 'done'">
+                <field name="name"/>
+                <field name="production_date"/>
+                <field name="total_consumption_weight" string="Poids Conso."/>
+                <field name="total_consumption_cost" string="Coût Conso."/>
+                <field name="cost_per_kg"/>
+                <field name="good_weight"/>
+                <field name="qty_solo_cartons" string="SOLO"/>
+                <field name="qty_classico_cartons" string="CLASSICO"/>
+                <field name="cost_solo_per_carton" string="Coût SOLO"/>
+                <field name="cost_classico_per_carton" string="Coût CLASSICO"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'draft'"
+                       decoration-warning="state in ('confirmed', 'calculated')"
+                       decoration-success="state in ('validated', 'done')"/>
+                <field name="currency_id" column_invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vue Recherche -->
+    <record id="ron_daily_production_view_search" model="ir.ui.view">
+        <field name="name">ron.daily.production.search</field>
+        <field name="model">ron.daily.production</field>
+        <field name="arch" type="xml">
+            <search string="Rechercher Productions">
+                <field name="name"/>
+                <field name="production_date"/>
+                <filter string="Aujourd'hui" name="today"
+                        domain="[('production_date', '=', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter string="Cette Semaine" name="this_week"
+                        domain="[('production_date', '>=', (context_today() - datetime.timedelta(days=context_today().weekday())).strftime('%Y-%m-%d'))]"/>
+                <filter string="Ce Mois" name="this_month"
+                        domain="[('production_date', '>=', context_today().strftime('%Y-%m-01'))]"/>
+                <separator/>
+                <filter string="Brouillon" name="draft" domain="[('state', '=', 'draft')]"/>
+                <filter string="Confirmé" name="confirmed" domain="[('state', '=', 'confirmed')]"/>
+                <filter string="Calculé" name="calculated" domain="[('state', '=', 'calculated')]"/>
+                <filter string="Validé" name="validated" domain="[('state', '=', 'validated')]"/>
+                <filter string="Terminé" name="done" domain="[('state', '=', 'done')]"/>
+                <group expand="0" string="Grouper par">
+                    <filter string="Date" name="group_date" context="{'group_by': 'production_date'}"/>
+                    <filter string="État" name="group_state" context="{'group_by': 'state'}"/>
+                    <filter string="Mois" name="group_month" context="{'group_by': 'production_date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Vue Pivot -->
+    <record id="ron_daily_production_view_pivot" model="ir.ui.view">
+        <field name="name">ron.daily.production.pivot</field>
+        <field name="model">ron.daily.production</field>
+        <field name="arch" type="xml">
+            <pivot string="Analyse Productions">
+                <field name="production_date" type="row" interval="month"/>
+                <field name="total_consumption_cost" type="measure"/>
+                <field name="total_good_cost" type="measure"/>
+                <field name="qty_solo_cartons" type="measure"/>
+                <field name="qty_classico_cartons" type="measure"/>
+                <field name="cost_solo_per_carton" type="measure"/>
+                <field name="cost_classico_per_carton" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Vue Graphique -->
+    <record id="ron_daily_production_view_graph" model="ir.ui.view">
+        <field name="name">ron.daily.production.graph</field>
+        <field name="model">ron.daily.production</field>
+        <field name="arch" type="xml">
+            <graph string="Évolution des Coûts" type="line">
+                <field name="production_date"/>
+                <field name="cost_solo_per_carton" type="measure"/>
+                <field name="cost_classico_per_carton" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="ron_daily_production_action" model="ir.actions.act_window">
+        <field name="name">Production Journalière</field>
+        <field name="res_model">ron.daily.production</field>
+        <field name="view_mode">tree,form,pivot,graph</field>
+        <field name="search_view_id" ref="ron_daily_production_view_search"/>
+        <field name="context">{'search_default_this_month': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créer une nouvelle production journalière
+            </p>
+            <p>
+                Enregistrez les consommations, rebuts et produits finis du jour
+                pour calculer automatiquement le coût de revient.
+            </p>
+        </field>
+    </record>
+
+</odoo>

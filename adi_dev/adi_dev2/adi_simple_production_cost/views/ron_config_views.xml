@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ==================== CONFIGURATION ==================== -->
+
+    <!-- Vue Formulaire Configuration -->
+    <record id="ron_production_config_view_form" model="ir.ui.view">
+        <field name="name">ron.production.config.form</field>
+        <field name="model">ron.production.config</field>
+        <field name="arch" type="xml">
+            <form string="Configuration Coût Production">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>Configuration Coût de Production</h1>
+                    </div>
+                    <group>
+                        <field name="company_id" groups="base.group_multi_company"/>
+                        <field name="currency_id" invisible="1"/>
+                    </group>
+
+                    <notebook>
+                        <!-- Produits Finis -->
+                        <page string="Produits Finis" name="products">
+                            <group col="4">
+                                <group string="Produit 1 (SOLO)">
+                                    <field name="product_solo_id"/>
+                                    <field name="solo_weight_per_carton"/>
+                                </group>
+                                <group string="Produit 2 (CLASSICO)">
+                                    <field name="product_classico_id"/>
+                                    <field name="classico_weight_per_carton"/>
+                                </group>
+                            </group>
+                            <group>
+                                <field name="cost_ratio_solo_classico"/>
+                            </group>
+                            <div class="alert alert-info" role="alert">
+                                <strong>Configuration des Produits:</strong><br/>
+                                - Produit 1: Carton = 48 packs x 4 unités = 192 unités<br/>
+                                - Produit 2: Carton = 24 packs x 13 unités = 312 unités<br/>
+                                - Ratio: Coût Produit 1 = Ratio x Coût Produit 2
+                            </div>
+                        </page>
+
+                        <!-- Dépôts -->
+                        <page string="Dépôts et Emplacements" name="warehouses">
+                            <group col="4">
+                                <group string="Dépôts">
+                                    <field name="warehouse_mp_id"/>
+                                    <field name="warehouse_production_id"/>
+                                    <field name="warehouse_pf_id"/>
+                                </group>
+                                <group string="Emplacements">
+                                    <field name="location_production_id"/>
+                                </group>
+                            </group>
+                            <div class="alert alert-info" role="alert">
+                                <strong>Architecture des Dépôts:</strong><br/>
+                                - DMP: Dépôt Matière Première (achats avec méthode AVCO)<br/>
+                                - DPR: Dépôt Production (simulation via BL vers contact Consommation)<br/>
+                                - DPF: Dépôt Produits Finis (réception via achat depuis fournisseur Production)
+                            </div>
+                        </page>
+
+                        <!-- Partenaires -->
+                        <page string="Partenaires" name="partners">
+                            <group>
+                                <field name="partner_consumption_id"/>
+                                <field name="partner_production_id"/>
+                            </group>
+                            <div class="alert alert-warning" role="alert">
+                                <strong>Partenaires Fictifs:</strong><br/>
+                                - Contact Consommation: Pour les BL de déstockage des matières premières<br/>
+                                - Fournisseur Production: Pour les achats de produits finis (entrée en stock avec coût calculé)
+                            </div>
+                        </page>
+
+                        <!-- Produits Rebuts -->
+                        <page string="Rebuts et Pâte" name="scraps">
+                            <group col="4">
+                                <group string="Rebuts">
+                                    <field name="product_scrap_sellable_id"/>
+                                    <field name="product_scrap_unsellable_id"/>
+                                </group>
+                                <group string="Pâte">
+                                    <field name="product_paste_recoverable_id"/>
+                                    <field name="product_paste_unrecoverable_id"/>
+                                </group>
+                            </group>
+                            <div class="alert alert-info" role="alert">
+                                <strong>Types de Rebuts/Pâte:</strong><br/>
+                                - Rebut Vendable: Peut être vendu comme produit secondaire<br/>
+                                - Rebut Non Vendable: Perte sèche (comptabilisée)<br/>
+                                - Pâte Récupérable: Réutilisée le lendemain (valeur conservée)<br/>
+                                - Pâte Irrécupérable: Perte (comptabilisée)
+                            </div>
+                        </page>
+
+                        <!-- Paramètres -->
+                        <page string="Paramètres" name="settings">
+                            <group string="Automatisation">
+                                <field name="auto_create_delivery"/>
+                                <field name="auto_create_purchase"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action Configuration -->
+    <record id="ron_production_config_action" model="ir.actions.act_window">
+        <field name="name">Configuration Coût Production</field>
+        <field name="res_model">ron.production.config</field>
+        <field name="view_mode">form</field>
+        <field name="target">current</field>
+        <field name="context">{'form_view_initial_mode': 'edit'}</field>
+    </record>
+
+    <!-- Action pour ouvrir la config (méthode) -->
+    <record id="ron_production_config_action_open" model="ir.actions.server">
+        <field name="name">Ouvrir Configuration</field>
+        <field name="model_id" ref="model_ron_production_config"/>
+        <field name="state">code</field>
+        <field name="code">
+action = model.get_config().action_open_config()
+        </field>
+    </record>
+
+</odoo>
