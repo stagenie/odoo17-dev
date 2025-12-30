@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ==================== EXTENSION PRODUIT ==================== -->
+
+    <!-- Vue Formulaire Produit Template - Ajout du champ rebut -->
+    <record id="product_template_form_view_production_cost" model="ir.ui.view">
+        <field name="name">product.template.form.production.cost</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_only_form_view"/>
+        <field name="arch" type="xml">
+            <!-- Ajouter le champ dans un groupe séparé pour le label -->
+            <xpath expr="//div[hasclass('oe_title')]" position="after">
+                <div class="mb-2" invisible="type != 'product'">
+                    <field name="is_recoverable_scrap" class="oe_inline"/>
+                    <label for="is_recoverable_scrap" string=" Est un Rebut Récupérable"/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Vue Liste Produit - Colonnes optionnelles -->
+    <record id="product_template_tree_view_production_cost" model="ir.ui.view">
+        <field name="name">product.template.tree.production.cost</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_tree_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='type']" position="after">
+                <field name="is_recoverable_scrap" optional="hide" string="Rebut Récup."/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Vue Recherche Produit - Filtres -->
+    <record id="product_template_search_view_production_cost" model="ir.ui.view">
+        <field name="name">product.template.search.production.cost</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_search_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='consumable']" position="after">
+                <separator/>
+                <filter string="Rebuts Récupérables" name="recoverable_scrap"
+                        domain="[('is_recoverable_scrap', '=', True)]"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

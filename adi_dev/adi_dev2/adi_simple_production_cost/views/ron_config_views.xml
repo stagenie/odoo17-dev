@@ -10,10 +10,11 @@
         <field name="arch" type="xml">
             <form string="Configuration Coût Production">
                 <sheet>
-                    <div class="oe_title">
+                    <div class="oe_title mb-3">
                         <h1>Configuration Coût de Production</h1>
                     </div>
-                    <group>
+
+                    <group col="2">
                         <field name="company_id" groups="base.group_multi_company"/>
                         <field name="currency_id" invisible="1"/>
                     </group>
@@ -21,86 +22,119 @@
                     <notebook>
                         <!-- Produits Finis -->
                         <page string="Produits Finis" name="products">
-                            <group col="4">
-                                <group string="Produit 1 (SOLO)">
-                                    <field name="product_solo_id"/>
-                                    <field name="solo_weight_per_carton"/>
+                            <separator string="SOLO / CLASSICO"/>
+                            <group col="2">
+                                <group string="Produit SOLO">
+                                    <field name="product_solo_id" placeholder="Sélectionner le produit SOLO"/>
+                                    <field name="solo_weight_per_carton" string="Poids/Carton (kg)"/>
+                                    <field name="solo_units_per_carton" string="Unités/Carton"/>
                                 </group>
-                                <group string="Produit 2 (CLASSICO)">
-                                    <field name="product_classico_id"/>
-                                    <field name="classico_weight_per_carton"/>
+                                <group string="Produit CLASSICO">
+                                    <field name="product_classico_id" placeholder="Sélectionner le produit CLASSICO"/>
+                                    <field name="classico_weight_per_carton" string="Poids/Carton (kg)"/>
+                                    <field name="classico_units_per_carton" string="Unités/Carton"/>
                                 </group>
                             </group>
-                            <group>
-                                <field name="cost_ratio_solo_classico"/>
+                            <group col="2">
+                                <group>
+                                    <field name="cost_ratio_solo_classico"/>
+                                </group>
+                                <group>
+                                    <span class="text-muted">Formule: Coût SOLO = Ratio × Coût CLASSICO</span>
+                                </group>
                             </group>
-                            <div class="alert alert-info" role="alert">
-                                <strong>Configuration des Produits:</strong><br/>
-                                - Produit 1: Carton = 48 packs x 4 unités = 192 unités<br/>
-                                - Produit 2: Carton = 24 packs x 13 unités = 312 unités<br/>
-                                - Ratio: Coût Produit 1 = Ratio x Coût Produit 2
-                            </div>
+
+                            <separator string="Sandwich Grand Format"/>
+                            <group col="2">
+                                <group string="Produit Sandwich GF">
+                                    <field name="product_sandwich_id" placeholder="Sélectionner le produit Sandwich"/>
+                                    <field name="sandwich_weight_per_carton" string="Poids/Carton (kg)"/>
+                                    <field name="sandwich_units_per_carton" string="Unités/Carton"/>
+                                </group>
+                                <group>
+                                    <span class="text-muted mt-4">Le Sandwich GF est produit séparément (calcul direct sans ratio).</span>
+                                </group>
+                            </group>
                         </page>
 
-                        <!-- Dépôts -->
-                        <page string="Dépôts et Emplacements" name="warehouses">
-                            <group col="4">
-                                <group string="Dépôts">
-                                    <field name="warehouse_mp_id"/>
-                                    <field name="warehouse_production_id"/>
-                                    <field name="warehouse_pf_id"/>
+                        <!-- Dépôts et Emplacements -->
+                        <page string="Dépôts" name="warehouses">
+                            <group col="2">
+                                <group string="Dépôts de Stockage">
+                                    <field name="warehouse_mp_id" string="Dépôt Matière Première (DMP)"/>
+                                    <field name="warehouse_production_id" string="Dépôt Production (DPR)"/>
+                                    <field name="warehouse_pf_id" string="Dépôt Produits Finis (DPF)"/>
                                 </group>
-                                <group string="Emplacements">
+                                <group string="Emplacement">
                                     <field name="location_production_id"/>
                                 </group>
                             </group>
-                            <div class="alert alert-info" role="alert">
-                                <strong>Architecture des Dépôts:</strong><br/>
-                                - DMP: Dépôt Matière Première (achats avec méthode AVCO)<br/>
-                                - DPR: Dépôt Production (simulation via BL vers contact Consommation)<br/>
-                                - DPF: Dépôt Produits Finis (réception via achat depuis fournisseur Production)
-                            </div>
+                            <group col="1">
+                                <div class="alert alert-info" role="alert">
+                                    <strong>Architecture des Dépôts:</strong><br/>
+                                    - <b>DMP:</b> Dépôt Matière Première (achats avec méthode AVCO)<br/>
+                                    - <b>DPR:</b> Dépôt Production (simulation via BL vers contact Consommation)<br/>
+                                    - <b>DPF:</b> Dépôt Produits Finis (réception via achat depuis fournisseur Production)
+                                </div>
+                            </group>
                         </page>
 
                         <!-- Partenaires -->
                         <page string="Partenaires" name="partners">
-                            <group>
-                                <field name="partner_consumption_id"/>
-                                <field name="partner_production_id"/>
-                            </group>
-                            <div class="alert alert-warning" role="alert">
-                                <strong>Partenaires Fictifs:</strong><br/>
-                                - Contact Consommation: Pour les BL de déstockage des matières premières<br/>
-                                - Fournisseur Production: Pour les achats de produits finis (entrée en stock avec coût calculé)
-                            </div>
-                        </page>
-
-                        <!-- Produits Rebuts -->
-                        <page string="Rebuts et Pâte" name="scraps">
-                            <group col="4">
-                                <group string="Rebuts">
-                                    <field name="product_scrap_sellable_id"/>
-                                    <field name="product_scrap_unsellable_id"/>
+                            <group col="2">
+                                <group string="Partenaires Fictifs">
+                                    <field name="partner_consumption_id" string="Contact Consommation"/>
+                                    <field name="partner_production_id" string="Fournisseur Production"/>
                                 </group>
-                                <group string="Pâte">
-                                    <field name="product_paste_recoverable_id"/>
-                                    <field name="product_paste_unrecoverable_id"/>
-                                </group>
+                                <group/>
                             </group>
-                            <div class="alert alert-info" role="alert">
-                                <strong>Types de Rebuts/Pâte:</strong><br/>
-                                - Rebut Vendable: Peut être vendu comme produit secondaire<br/>
-                                - Rebut Non Vendable: Perte sèche (comptabilisée)<br/>
-                                - Pâte Récupérable: Réutilisée le lendemain (valeur conservée)<br/>
-                                - Pâte Irrécupérable: Perte (comptabilisée)
-                            </div>
+                            <group col="1">
+                                <div class="alert alert-warning" role="alert">
+                                    <strong>Partenaires Fictifs:</strong><br/>
+                                    - <b>Contact Consommation:</b> Pour les BL de déstockage des matières premières<br/>
+                                    - <b>Fournisseur Production:</b> Pour les achats de produits finis (entrée en stock avec coût calculé)
+                                </div>
+                            </group>
                         </page>
 
                         <!-- Paramètres -->
                         <page string="Paramètres" name="settings">
-                            <group string="Automatisation">
-                                <field name="auto_create_delivery"/>
-                                <field name="auto_create_purchase"/>
+                            <group col="2">
+                                <group string="Création Automatique">
+                                    <field name="auto_create_delivery" widget="boolean_toggle"/>
+                                    <field name="auto_create_purchase" widget="boolean_toggle"/>
+                                </group>
+                                <group string="Produit Pâte Récupérable">
+                                    <field name="product_paste_id"/>
+                                </group>
+                            </group>
+
+                            <separator string="Validation Automatique des Opérations"/>
+                            <group col="2">
+                                <group>
+                                    <field name="auto_validate_operations" widget="boolean_toggle"/>
+                                    <field name="auto_create_supplier_invoice" widget="boolean_toggle"
+                                           invisible="not auto_validate_operations"/>
+                                </group>
+                                <group>
+                                    <div class="alert alert-warning" role="alert"
+                                         invisible="not auto_validate_operations">
+                                        <strong>Attention:</strong> Si activé, lors de la validation:<br/>
+                                        - Le BL de consommation sera validé (sortie de stock)<br/>
+                                        - Les achats seront confirmés et réceptionnés<br/>
+                                        - Les factures fournisseur seront créées (si coché)
+                                    </div>
+                                </group>
+                            </group>
+
+                            <separator string="Informations"/>
+                            <group col="1">
+                                <div class="alert alert-info" role="alert">
+                                    <strong>Produit Pâte:</strong> Ce produit sera utilisé pour créer l'achat de pâte récupérable (stock AVCO).<br/><br/>
+                                    <strong>Produits Rebuts:</strong> Les rebuts récupérables sont configurés directement sur la fiche produit.<br/>
+                                    Allez dans <b>Inventaire &gt; Produits</b> et cochez <b>"Est un Rebut Récupérable"</b> pour les produits vendables issus de la production.<br/><br/>
+                                    <strong>Contrôle Stock:</strong> La validation vérifie automatiquement que le stock est disponible pour toutes les matières premières.
+                                </div>
                             </group>
                         </page>
                     </notebook>

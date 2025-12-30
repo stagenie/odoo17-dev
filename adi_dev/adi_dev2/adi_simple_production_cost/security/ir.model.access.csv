@@ -13,3 +13,7 @@ access_ron_packaging_line_user,ron.packaging.line.user,model_ron_packaging_line,
 access_ron_packaging_line_manager,ron.packaging.line.manager,model_ron_packaging_line,group_ron_production_manager,1,1,1,1
 access_ron_generate_purchase_wizard_user,ron.generate.purchase.wizard.user,model_ron_generate_purchase_wizard,group_ron_production_user,1,1,1,1
 access_ron_generate_purchase_wizard_manager,ron.generate.purchase.wizard.manager,model_ron_generate_purchase_wizard,group_ron_production_manager,1,1,1,1
+access_ron_bom_user,ron.bom.user,model_ron_bom,group_ron_production_user,1,0,0,0
+access_ron_bom_manager,ron.bom.manager,model_ron_bom,group_ron_production_manager,1,1,1,1
+access_ron_bom_line_user,ron.bom.line.user,model_ron_bom_line,group_ron_production_user,1,0,0,0
+access_ron_bom_line_manager,ron.bom.line.manager,model_ron_bom_line,group_ron_production_manager,1,1,1,1

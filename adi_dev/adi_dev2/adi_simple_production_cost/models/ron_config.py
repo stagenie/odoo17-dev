@@ -21,7 +21,7 @@ class RonProductionConfig(models.Model):
         ondelete='cascade'
     )
 
-    # ================== PRODUITS FINIS ==================
+    # ================== PRODUITS FINIS - SOLO/CLASSICO ==================
     product_solo_id = fields.Many2one(
         'product.product',
         string='Produit SOLO',
@@ -49,11 +49,43 @@ class RonProductionConfig(models.Model):
         help="Poids net d'un carton CLASSICO en kilogrammes"
     )
 
+    solo_units_per_carton = fields.Integer(
+        string='Unités SOLO par Carton',
+        default=192,
+        help="48 packs × 4 unités = 192 unités"
+    )
+
+    classico_units_per_carton = fields.Integer(
+        string='Unités CLASSICO par Carton',
+        default=312,
+        help="24 packs × 13 unités = 312 unités"
+    )
+
     # Ratio de coût
     cost_ratio_solo_classico = fields.Float(
         string='Ratio Coût SOLO/CLASSICO',
         default=1.65,
         help="SOLO = Ratio × CLASSICO (par défaut 1.65)"
+    )
+
+    # ================== PRODUITS FINIS - SANDWICH GRAND FORMAT ==================
+    product_sandwich_id = fields.Many2one(
+        'product.product',
+        string='Produit Sandwich Grand Format',
+        domain="[('type', '=', 'product')]",
+        help="Produit fini Sandwich Grand Format (produit seul, sans ratio)"
+    )
+
+    sandwich_weight_per_carton = fields.Float(
+        string='Poids Sandwich par Carton (kg)',
+        default=0.0,
+        help="Poids net d'un carton Sandwich Grand Format en kilogrammes"
+    )
+
+    sandwich_units_per_carton = fields.Integer(
+        string='Unités Sandwich par Carton',
+        default=0,
+        help="Nombre d'unités par carton Sandwich Grand Format"
     )
 
     # ================== DÉPÔTS ==================
@@ -95,33 +127,12 @@ class RonProductionConfig(models.Model):
         help="Fournisseur fictif pour les achats de produits finis"
     )
 
-    # ================== PRODUITS REBUTS ==================
-    product_scrap_sellable_id = fields.Many2one(
+    # ================== PÂTE RÉCUPÉRABLE ==================
+    product_paste_id = fields.Many2one(
         'product.product',
-        string='Produit Rebut Vendable',
+        string='Produit Pâte Récupérable',
         domain="[('type', '=', 'product')]",
-        help="Produit rebut qui peut être vendu"
-    )
-
-    product_scrap_unsellable_id = fields.Many2one(
-        'product.product',
-        string='Produit Rebut Non Vendable',
-        domain="[('type', '=', 'product')]",
-        help="Produit rebut qui ne peut pas être vendu"
-    )
-
-    product_paste_recoverable_id = fields.Many2one(
-        'product.product',
-        string='Pâte Récupérable',
-        domain="[('type', '=', 'product')]",
-        help="Produit pâte récupérable (peut être réutilisée)"
-    )
-
-    product_paste_unrecoverable_id = fields.Many2one(
-        'product.product',
-        string='Pâte Irrécupérable',
-        domain="[('type', '=', 'product')]",
-        help="Produit pâte irrécupérable (perte)"
+        help="Produit pâte récupérable (valorisation AVCO, réutilisable le lendemain)"
     )
 
     # ================== PARAMÈTRES ==================
@@ -135,6 +146,19 @@ class RonProductionConfig(models.Model):
         string='Créer Achat Prod. Finis Auto',
         default=True,
         help="Créer automatiquement l'achat des produits finis à la validation"
+    )
+
+    # ================== VALIDATION AUTOMATIQUE ==================
+    auto_validate_operations = fields.Boolean(
+        string='Valider Opérations Automatiquement',
+        default=False,
+        help="Valider automatiquement les BL et Achats lors de la validation de la production"
+    )
+
+    auto_create_supplier_invoice = fields.Boolean(
+        string='Créer Facture Fournisseur Auto',
+        default=False,
+        help="Créer automatiquement les factures fournisseur pour les achats validés"
     )
 
     currency_id = fields.Many2one(

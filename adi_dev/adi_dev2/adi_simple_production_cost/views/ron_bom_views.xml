@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ===================== BOM LINE - TREE VIEW ===================== -->
+    <record id="view_ron_bom_line_tree" model="ir.ui.view">
+        <field name="name">ron.bom.line.tree</field>
+        <field name="model">ron.bom.line</field>
+        <field name="arch" type="xml">
+            <tree string="Composants">
+                <field name="sequence" widget="handle"/>
+                <field name="product_id"/>
+                <field name="quantity"/>
+                <field name="uom_id"/>
+                <field name="bom_id" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ===================== BOM LINE - FORM VIEW ===================== -->
+    <record id="view_ron_bom_line_form" model="ir.ui.view">
+        <field name="name">ron.bom.line.form</field>
+        <field name="model">ron.bom.line</field>
+        <field name="arch" type="xml">
+            <form string="Composant">
+                <group>
+                    <group>
+                        <field name="product_id"/>
+                        <field name="quantity"/>
+                        <field name="uom_id"/>
+                    </group>
+                    <group>
+                        <field name="bom_id"/>
+                        <field name="sequence"/>
+                    </group>
+                </group>
+            </form>
+        </field>
+    </record>
+
+    <!-- ===================== NOMENCLATURE - TREE VIEW ===================== -->
+    <record id="view_ron_bom_tree" model="ir.ui.view">
+        <field name="name">ron.bom.tree</field>
+        <field name="model">ron.bom</field>
+        <field name="arch" type="xml">
+            <tree string="Nomenclatures" decoration-success="state == 'validated'" decoration-muted="not active">
+                <field name="name"/>
+                <field name="product_type"/>
+                <field name="component_count"/>
+                <field name="state" widget="badge" decoration-success="state == 'validated'" decoration-info="state == 'draft'"/>
+                <field name="active" invisible="1"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ===================== NOMENCLATURE - FORM VIEW ===================== -->
+    <record id="view_ron_bom_form" model="ir.ui.view">
+        <field name="name">ron.bom.form</field>
+        <field name="model">ron.bom</field>
+        <field name="arch" type="xml">
+            <form string="Nomenclature">
+                <header>
+                    <button name="action_validate" type="object" string="Valider"
+                            class="oe_highlight"
+                            invisible="state == 'validated'"
+                            confirm="Valider cette nomenclature ? Les autres nomenclatures validées du même type passeront en brouillon."/>
+                    <button name="action_set_draft" type="object" string="Remettre en brouillon"
+                            invisible="state == 'draft'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,validated"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_components" type="object"
+                                class="oe_stat_button" icon="fa-list">
+                            <field name="component_count" widget="statinfo" string="Composants"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archivé" bg_color="bg-danger" invisible="active"/>
+                    <widget name="web_ribbon" title="Validée" bg_color="bg-success" invisible="state != 'validated'"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" placeholder="Nom de la nomenclature"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="product_type" readonly="state == 'validated'"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Composants" name="components">
+                            <field name="line_ids" readonly="state == 'validated'">
+                                <tree editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="product_id"/>
+                                    <field name="quantity"/>
+                                    <field name="uom_id"/>
+                                </tree>
+                            </field>
+                            <div class="alert alert-info" role="alert" style="margin-top: 16px;">
+                                <strong>Note:</strong> Les quantités sont définies <b>par carton</b> de produit fini.
+                                <br/>Exemple: Si vous mettez 2 kg de farine et produisez 100 cartons, la consommation sera de 200 kg.
+                            </div>
+                        </page>
+                        <page string="Notes" name="notes">
+                            <field name="notes" placeholder="Notes internes..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- ===================== NOMENCLATURE - SEARCH VIEW ===================== -->
+    <record id="view_ron_bom_search" model="ir.ui.view">
+        <field name="name">ron.bom.search</field>
+        <field name="model">ron.bom</field>
+        <field name="arch" type="xml">
+            <search string="Recherche Nomenclatures">
+                <field name="name"/>
+                <field name="product_type"/>
+                <filter string="Validées" name="validated" domain="[('state', '=', 'validated')]"/>
+                <filter string="Brouillon" name="draft" domain="[('state', '=', 'draft')]"/>
+                <separator/>
+                <filter string="SOLO" name="solo" domain="[('product_type', '=', 'solo')]"/>
+                <filter string="CLASSICO" name="classico" domain="[('product_type', '=', 'classico')]"/>
+                <filter string="Sandwich GF" name="sandwich" domain="[('product_type', '=', 'sandwich_gf')]"/>
+                <separator/>
+                <filter string="Archivés" name="archived" domain="[('active', '=', False)]"/>
+                <group expand="0" string="Grouper par">
+                    <filter string="Type de Produit" name="group_product_type" context="{'group_by': 'product_type'}"/>
+                    <filter string="État" name="group_state" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ===================== NOMENCLATURE - ACTION ===================== -->
+    <record id="action_ron_bom" model="ir.actions.act_window">
+        <field name="name">Nomenclatures</field>
+        <field name="res_model">ron.bom</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_ron_bom_search"/>
+        <field name="context">{'search_default_validated': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créez votre première nomenclature
+            </p>
+            <p>
+                Définissez les composants (matières premières) nécessaires pour chaque type de produit fini.
+                <br/>Les quantités sont définies par carton.
+            </p>
+        </field>
+    </record>
+
+</odoo>

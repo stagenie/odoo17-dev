@@ -6,13 +6,11 @@ from odoo.exceptions import ValidationError
 
 class RonScrapLine(models.Model):
     """
-    Ligne de rebut ou pâte.
+    Ligne de rebut ou pâte récupérable.
 
-    Types:
-    - Rebut vendable: peut être vendu comme produit fini secondaire
-    - Rebut non vendable: perte sèche
-    - Pâte récupérable: sera réutilisée le lendemain
-    - Pâte irrécupérable: perte
+    Types simplifiés:
+    - Rebut récupérable: peut être vendu comme produit fini secondaire (multi-produits)
+    - Pâte récupérable: sera réutilisée le lendemain (stock AVCO)
     """
     _name = 'ron.scrap.line'
     _description = 'Ligne de Rebut/Pâte'
@@ -32,20 +30,18 @@ class RonScrapLine(models.Model):
         store=True
     )
 
-    # ================== TYPE ==================
+    # ================== TYPE (SIMPLIFIÉ) ==================
     scrap_type = fields.Selection([
-        ('scrap_sellable', 'Rebut Vendable'),
-        ('scrap_unsellable', 'Rebut Non Vendable'),
+        ('scrap_recoverable', 'Rebut Récupérable'),
         ('paste_recoverable', 'Pâte Récupérable'),
-        ('paste_unrecoverable', 'Pâte Irrécupérable'),
-    ], string='Type', required=True, default='scrap_sellable')
+    ], string='Type', required=True, default='scrap_recoverable')
 
-    # ================== PRODUIT OPTIONNEL ==================
+    # ================== PRODUIT ==================
     product_id = fields.Many2one(
         'product.product',
         string='Produit',
         domain="[('type', '=', 'product')]",
-        help="Produit associé (optionnel, utilisé pour le stock des rebuts vendables)"
+        help="Produit rebut (plusieurs articles possibles) ou pâte récupérable"
     )
 
     # ================== QUANTITÉS ==================
@@ -109,6 +105,19 @@ class RonScrapLine(models.Model):
 
     # ================== MÉTHODES ==================
 
+    @api.model
+    def default_get(self, fields_list):
+        """Définit les valeurs par défaut, notamment le produit pâte."""
+        res = super().default_get(fields_list)
+
+        # Si le type par défaut est pâte récupérable, définir le produit pâte
+        if res.get('scrap_type') == 'paste_recoverable':
+            config = self.env['ron.production.config'].get_config()
+            if config.product_paste_id:
+                res['product_id'] = config.product_paste_id.id
+
+        return res
+
     @api.depends('weight_kg', 'cost_per_kg')
     def _compute_total_cost(self):
         """Calcule le coût total."""
@@ -119,23 +128,21 @@ class RonScrapLine(models.Model):
     def _compute_type_display(self):
         """Affichage du type."""
         type_labels = {
-            'scrap_sellable': 'Rebut Vendable',
-            'scrap_unsellable': 'Rebut Non Vendable',
+            'scrap_recoverable': 'Rebut Récupérable',
             'paste_recoverable': 'Pâte Récupérable',
-            'paste_unrecoverable': 'Pâte Irrécupérable',
         }
         for rec in self:
             rec.type_display = type_labels.get(rec.scrap_type, '')
 
     @api.depends('scrap_type')
     def _compute_is_sellable(self):
-        """Indique si le rebut est vendable."""
+        """Indique si le rebut est vendable (récupérable)."""
         for rec in self:
-            rec.is_sellable = rec.scrap_type == 'scrap_sellable'
+            rec.is_sellable = rec.scrap_type == 'scrap_recoverable'
 
     @api.depends('scrap_type')
     def _compute_is_recoverable(self):
-        """Indique si la pâte est récupérable."""
+        """Indique si c'est de la pâte récupérable."""
         for rec in self:
             rec.is_recoverable = rec.scrap_type == 'paste_recoverable'
 
@@ -144,14 +151,13 @@ class RonScrapLine(models.Model):
         """Met à jour le produit selon le type."""
         config = self.env['ron.production.config'].get_config()
 
-        if self.scrap_type == 'scrap_sellable' and config.product_scrap_sellable_id:
-            self.product_id = config.product_scrap_sellable_id
-        elif self.scrap_type == 'scrap_unsellable' and config.product_scrap_unsellable_id:
-            self.product_id = config.product_scrap_unsellable_id
-        elif self.scrap_type == 'paste_recoverable' and config.product_paste_recoverable_id:
-            self.product_id = config.product_paste_recoverable_id
-        elif self.scrap_type == 'paste_unrecoverable' and config.product_paste_unrecoverable_id:
-            self.product_id = config.product_paste_unrecoverable_id
+        # Pour la pâte récupérable, utiliser le produit configuré
+        if self.scrap_type == 'paste_recoverable' and config.product_paste_id:
+            self.product_id = config.product_paste_id
+        # Pour les rebuts, laisser l'utilisateur choisir librement
+        elif self.scrap_type == 'scrap_recoverable':
+            # Ne pas forcer un produit - l'utilisateur peut choisir parmi plusieurs
+            pass
 
     @api.onchange('daily_production_id')
     def _onchange_daily_production(self):

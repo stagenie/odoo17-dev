@@ -9,8 +9,8 @@ class RonPackagingLine(models.Model):
     Ligne de coût d'emballage.
 
     Représente les coûts d'emballage pour la production du jour :
-    - Cartons (lié au nombre de cartons produits)
-    - Plastification (film, etc.)
+    - Cartons: Nombre × Prix unitaire
+    - Film Ondulé: Poids (kg) × Prix/kg
     - Autres matières d'emballage
     """
     _name = 'ron.packaging.line'
@@ -34,17 +34,17 @@ class RonPackagingLine(models.Model):
     # ================== TYPE D'EMBALLAGE ==================
     packaging_type = fields.Selection([
         ('carton', 'Carton'),
-        ('plastic_film', 'Film Plastique / Plastification'),
+        ('film_ondule', 'Film Ondulé'),
         ('label', 'Étiquettes'),
         ('other', 'Autre'),
-    ], string='Type', required=True, default='plastic_film')
+    ], string='Type', required=True, default='carton')
 
     # ================== PRODUIT ==================
     product_id = fields.Many2one(
         'product.product',
         string='Produit Emballage',
         domain="[('type', 'in', ['product', 'consu'])]",
-        help="Produit d'emballage (carton, film plastique, etc.)"
+        help="Produit d'emballage (carton, film ondulé, etc.)"
     )
 
     product_uom_id = fields.Many2one(
@@ -55,11 +55,18 @@ class RonPackagingLine(models.Model):
     )
 
     # ================== QUANTITÉS ==================
+    # Pour Carton: nombre de pièces
+    # Pour Film Ondulé: poids en kg
     quantity = fields.Float(
-        string='Quantité',
+        string='Quantité / Poids',
         required=True,
         digits='Product Unit of Measure',
-        help="Quantité utilisée"
+        help="Nombre (pour cartons/étiquettes) ou Poids en kg (pour film ondulé)"
+    )
+
+    quantity_label = fields.Char(
+        string='Libellé Quantité',
+        compute='_compute_quantity_label'
     )
 
     # ================== COÛTS ==================
@@ -73,7 +80,12 @@ class RonPackagingLine(models.Model):
     unit_cost = fields.Monetary(
         string='Prix Unitaire',
         currency_field='currency_id',
-        help="Prix unitaire de l'emballage"
+        help="Prix unitaire (par pièce ou par kg selon le type)"
+    )
+
+    unit_cost_label = fields.Char(
+        string='Libellé Prix',
+        compute='_compute_unit_cost_label'
     )
 
     total_cost = fields.Monetary(
@@ -85,11 +97,10 @@ class RonPackagingLine(models.Model):
     )
 
     # ================== LIEN AVEC PRODUITS FINIS ==================
-    # Pour les cartons, on peut lier automatiquement aux quantités produites
     linked_to_production = fields.Boolean(
         string='Lié à la Production',
         default=False,
-        help="Si coché, la quantité est calculée depuis les produits finis"
+        help="Si coché, la quantité est calculée depuis les produits finis (pour cartons)"
     )
 
     # ================== NOTES ==================
@@ -103,6 +114,24 @@ class RonPackagingLine(models.Model):
         for rec in self:
             rec.total_cost = rec.quantity * rec.unit_cost
 
+    @api.depends('packaging_type')
+    def _compute_quantity_label(self):
+        """Calcule le libellé de la quantité selon le type."""
+        for rec in self:
+            if rec.packaging_type == 'film_ondule':
+                rec.quantity_label = 'Poids (kg)'
+            else:
+                rec.quantity_label = 'Nombre'
+
+    @api.depends('packaging_type')
+    def _compute_unit_cost_label(self):
+        """Calcule le libellé du prix selon le type."""
+        for rec in self:
+            if rec.packaging_type == 'film_ondule':
+                rec.unit_cost_label = 'Prix/kg'
+            else:
+                rec.unit_cost_label = 'Prix/unité'
+
     @api.onchange('product_id')
     def _onchange_product_id(self):
         """Met à jour le prix unitaire depuis le produit."""
@@ -113,14 +142,11 @@ class RonPackagingLine(models.Model):
     @api.onchange('packaging_type')
     def _onchange_packaging_type(self):
         """Suggestions selon le type."""
-        config = self.env['ron.production.config'].get_config()
-
         if self.packaging_type == 'carton':
             self.linked_to_production = True
             # Calculer automatiquement la quantité de cartons
             if self.daily_production_id:
-                total_cartons = (self.daily_production_id.qty_solo_cartons +
-                                self.daily_production_id.qty_classico_cartons)
+                total_cartons = self.daily_production_id.total_cartons_produced
                 self.quantity = total_cartons
         else:
             self.linked_to_production = False
@@ -130,8 +156,7 @@ class RonPackagingLine(models.Model):
         """Met à jour la quantité si lié à la production."""
         if self.linked_to_production and self.daily_production_id:
             if self.packaging_type == 'carton':
-                self.quantity = (self.daily_production_id.qty_solo_cartons +
-                                self.daily_production_id.qty_classico_cartons)
+                self.quantity = self.daily_production_id.total_cartons_produced
 
     @api.constrains('quantity')
     def _check_quantity(self):

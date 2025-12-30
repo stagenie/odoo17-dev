@@ -6,7 +6,7 @@
     <!-- Menu Principal -->
     <menuitem id="spc_production_menu_root"
               name="Coût Production"
-              web_icon="adi_simple_production_cost,static/description/icon.png"
+              web_icon="adi_simple_production_cost,static/description/budget.png"
               sequence="100"/>
 
     <!-- Menu Production -->
@@ -45,5 +45,11 @@
               parent="spc_production_menu_config"
               action="ron_production_config_action_open"
               sequence="10"/>
+
+    <menuitem id="spc_bom_menu"
+              name="Nomenclatures"
+              parent="spc_production_menu_config"
+              action="action_ron_bom"
+              sequence="20"/>
 
 </odoo>

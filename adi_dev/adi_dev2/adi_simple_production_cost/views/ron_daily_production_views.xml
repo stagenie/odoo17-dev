@@ -10,15 +10,14 @@
         <field name="arch" type="xml">
             <form string="Production Journalière">
                 <header>
-                    <button name="action_confirm" string="Confirmer"
+                    <button name="action_print_production_report" string="Imprimer"
+                            type="object" class="btn-warning" icon="fa-print"/>
+                    <button name="action_confirm" string="Confirmer et Calculer"
                             type="object" class="btn-primary"
                             invisible="state != 'draft'"/>
-                    <button name="action_calculate" string="Calculer les Coûts"
-                            type="object" class="btn-primary"
-                            invisible="state != 'confirmed'"/>
                     <button name="action_validate" string="Valider et Générer Documents"
                             type="object" class="btn-success"
-                            invisible="state != 'calculated'"/>
+                            invisible="state != 'confirmed'"/>
                     <button name="action_done" string="Terminer"
                             type="object" class="btn-success"
                             invisible="state != 'validated'"/>
@@ -26,21 +25,33 @@
                             type="object"
                             invisible="state in ('draft', 'done')"/>
                     <field name="state" widget="statusbar"
-                           statusbar_visible="draft,confirmed,calculated,validated,done"/>
+                           statusbar_visible="draft,confirmed,validated,done"/>
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
-                        <button name="%(stock.action_picking_tree_all)d"
-                                type="action" class="oe_stat_button" icon="fa-truck"
+                        <button name="action_view_consumption_picking"
+                                type="object" class="oe_stat_button" icon="fa-truck"
                                 invisible="not picking_consumption_id">
                             <field name="picking_consumption_id" invisible="1"/>
                             <span>BL Consommation</span>
                         </button>
-                        <button name="%(purchase.purchase_rfq)d"
-                                type="action" class="oe_stat_button" icon="fa-shopping-cart"
+                        <button name="action_view_finished_purchase"
+                                type="object" class="oe_stat_button" icon="fa-shopping-cart"
                                 invisible="not purchase_finished_id">
                             <field name="purchase_finished_id" invisible="1"/>
                             <span>Achat Prod. Finis</span>
+                        </button>
+                        <button name="action_view_scrap_purchase"
+                                type="object" class="oe_stat_button" icon="fa-recycle"
+                                invisible="not purchase_scrap_id">
+                            <field name="purchase_scrap_id" invisible="1"/>
+                            <span>Achat Rebuts</span>
+                        </button>
+                        <button name="action_view_paste_purchase"
+                                type="object" class="oe_stat_button" icon="fa-circle"
+                                invisible="not purchase_paste_id">
+                            <field name="purchase_paste_id" invisible="1"/>
+                            <span>Achat Pâte</span>
                         </button>
                     </div>
                     <div class="oe_title">
@@ -51,6 +62,7 @@
                     <group>
                         <group>
                             <field name="production_date"/>
+                            <field name="production_type" widget="radio" options="{'horizontal': true}"/>
                             <field name="company_id" groups="base.group_multi_company"/>
                         </group>
                         <group>
@@ -59,8 +71,66 @@
                     </group>
 
                     <notebook>
+                        <!-- Onglet Produits Finis (EN PREMIER) -->
+                        <page string="Produits Finis" name="finished">
+                            <field name="finished_product_ids"
+                                   context="{'default_parent_production_type': production_type}">
+                                <tree editable="bottom">
+                                    <field name="parent_production_type" column_invisible="1"/>
+                                    <field name="product_type"/>
+                                    <field name="quantity" sum="Total Cartons"/>
+                                    <field name="units_per_carton"/>
+                                    <field name="total_units" sum="Total Unités"/>
+                                    <field name="weight_per_carton"/>
+                                    <field name="total_weight" sum="Total Poids"/>
+                                    <field name="unit_cost"/>
+                                    <field name="total_cost" sum="Total Coût"/>
+                                    <field name="sale_price"/>
+                                    <field name="margin"/>
+                                    <field name="margin_percent"/>
+                                    <field name="total_margin" sum="Marge Totale"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                </tree>
+                            </field>
+                            <!-- Totaux SOLO/CLASSICO -->
+                            <group col="4" invisible="production_type != 'solo_classico'">
+                                <group string="SOLO">
+                                    <field name="qty_solo_cartons"/>
+                                    <field name="cost_solo_per_carton"/>
+                                    <field name="total_solo_cost"/>
+                                </group>
+                                <group string="CLASSICO">
+                                    <field name="qty_classico_cartons"/>
+                                    <field name="cost_classico_per_carton"/>
+                                    <field name="total_classico_cost"/>
+                                </group>
+                            </group>
+                            <!-- Totaux Sandwich Grand Format -->
+                            <group col="2" invisible="production_type != 'sandwich_gf'">
+                                <group string="Sandwich Grand Format">
+                                    <field name="qty_sandwich_cartons"/>
+                                    <field name="cost_sandwich_per_carton"/>
+                                    <field name="total_sandwich_cost"/>
+                                </group>
+                            </group>
+                            <!-- Total tous produits -->
+                            <group class="oe_subtotal_footer">
+                                <field name="total_cartons_produced" string="Total Cartons"/>
+                            </group>
+                        </page>
+
                         <!-- Onglet Consommations -->
                         <page string="Consommations" name="consumptions">
+                            <div class="mb-3" invisible="state != 'draft'">
+                                <button name="action_load_from_bom" type="object"
+                                        string="Charger depuis Nomenclatures"
+                                        class="btn-primary"
+                                        icon="fa-magic"
+                                        confirm="Charger les composants depuis les nomenclatures ? Les lignes existantes seront remplacées."/>
+                                <span class="text-muted ms-2">
+                                    Charge automatiquement les consommations en fonction des produits finis saisis.
+                                </span>
+                            </div>
                             <field name="consumption_line_ids">
                                 <tree editable="bottom">
                                     <field name="sequence" widget="handle"/>
@@ -86,13 +156,17 @@
                             </group>
                         </page>
 
-                        <!-- Onglet Rebuts et Pâte -->
-                        <page string="Rebuts et Pâte" name="scraps">
-                            <field name="scrap_line_ids">
+                        <!-- Onglet Rebuts Récupérables -->
+                        <page string="Rebuts Récupérables" name="scraps">
+                            <field name="scrap_line_ids"
+                                   context="{'default_scrap_type': 'scrap_recoverable'}"
+                                   domain="[('scrap_type', '=', 'scrap_recoverable')]">
                                 <tree editable="bottom">
-                                    <field name="scrap_type"/>
-                                    <field name="product_id"/>
-                                    <field name="weight_kg" sum="Total Poids"/>
+                                    <field name="scrap_type" column_invisible="1"/>
+                                    <field name="product_id" required="1"
+                                           domain="[('product_tmpl_id.is_recoverable_scrap', '=', True), ('type', '=', 'product')]"
+                                           options="{'no_create': True}"/>
+                                    <field name="weight_kg" string="Poids (kg)" sum="Total Poids"/>
                                     <field name="cost_per_kg"/>
                                     <field name="total_cost" sum="Total Coût"/>
                                     <field name="reason"/>
@@ -100,59 +174,50 @@
                                     <field name="currency_id" column_invisible="1"/>
                                 </tree>
                             </field>
-                            <group col="4">
-                                <group string="Rebuts">
-                                    <field name="scrap_sellable_weight"/>
-                                    <field name="scrap_sellable_cost"/>
-                                    <field name="scrap_unsellable_weight"/>
-                                    <field name="scrap_unsellable_cost"/>
-                                </group>
-                                <group string="Pâte">
-                                    <field name="paste_recoverable_weight"/>
-                                    <field name="paste_recoverable_cost"/>
-                                    <field name="paste_unrecoverable_weight"/>
-                                    <field name="paste_unrecoverable_cost"/>
-                                </group>
-                            </group>
                             <group class="oe_subtotal_footer">
-                                <field name="total_scrap_weight"
-                                       class="oe_subtotal_footer_separator"/>
-                                <field name="total_scrap_cost"
-                                       class="oe_subtotal_footer_separator oe_right"/>
+                                <field name="scrap_recoverable_weight"
+                                       class="oe_subtotal_footer_separator"
+                                       string="Poids Total Rebuts (kg)"/>
+                                <field name="scrap_recoverable_cost"
+                                       class="oe_subtotal_footer_separator oe_right"
+                                       string="Coût Total Rebuts"/>
                             </group>
+                            <div class="alert alert-info" role="alert">
+                                <strong>Rebuts Récupérables:</strong> Produits vendables issus de la production (brisures, morceaux, etc.).<br/>
+                                <em>Filtrage: Seuls les produits marqués "Est un Rebut Récupérable" sont affichés.</em>
+                            </div>
                         </page>
 
-                        <!-- Onglet Produits Finis -->
-                        <page string="Produits Finis" name="finished">
-                            <field name="finished_product_ids">
+                        <!-- Onglet Pâte Récupérable -->
+                        <page string="Pâte Récupérable" name="paste">
+                            <field name="scrap_line_ids"
+                                   context="{'default_scrap_type': 'paste_recoverable'}"
+                                   domain="[('scrap_type', '=', 'paste_recoverable')]">
                                 <tree editable="bottom">
-                                    <field name="product_type"/>
-                                    <field name="quantity" sum="Total Cartons"/>
-                                    <field name="units_per_carton"/>
-                                    <field name="total_units" sum="Total Unités"/>
-                                    <field name="weight_per_carton"/>
-                                    <field name="total_weight" sum="Total Poids"/>
-                                    <field name="unit_cost"/>
+                                    <field name="scrap_type" column_invisible="1"/>
+                                    <field name="product_id" required="1"
+                                           domain="[('type', '=', 'product')]"/>
+                                    <field name="weight_kg" string="Poids (kg)" sum="Total Poids"/>
+                                    <field name="cost_per_kg"/>
                                     <field name="total_cost" sum="Total Coût"/>
-                                    <field name="sale_price"/>
-                                    <field name="margin"/>
-                                    <field name="margin_percent"/>
-                                    <field name="total_margin" sum="Marge Totale"/>
+                                    <field name="reason" string="Observation"/>
+                                    <field name="notes"/>
                                     <field name="currency_id" column_invisible="1"/>
                                 </tree>
                             </field>
-                            <group col="4">
-                                <group string="SOLO">
-                                    <field name="qty_solo_cartons"/>
-                                    <field name="cost_solo_per_carton"/>
-                                    <field name="total_solo_cost"/>
-                                </group>
-                                <group string="CLASSICO">
-                                    <field name="qty_classico_cartons"/>
-                                    <field name="cost_classico_per_carton"/>
-                                    <field name="total_classico_cost"/>
-                                </group>
+                            <group class="oe_subtotal_footer">
+                                <field name="paste_recoverable_weight"
+                                       class="oe_subtotal_footer_separator"
+                                       string="Poids Total Pâte (kg)"/>
+                                <field name="paste_recoverable_cost"
+                                       class="oe_subtotal_footer_separator oe_right"
+                                       string="Coût Total Pâte"/>
                             </group>
+                            <div class="alert alert-warning" role="alert">
+                                <strong>Pâte Récupérable:</strong> Stock valorisé en AVCO (Prix Moyen Pondéré).<br/>
+                                Peut être réutilisée comme matière première le lendemain.<br/>
+                                <em>Le produit Pâte par défaut est configuré dans les paramètres.</em>
+                            </div>
                         </page>
 
                         <!-- Onglet Emballage -->
@@ -161,9 +226,9 @@
                                 <tree editable="bottom">
                                     <field name="packaging_type"/>
                                     <field name="product_id"/>
-                                    <field name="quantity"/>
+                                    <field name="quantity" string="Qté/Poids"/>
                                     <field name="product_uom_id"/>
-                                    <field name="unit_cost"/>
+                                    <field name="unit_cost" string="Prix Unit."/>
                                     <field name="total_cost" sum="Total Coût"/>
                                     <field name="linked_to_production"/>
                                     <field name="notes"/>
@@ -172,14 +237,19 @@
                             </field>
                             <group col="4">
                                 <group string="Détail Coûts Emballage">
-                                    <field name="packaging_carton_cost"/>
-                                    <field name="packaging_plastic_cost"/>
-                                    <field name="packaging_other_cost"/>
+                                    <field name="packaging_carton_cost" string="Cartons"/>
+                                    <field name="packaging_film_cost" string="Film Ondulé"/>
+                                    <field name="packaging_other_cost" string="Autres"/>
                                 </group>
                                 <group string="Total">
                                     <field name="total_packaging_cost" class="oe_subtotal_footer_separator"/>
                                 </group>
                             </group>
+                            <div class="alert alert-info" role="alert">
+                                <strong>Types d'emballage:</strong><br/>
+                                - Carton: Nombre × Prix unitaire<br/>
+                                - Film Ondulé: Poids (kg) × Prix/kg
+                            </div>
                         </page>
 
                         <!-- Onglet Résumé -->
@@ -192,13 +262,13 @@
                                 </group>
                                 <group string="Emballage">
                                     <field name="packaging_carton_cost"/>
-                                    <field name="packaging_plastic_cost"/>
+                                    <field name="packaging_film_cost"/>
                                     <field name="total_packaging_cost"/>
                                 </group>
-                                <group string="Pertes">
-                                    <field name="total_scrap_weight"/>
-                                    <field name="total_scrap_cost"/>
-                                    <field name="paste_recoverable_weight"/>
+                                <group string="Pertes (Rebuts + Pâte)">
+                                    <field name="scrap_recoverable_weight" string="Rebuts (kg)"/>
+                                    <field name="paste_recoverable_weight" string="Pâte (kg)"/>
+                                    <field name="total_scrap_weight" string="Total Pertes"/>
                                 </group>
                                 <group string="Production Bonne">
                                     <field name="good_weight"/>
@@ -207,10 +277,11 @@
                                 </group>
                             </group>
                             <group>
-                                <group string="Documents">
+                                <group string="Documents Générés">
                                     <field name="picking_consumption_id"/>
                                     <field name="purchase_finished_id"/>
                                     <field name="purchase_scrap_id"/>
+                                    <field name="purchase_paste_id"/>
                                 </group>
                             </group>
                             <field name="notes" placeholder="Notes et observations..."/>
@@ -236,17 +307,20 @@
                   decoration-success="state == 'done'">
                 <field name="name"/>
                 <field name="production_date"/>
+                <field name="production_type" widget="badge"/>
                 <field name="total_consumption_weight" string="Poids Conso."/>
-                <field name="total_consumption_cost" string="Coût Conso."/>
                 <field name="cost_per_kg"/>
                 <field name="good_weight"/>
-                <field name="qty_solo_cartons" string="SOLO"/>
-                <field name="qty_classico_cartons" string="CLASSICO"/>
-                <field name="cost_solo_per_carton" string="Coût SOLO"/>
-                <field name="cost_classico_per_carton" string="Coût CLASSICO"/>
+                <field name="total_cartons_produced" string="Cartons"/>
+                <field name="qty_solo_cartons" string="SOLO" optional="show"/>
+                <field name="qty_classico_cartons" string="CLASSICO" optional="show"/>
+                <field name="qty_sandwich_cartons" string="Sandwich" optional="show"/>
+                <field name="cost_solo_per_carton" string="Coût SOLO" optional="hide"/>
+                <field name="cost_classico_per_carton" string="Coût CLASSICO" optional="hide"/>
+                <field name="cost_sandwich_per_carton" string="Coût Sandwich" optional="hide"/>
                 <field name="state" widget="badge"
                        decoration-info="state == 'draft'"
-                       decoration-warning="state in ('confirmed', 'calculated')"
+                       decoration-warning="state == 'confirmed'"
                        decoration-success="state in ('validated', 'done')"/>
                 <field name="currency_id" column_invisible="1"/>
             </tree>
@@ -261,6 +335,7 @@
             <search string="Rechercher Productions">
                 <field name="name"/>
                 <field name="production_date"/>
+                <field name="production_type"/>
                 <filter string="Aujourd'hui" name="today"
                         domain="[('production_date', '=', context_today().strftime('%Y-%m-%d'))]"/>
                 <filter string="Cette Semaine" name="this_week"
@@ -268,12 +343,15 @@
                 <filter string="Ce Mois" name="this_month"
                         domain="[('production_date', '>=', context_today().strftime('%Y-%m-01'))]"/>
                 <separator/>
+                <filter string="SOLO/CLASSICO" name="solo_classico" domain="[('production_type', '=', 'solo_classico')]"/>
+                <filter string="Sandwich GF" name="sandwich_gf" domain="[('production_type', '=', 'sandwich_gf')]"/>
+                <separator/>
                 <filter string="Brouillon" name="draft" domain="[('state', '=', 'draft')]"/>
                 <filter string="Confirmé" name="confirmed" domain="[('state', '=', 'confirmed')]"/>
-                <filter string="Calculé" name="calculated" domain="[('state', '=', 'calculated')]"/>
                 <filter string="Validé" name="validated" domain="[('state', '=', 'validated')]"/>
                 <filter string="Terminé" name="done" domain="[('state', '=', 'done')]"/>
                 <group expand="0" string="Grouper par">
+                    <filter string="Type" name="group_type" context="{'group_by': 'production_type'}"/>
                     <filter string="Date" name="group_date" context="{'group_by': 'production_date'}"/>
                     <filter string="État" name="group_state" context="{'group_by': 'state'}"/>
                     <filter string="Mois" name="group_month" context="{'group_by': 'production_date:month'}"/>
@@ -288,13 +366,14 @@
         <field name="model">ron.daily.production</field>
         <field name="arch" type="xml">
             <pivot string="Analyse Productions">
+                <field name="production_type" type="row"/>
                 <field name="production_date" type="row" interval="month"/>
                 <field name="total_consumption_cost" type="measure"/>
                 <field name="total_good_cost" type="measure"/>
+                <field name="total_cartons_produced" type="measure"/>
                 <field name="qty_solo_cartons" type="measure"/>
                 <field name="qty_classico_cartons" type="measure"/>
-                <field name="cost_solo_per_carton" type="measure"/>
-                <field name="cost_classico_per_carton" type="measure"/>
+                <field name="qty_sandwich_cartons" type="measure"/>
             </pivot>
         </field>
     </record>
@@ -306,8 +385,15 @@
         <field name="arch" type="xml">
             <graph string="Évolution des Coûts" type="line">
                 <field name="production_date"/>
+                <field name="production_type" type="row"/>
+                <field name="cost_per_kg_good" type="measure"/>
+                <field name="total_cartons_produced" type="measure"/>
+                <field name="qty_solo_cartons" type="measure"/>
+                <field name="qty_classico_cartons" type="measure"/>
+                <field name="qty_sandwich_cartons" type="measure"/>
                 <field name="cost_solo_per_carton" type="measure"/>
                 <field name="cost_classico_per_carton" type="measure"/>
+                <field name="cost_sandwich_per_carton" type="measure"/>
             </graph>
         </field>
     </record>
