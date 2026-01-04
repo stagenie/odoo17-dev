@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Tree View -->
+    <record id="view_bon_vente_template_config_tree" model="ir.ui.view">
+        <field name="name">bon.vente.template.config.tree</field>
+        <field name="model">bon.vente.template.config</field>
+        <field name="arch" type="xml">
+            <tree string="Modèles de Bon de Vente">
+                <field name="name"/>
+                <field name="header_style"/>
+                <field name="body_style"/>
+                <field name="is_default" widget="boolean_toggle"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="primary_color" widget="color"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_bon_vente_template_config_form" model="ir.ui.view">
+        <field name="name">bon.vente.template.config.form</field>
+        <field name="model">bon.vente.template.config</field>
+        <field name="arch" type="xml">
+            <form string="Configuration du Modèle">
+                <header>
+                    <button name="action_preview"
+                            string="Aperçu"
+                            type="object"
+                            class="btn-secondary"
+                            icon="fa-eye"/>
+                    <button name="action_set_as_company_default"
+                            string="Définir par défaut (Société)"
+                            type="object"
+                            class="btn-primary"
+                            icon="fa-star"
+                            invisible="is_default"/>
+                    <button name="set_as_default"
+                            string="Définir par défaut"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="is_default"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button" icon="fa-star" invisible="not is_default">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_text text-success">PAR DÉFAUT</span>
+                            </div>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Nom du modèle..."/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group string="Styles">
+                            <field name="header_style" widget="radio" options="{'horizontal': true}"/>
+                            <field name="body_style" widget="radio" options="{'horizontal': true}"/>
+                        </group>
+                        <group string="Paramètres">
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="is_default"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <!-- Onglet Couleurs -->
+                        <page string="Couleurs" name="colors">
+                            <group>
+                                <group>
+                                    <label for="primary_color"/>
+                                    <div class="d-flex align-items-center">
+                                        <field name="primary_color" widget="color" class="me-2"/>
+                                        <span class="text-muted">Titres, bordures principales</span>
+                                    </div>
+                                    <label for="secondary_color"/>
+                                    <div class="d-flex align-items-center">
+                                        <field name="secondary_color" widget="color" class="me-2"/>
+                                        <span class="text-muted">Sous-titres, accents</span>
+                                    </div>
+                                    <label for="accent_color"/>
+                                    <div class="d-flex align-items-center">
+                                        <field name="accent_color" widget="color" class="me-2"/>
+                                        <span class="text-muted">Montants, totaux importants</span>
+                                    </div>
+                                </group>
+                                <group>
+                                    <!-- Aperçu des couleurs -->
+                                    <div class="alert alert-info">
+                                        <strong>Conseil:</strong> Utilisez des couleurs qui correspondent à l'identité visuelle de l'entreprise.
+                                    </div>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- Onglet En-tête personnalisé -->
+                        <page string="En-tête Personnalisé" name="custom_header">
+                            <group>
+                                <field name="use_custom_header"/>
+                            </group>
+                            <group invisible="not use_custom_header">
+                                <group string="Identité">
+                                    <field name="custom_title" placeholder="SOCIÉTÉ GECAFLE SARL"/>
+                                    <field name="custom_subtitle" placeholder="Marché de Gros Fruits &amp; Légumes"/>
+                                </group>
+                                <group string="Adresse">
+                                    <field name="custom_address_line1" placeholder="Zone Industrielle, Lot 42"/>
+                                    <field name="custom_address_line2" placeholder="16000 Alger, Algérie"/>
+                                </group>
+                            </group>
+                            <group invisible="not use_custom_header">
+                                <group string="Contacts">
+                                    <field name="custom_phone1" placeholder="021 XX XX XX"/>
+                                    <field name="custom_phone2" placeholder="023 XX XX XX"/>
+                                    <field name="custom_mobile" placeholder="0XX XX XX XX"/>
+                                    <field name="custom_fax" placeholder="021 XX XX XX"/>
+                                    <field name="custom_email" placeholder="contact@gecafle.dz"/>
+                                    <field name="custom_website" placeholder="www.gecafle.dz"/>
+                                </group>
+                                <group string="Informations Fiscales">
+                                    <field name="custom_rc" placeholder="XX/XX-XXXXXXX"/>
+                                    <field name="custom_nif" placeholder="XXXXXXXXXXXXXXXXX"/>
+                                    <field name="custom_nis" placeholder="XXXXXXXXXXXXXXXXX"/>
+                                    <field name="custom_ai" placeholder="XXXXXXXXX"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- Onglet Logo -->
+                        <page string="Logo" name="logo">
+                            <group>
+                                <group>
+                                    <field name="use_logo"/>
+                                    <field name="logo_position" invisible="not use_logo"/>
+                                </group>
+                                <group invisible="not use_logo">
+                                    <field name="custom_logo" widget="image" class="oe_avatar"/>
+                                    <div class="text-muted">
+                                        Si vide, le logo de la société sera utilisé.
+                                    </div>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- Onglet Options -->
+                        <page string="Options d'affichage" name="options">
+                            <group>
+                                <group string="Duplicata">
+                                    <field name="show_duplicata_watermark"/>
+                                </group>
+                                <group string="Bordure">
+                                    <field name="show_border"/>
+                                    <field name="border_style" invisible="not show_border"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="view_bon_vente_template_config_search" model="ir.ui.view">
+        <field name="name">bon.vente.template.config.search</field>
+        <field name="model">bon.vente.template.config</field>
+        <field name="arch" type="xml">
+            <search string="Rechercher Modèles">
+                <field name="name"/>
+                <field name="header_style"/>
+                <field name="body_style"/>
+                <filter string="Par défaut" name="default" domain="[('is_default', '=', True)]"/>
+                <filter string="Archivés" name="archived" domain="[('active', '=', False)]"/>
+                <group expand="0" string="Grouper par">
+                    <filter string="Style En-tête" name="group_header" context="{'group_by': 'header_style'}"/>
+                    <filter string="Style Corps" name="group_body" context="{'group_by': 'body_style'}"/>
+                    <filter string="Société" name="group_company" context="{'group_by': 'company_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_bon_vente_template_config" model="ir.actions.act_window">
+        <field name="name">Modèles Bon de Vente</field>
+        <field name="res_model">bon.vente.template.config</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créez votre premier modèle de Bon de Vente!
+            </p>
+            <p>
+                Personnalisez l'apparence de vos bons de vente avec différents styles d'en-tête et de corps.
+            </p>
+        </field>
+    </record>
+</odoo>

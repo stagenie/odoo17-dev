@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Héritage de la vue form de res.company -->
+    <record id="view_company_form_sequence_config" model="ir.ui.view">
+        <field name="name">res.company.form.sequence.config</field>
+        <field name="model">res.company</field>
+        <field name="inherit_id" ref="base.view_company_form"/>
+        <field name="priority">100</field>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='general_info']" position="after">
+                <page string="Configuration Séquences" name="sequence_config">
+                    <group>
+                        <group string="Format N° de Vente">
+                            <field name="vente_prefix" placeholder="Ex: VTE, VENTE..."/>
+                            <field name="vente_separator"/>
+                            <field name="vente_year_position"/>
+                            <field name="vente_yearly_reset"/>
+                            <div class="text-muted" colspan="2">
+                                <strong>Compteur actuel : </strong>
+                                <span class="badge bg-info" style="font-size: 14px;">
+                                    <field name="vente_counter" readonly="1" nolabel="1" class="oe_inline"/>
+                                </span>
+                            </div>
+                        </group>
+                        <group string="Format N° de Réception">
+                            <field name="reception_prefix" placeholder="Ex: REC, BR..."/>
+                            <field name="reception_separator"/>
+                            <field name="reception_year_position"/>
+                            <field name="reception_yearly_reset"/>
+                            <div class="text-muted" colspan="2">
+                                <strong>Compteur actuel : </strong>
+                                <span class="badge bg-success" style="font-size: 14px;">
+                                    <field name="reception_counter" readonly="1" nolabel="1" class="oe_inline"/>
+                                </span>
+                            </div>
+                        </group>
+                    </group>
+                    <div class="alert alert-info" role="alert">
+                        <h5 class="alert-heading">Exemples de formats :</h5>
+                        <ul>
+                            <li><strong>VTE/2026/00000001</strong> : Préfixe "VTE", séparateur "/", année en préfixe</li>
+                            <li><strong>00000001/2026</strong> : Sans préfixe, séparateur "/", année en suffixe</li>
+                            <li><strong>2026-00000001</strong> : Sans préfixe, séparateur "-", année en préfixe</li>
+                            <li><strong>REC/00000001</strong> : Préfixe "REC", séparateur "/", sans année</li>
+                            <li><strong>00000001</strong> : Format brut (compteur seul)</li>
+                        </ul>
+                        <hr/>
+                        <p class="mb-0">
+                            <strong>Reset annuel :</strong> Si activé, le compteur repart à 00000001
+                            automatiquement au 1er janvier de chaque année.
+                        </p>
+                    </div>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Menu sous Configuration GECAFLE -->
+    <menuitem id="menu_bon_vente_designer_config"
+              name="Modèles Bon de Vente"
+              parent="adi_gecafle_base_stock.menu_gecafle_config"
+              action="action_bon_vente_template_config"
+              sequence="50"/>
+</odoo>

@@ -1,0 +1,299 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   BON DE VENTE DESIGNER - STYLES CSS SPECTACULAIRES
+   Styles pour les rapports PDF QWeb
+═══════════════════════════════════════════════════════════════════════════ */
+
+/* ══════════ BASE STYLES ══════════ */
+.bv-designer-page {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    color: #333;
+    line-height: 1.4;
+}
+
+/* ══════════ BORDURES DOCUMENT ══════════ */
+.bv-border-simple {
+    border: 2px solid #1a5276 !important;
+}
+
+.bv-border-double {
+    border: 4px double #1a5276 !important;
+}
+
+.bv-border-elegant {
+    border: 3px solid #1a5276 !important;
+    box-shadow: inset 0 0 0 5px white, inset 0 0 0 6px #c0a062 !important;
+}
+
+/* ══════════ FILIGRANE DUPLICATA ══════════ */
+.bv-watermark {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) rotate(-45deg) !important;
+    font-size: 100px !important;
+    color: rgba(0, 0, 0, 0.03) !important;
+    font-weight: 900 !important;
+    z-index: -1 !important;
+    pointer-events: none !important;
+    white-space: nowrap !important;
+    letter-spacing: 20px !important;
+}
+
+/* ══════════ EN-TÊTE CLASSIQUE ══════════ */
+.bv-header-classic h1 {
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* ══════════ EN-TÊTE MODERNE ══════════ */
+.bv-header-modern {
+    position: relative;
+}
+
+/* ══════════ EN-TÊTE PREMIUM ══════════ */
+.bv-header-premium {
+    font-family: Georgia, 'Times New Roman', serif;
+}
+
+/* ══════════ TABLEAU STANDARD ══════════ */
+.bv-table-standard {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.bv-table-standard thead tr {
+    background: linear-gradient(135deg, #1a5276 0%, #2980b9 100%);
+    color: white;
+}
+
+.bv-table-standard thead th {
+    padding: 10px 8px;
+    font-weight: 600;
+    text-align: left;
+    border: none;
+    font-size: 11px;
+}
+
+.bv-table-standard tbody tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+.bv-table-standard tbody td {
+    padding: 8px;
+    border-bottom: 1px solid #eee;
+    font-size: 11px;
+}
+
+.bv-table-standard tfoot tr {
+    background-color: #1a5276;
+    color: white;
+    font-weight: bold;
+}
+
+.bv-table-standard tfoot td {
+    padding: 12px 8px;
+    border: none;
+}
+
+/* ══════════ CORPS MODERNE ══════════ */
+.bv-body-modern .bv-card-row {
+    background: white;
+    border-radius: 8px;
+    padding: 12px 15px;
+    margin-bottom: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+}
+
+.bv-body-modern .bv-card-row:hover {
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* ══════════ CORPS PREMIUM ══════════ */
+.bv-body-premium {
+    font-family: Georgia, 'Times New Roman', serif;
+}
+
+.bv-body-premium table {
+    border-collapse: collapse;
+}
+
+.bv-body-premium th {
+    font-weight: 400;
+    color: #888;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-size: 10px;
+    padding: 15px 10px;
+}
+
+.bv-body-premium td {
+    padding: 12px 10px;
+    border-bottom: 1px solid #eee;
+}
+
+/* ══════════ CLIENT BLOCK ══════════ */
+.bv-client-block {
+    background: linear-gradient(to right, rgba(26, 82, 118, 0.1), rgba(26, 82, 118, 0.02));
+    border-left: 6px solid #1a5276;
+    padding: 20px 25px;
+    margin-bottom: 25px;
+    border-radius: 0 10px 10px 0;
+}
+
+.bv-client-name {
+    font-size: 36px;
+    font-weight: 900;
+    color: #1a5276;
+    line-height: 1.1;
+    text-transform: uppercase;
+}
+
+/* ══════════ TOTAUX ══════════ */
+.bv-total-box {
+    background: linear-gradient(135deg, #1a5276 0%, #2980b9 100%);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 8px;
+}
+
+.bv-total-amount {
+    font-size: 24px;
+    font-weight: 900;
+}
+
+/* ══════════ BADGES ÉTAT ══════════ */
+.bv-badge {
+    display: inline-block;
+    padding: 8px 30px;
+    border-radius: 25px;
+    font-size: 14px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.bv-badge-annule {
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    color: white;
+}
+
+.bv-badge-brouillon {
+    background: linear-gradient(135deg, #f39c12 0%, #d68910 100%);
+    color: white;
+}
+
+.bv-badge-duplicata {
+    background: linear-gradient(135deg, #2980b9 0%, #1a5276 100%);
+    color: white;
+}
+
+/* ══════════ CONSIGNE BOX ══════════ */
+.bv-consigne-box {
+    border: 2px dashed #e74c3c;
+    padding: 15px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, rgba(231, 76, 60, 0.1) 0%, rgba(231, 76, 60, 0.02) 100%);
+}
+
+.bv-consigne-amount {
+    font-size: 28px;
+    font-weight: 900;
+    color: #e74c3c;
+}
+
+/* ══════════ ORNEMENTS PREMIUM ══════════ */
+.bv-ornament {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bv-ornament-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, transparent, #c0a062);
+}
+
+.bv-ornament-star {
+    color: #c0a062;
+    margin: 0 15px;
+    font-size: 18px;
+}
+
+/* ══════════ RESPONSIVE POUR IMPRESSION ══════════ */
+@media print {
+    .bv-designer-page {
+        margin: 0;
+        padding: 0;
+    }
+
+    .bv-watermark {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    .bv-table-standard thead tr,
+    .bv-table-standard tfoot tr,
+    .bv-total-box,
+    .bv-badge {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+}
+
+/* ══════════ ANIMATIONS (si supportées) ══════════ */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ══════════ UTILITAIRES ══════════ */
+.bv-text-primary {
+    color: #1a5276;
+}
+
+.bv-text-secondary {
+    color: #2980b9;
+}
+
+.bv-text-accent {
+    color: #e74c3c;
+}
+
+.bv-text-gold {
+    color: #c0a062;
+}
+
+.bv-bg-primary {
+    background-color: #1a5276;
+}
+
+.bv-bg-secondary {
+    background-color: #2980b9;
+}
+
+.bv-font-light {
+    font-weight: 300;
+}
+
+.bv-font-bold {
+    font-weight: 700;
+}
+
+.bv-font-black {
+    font-weight: 900;
+}
+
+.bv-letter-spacing {
+    letter-spacing: 2px;
+}
+
+.bv-uppercase {
+    text-transform: uppercase;
+}

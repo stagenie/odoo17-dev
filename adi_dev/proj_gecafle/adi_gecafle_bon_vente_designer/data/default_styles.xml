@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- ═══════════════════════════════════════════════════════════════════════════
+             MODÈLES PAR DÉFAUT - BON DE VENTE DESIGNER
+             Ces modèles sont créés à l'installation du module
+        ═══════════════════════════════════════════════════════════════════════════ -->
+
+        <!-- Modèle 1: Classique Standard (Par défaut) -->
+        <record id="template_classic_standard" model="bon.vente.template.config">
+            <field name="name">Classique - Standard</field>
+            <field name="header_style">classic</field>
+            <field name="body_style">standard</field>
+            <field name="is_default">True</field>
+            <field name="use_custom_header">False</field>
+            <field name="use_logo">True</field>
+            <field name="logo_position">left</field>
+            <field name="primary_color">#1a5276</field>
+            <field name="secondary_color">#2980b9</field>
+            <field name="accent_color">#e74c3c</field>
+            <field name="show_duplicata_watermark">True</field>
+            <field name="show_border">False</field>
+        </record>
+
+        <!-- Modèle 2: Moderne Corporate -->
+        <record id="template_modern_modern" model="bon.vente.template.config">
+            <field name="name">Moderne - Corporate</field>
+            <field name="header_style">modern</field>
+            <field name="body_style">modern</field>
+            <field name="is_default">False</field>
+            <field name="use_custom_header">False</field>
+            <field name="use_logo">True</field>
+            <field name="logo_position">left</field>
+            <field name="primary_color">#2c3e50</field>
+            <field name="secondary_color">#3498db</field>
+            <field name="accent_color">#e67e22</field>
+            <field name="show_duplicata_watermark">True</field>
+            <field name="show_border">False</field>
+        </record>
+
+        <!-- Modèle 3: Premium Luxe -->
+        <record id="template_premium_premium" model="bon.vente.template.config">
+            <field name="name">Premium - Luxe</field>
+            <field name="header_style">premium</field>
+            <field name="body_style">premium</field>
+            <field name="is_default">False</field>
+            <field name="use_custom_header">False</field>
+            <field name="use_logo">True</field>
+            <field name="logo_position">left</field>
+            <field name="primary_color">#1a1a2e</field>
+            <field name="secondary_color">#16213e</field>
+            <field name="accent_color">#c0a062</field>
+            <field name="show_duplicata_watermark">True</field>
+            <field name="show_border">True</field>
+            <field name="border_style">elegant</field>
+        </record>
+
+        <!-- Modèle 4: Classique Moderne -->
+        <record id="template_classic_modern" model="bon.vente.template.config">
+            <field name="name">Classique - Moderne</field>
+            <field name="header_style">classic</field>
+            <field name="body_style">modern</field>
+            <field name="is_default">False</field>
+            <field name="use_custom_header">False</field>
+            <field name="use_logo">True</field>
+            <field name="logo_position">center</field>
+            <field name="primary_color">#27ae60</field>
+            <field name="secondary_color">#2ecc71</field>
+            <field name="accent_color">#e74c3c</field>
+            <field name="show_duplicata_watermark">True</field>
+            <field name="show_border">False</field>
+        </record>
+
+        <!-- Modèle 5: Moderne Premium -->
+        <record id="template_modern_premium" model="bon.vente.template.config">
+            <field name="name">Moderne - Premium</field>
+            <field name="header_style">modern</field>
+            <field name="body_style">premium</field>
+            <field name="is_default">False</field>
+            <field name="use_custom_header">False</field>
+            <field name="use_logo">True</field>
+            <field name="logo_position">left</field>
+            <field name="primary_color">#8e44ad</field>
+            <field name="secondary_color">#9b59b6</field>
+            <field name="accent_color">#f1c40f</field>
+            <field name="show_duplicata_watermark">True</field>
+            <field name="show_border">True</field>
+            <field name="border_style">simple</field>
+        </record>
+
+        <!-- Modèle 6: Premium Standard (élégant simple) -->
+        <record id="template_premium_standard" model="bon.vente.template.config">
+            <field name="name">Premium - Standard</field>
+            <field name="header_style">premium</field>
+            <field name="body_style">standard</field>
+            <field name="is_default">False</field>
+            <field name="use_custom_header">False</field>
+            <field name="use_logo">True</field>
+            <field name="logo_position">left</field>
+            <field name="primary_color">#34495e</field>
+            <field name="secondary_color">#7f8c8d</field>
+            <field name="accent_color">#d4af37</field>
+            <field name="show_duplicata_watermark">True</field>
+            <field name="show_border">True</field>
+            <field name="border_style">double</field>
+        </record>
+
+    </data>
+</odoo>

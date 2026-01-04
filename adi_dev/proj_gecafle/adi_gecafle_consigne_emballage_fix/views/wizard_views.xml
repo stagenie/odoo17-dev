@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Wizard Form View -->
+    <record id="view_fix_emballage_consigne_wizard_form" model="ir.ui.view">
+        <field name="name">fix.emballage.consigne.wizard.form</field>
+        <field name="model">fix.emballage.consigne.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Correction Emballages Consignés">
+                <header>
+                    <field name="state" widget="statusbar" statusbar_visible="init,analysis,preview,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>Assistant de Correction R/NR</h1>
+                    </div>
+
+                    <!-- État Initial -->
+                    <group invisible="state != 'init'">
+                        <group string="Filtres (optionnel)">
+                            <field name="date_from"/>
+                            <field name="date_to"/>
+                            <field name="vente_ids" widget="many2many_tags"
+                                   options="{'no_create': True}"
+                                   domain="[('state', '=', 'valide')]"/>
+                        </group>
+                        <group>
+                            <div class="alert alert-info" role="alert">
+                                <strong>Ce wizard permet de:</strong>
+                                <ul>
+                                    <li>Détecter les ventes où le statut R/NR des emballages n'est pas correctement propagé</li>
+                                    <li>Prévisualiser les corrections à effectuer</li>
+                                    <li>Appliquer les corrections en régénérant les lignes d'emballage</li>
+                                </ul>
+                                <p>Laissez les filtres vides pour analyser toutes les ventes validées.</p>
+                            </div>
+                        </group>
+                    </group>
+
+                    <!-- État Prévisualisation -->
+                    <group invisible="state != 'preview'">
+                        <group string="Résultats de l'analyse" col="4">
+                            <field name="total_ventes_analyzed"/>
+                            <field name="total_ventes_to_fix"/>
+                            <field name="total_lines_to_fix"/>
+                        </group>
+                        <group col="1">
+                            <field name="analysis_summary" readonly="1" widget="text"
+                                   class="oe_inline" nolabel="1"/>
+                        </group>
+                    </group>
+
+                    <!-- Lignes de prévisualisation -->
+                    <notebook invisible="state not in ('preview', 'done')">
+                        <page string="Corrections à effectuer" name="preview_lines"
+                              invisible="state != 'preview'">
+                            <field name="preview_line_ids" readonly="1">
+                                <tree>
+                                    <field name="vente_name"/>
+                                    <field name="vente_date"/>
+                                    <field name="emballage_id"/>
+                                    <field name="qte_sortantes"/>
+                                    <field name="issue_type"/>
+                                    <field name="issue_description"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+
+                    <!-- État Terminé -->
+                    <group invisible="state != 'done'">
+                        <group string="Résultat de la correction" col="1">
+                            <field name="fix_result" readonly="1" widget="text" nolabel="1"/>
+                        </group>
+                        <div class="alert alert-success" role="alert">
+                            <strong>Correction terminée!</strong>
+                            <p>Les lignes d'emballage ont été régénérées avec le bon statut R/NR.</p>
+                        </div>
+                    </group>
+
+                </sheet>
+                <footer>
+                    <button name="action_analyze" string="Analyser" type="object"
+                            class="btn-primary" invisible="state != 'init'"/>
+                    <button name="action_fix" string="Appliquer les corrections" type="object"
+                            class="btn-primary" invisible="state != 'preview'"
+                            confirm="Êtes-vous sûr de vouloir régénérer les lignes d'emballage pour les ventes détectées?"/>
+                    <button name="action_back_to_init" string="Nouvelle analyse" type="object"
+                            class="btn-secondary" invisible="state not in ('preview', 'done')"/>
+                    <button string="Fermer" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action pour ouvrir le wizard -->
+    <record id="action_fix_emballage_consigne_wizard" model="ir.actions.act_window">
+        <field name="name">Correction Emballages R/NR</field>
+        <field name="res_model">fix.emballage.consigne.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <!-- Menu Configuration -->
+    <menuitem id="menu_gecafle_configuration"
+              name="Configuration"
+              parent="adi_gecafle_ventes.menu_adi_gecafle_ventes"
+              sequence="200"/>
+
+    <!-- Sous-menu Correction Emballages R/NR -->
+    <menuitem id="menu_fix_emballage_consigne"
+              name="Correction Emballages R/NR"
+              parent="menu_gecafle_configuration"
+              action="action_fix_emballage_consigne_wizard"
+              sequence="10"/>
+
+</odoo>

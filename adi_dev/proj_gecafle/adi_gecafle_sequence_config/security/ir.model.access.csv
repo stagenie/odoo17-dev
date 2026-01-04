@@ -1,0 +1,2 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_res_company_sequence_config,res.company.sequence.config,base.model_res_company,group_sequence_config_user,1,1,0,0

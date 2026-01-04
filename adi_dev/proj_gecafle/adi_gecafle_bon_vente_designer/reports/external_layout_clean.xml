@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- ═══════════════════════════════════════════════════════════════════════════
+         LAYOUT EXTERNE SANS HEADER/FOOTER ODOO
+         Pour les rapports Designer personnalisés
+    ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <!-- Layout externe propre - SANS header/footer de société Odoo -->
+    <template id="external_layout_clean">
+        <t t-if="not o" t-set="o" t-value="doc"/>
+        <t t-if="not company">
+            <t t-if="company_id">
+                <t t-set="company" t-value="company_id"/>
+            </t>
+            <t t-elif="o and 'company_id' in o and o.company_id">
+                <t t-set="company" t-value="o.company_id"/>
+            </t>
+            <t t-else="">
+                <t t-set="company" t-value="res_company"/>
+            </t>
+        </t>
+
+        <div t-attf-class="article o_report_layout_clean o_company_#{company.id}_layout"
+             t-att-data-oe-model="o and o._name"
+             t-att-data-oe-id="o and o.id"
+             style="padding: 0; margin: 0;">
+            <!-- PAS de header Odoo - Le Designer a son propre header -->
+
+            <!-- Contenu principal -->
+            <t t-out="0"/>
+
+            <!-- PAS de footer Odoo -->
+        </div>
+    </template>
+</odoo>

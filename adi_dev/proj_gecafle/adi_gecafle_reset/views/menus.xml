@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Menu dans Paramètres > Technique (visible uniquement pour les admins) -->
+    <menuitem
+        id="menu_gecafle_reset"
+        name="Reset Données GECAFLE"
+        parent="base.menu_administration"
+        action="action_gecafle_reset_wizard"
+        sequence="999"
+        groups="base.group_system"/>
+</odoo>

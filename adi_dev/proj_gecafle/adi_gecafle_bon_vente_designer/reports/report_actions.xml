@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- ═══════════════════════════════════════════════════════════════════════════
+         ACTIONS DE RAPPORT - BON DE VENTE DESIGNER
+    ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <!-- Format papier Designer - Marges réduites, pas d'espace header -->
+    <record id="paperformat_bon_vente_designer" model="report.paperformat">
+        <field name="name">Format Bon de Vente Designer</field>
+        <field name="default" eval="False"/>
+        <field name="format">A4</field>
+        <field name="page_height">0</field>
+        <field name="page_width">0</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">10</field>
+        <field name="margin_bottom">10</field>
+        <field name="margin_left">7</field>
+        <field name="margin_right">7</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">0</field>
+        <field name="dpi">96</field>
+        <field name="disable_shrinking" eval="True"/>
+    </record>
+
+    <!-- Action principale du rapport designer - Paperformat SANS header Odoo -->
+    <record id="action_report_bon_vente_designer" model="ir.actions.report">
+        <field name="name">Bon de Vente (Designer)</field>
+        <field name="model">gecafle.vente</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_gecafle_bon_vente_designer.report_bon_vente_designer</field>
+        <field name="report_file">adi_gecafle_bon_vente_designer.report_bon_vente_designer</field>
+        <field name="paperformat_id" ref="adi_gecafle_bon_vente_designer.paperformat_bon_vente_designer"/>
+        <field name="print_report_name">'Bon de Vente - %s' % (object.name)</field>
+    </record>
+</odoo>

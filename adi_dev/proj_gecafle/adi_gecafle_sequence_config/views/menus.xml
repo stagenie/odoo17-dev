@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Menu dans Configuration générale -->
+    <menuitem
+        id="menu_gecafle_sequence_config"
+        name="Configuration Séquences GECAFLE"
+        parent="base.menu_administration"
+        action="action_gecafle_sequence_config"
+        sequence="100"/>
+</odoo>

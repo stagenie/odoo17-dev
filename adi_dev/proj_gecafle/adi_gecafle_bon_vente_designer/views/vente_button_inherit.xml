@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Héritage de la vue formulaire gecafle.vente pour modifier le bouton Imprimer -->
+    <record id="view_gecafle_vente_form_inherit_designer" model="ir.ui.view">
+        <field name="name">gecafle.vente.form.inherit.designer</field>
+        <field name="model">gecafle.vente</field>
+        <field name="inherit_id" ref="adi_gecafle_ventes.view_gecafle_vente_form"/>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <!-- Remplacer le bouton Imprimer Bon de Vente -->
+            <xpath expr="//button[@name='action_imprimer_bon_vente']" position="replace">
+                <button name="action_open_print_wizard"
+                        string="Imprimer Bon de Vente"
+                        type="object"
+                        class="btn-primary"
+                        icon="fa-print"
+                        invisible="state != 'valide'"/>
+            </xpath>
+
+            <!-- Remplacer le bouton Imprimer Duplicata -->
+            <xpath expr="//button[@name='action_imprimer_duplicata']" position="replace">
+                <button name="action_open_print_wizard_duplicata"
+                        string="Imprimer Duplicata"
+                        type="object"
+                        class="btn-warning"
+                        icon="fa-copy"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Héritage de la vue liste pour modifier le bouton -->
+    <record id="view_gecafle_vente_list_inherit_designer" model="ir.ui.view">
+        <field name="name">gecafle.vente.list.inherit.designer</field>
+        <field name="model">gecafle.vente</field>
+        <field name="inherit_id" ref="adi_gecafle_ventes.view_gecafle_vente_list"/>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <!-- Remplacer le bouton Imprimer dans la liste -->
+            <xpath expr="//button[@name='action_imprimer_bon_vente']" position="replace">
+                <button name="action_open_print_wizard"
+                        string="Imprimer"
+                        type="object"
+                        icon="fa-print"
+                        class="btn-link"
+                        invisible="state != 'valide'"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

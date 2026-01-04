@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- ═══════════════════════════════════════════════════════════════════════════
+         CORPS STYLE MODERNE CARD-BASED
+         Lignes avec effet carte, ombres et design contemporain
+    ═══════════════════════════════════════════════════════════════════════════ -->
+    <template id="body_modern">
+        <t t-set="primary" t-value="primary_color or '#1a5276'"/>
+        <t t-set="secondary" t-value="secondary_color or '#2980b9'"/>
+        <t t-set="accent" t-value="accent_color or '#e74c3c'"/>
+
+        <div class="bv-body-modern">
+            <!-- ══════════ BARRE TITRE MODERNE ══════════ -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div t-attf-style="background-color: #{primary}; padding: 15px 25px; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.15);">
+                        <div class="row align-items-center">
+                            <div class="col-4">
+                                <div style="color: rgba(255,255,255,0.7); font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">Bon de Vente N°</div>
+                                <div style="color: white; font-size: 24px; font-weight: 800;">
+                                    <span t-field="o.name"/>
+                                </div>
+                            </div>
+                            <div class="col-4 text-center">
+                                <div style="color: white; font-size: 32px; font-weight: 900; letter-spacing: 2px;">
+                                    BON DE VENTE
+                                </div>
+                            </div>
+                            <div class="col-4 text-right">
+                                <div style="color: rgba(255,255,255,0.7); font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">Date</div>
+                                <div style="color: white; font-size: 16px; font-weight: 600;">
+                                    <span t-field="o.date_vente" t-options='{"widget": "datetime", "format": "dd/MM/yyyy HH:mm"}'/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══════════ CARTE CLIENT SPECTACULAIRE ══════════ -->
+            <div class="row mb-4">
+                <div t-att-class="'col-8' if (not o.client_id.est_fidel and o.montant_total_consigne > 0) else 'col-12'">
+                    <div t-attf-style="background: white; border-radius: 15px; padding: 25px 30px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); border-left: 8px solid #{accent};">
+                        <div style="display: flex; align-items: center;">
+                            <div t-attf-style="width: 70px; height: 70px; background: linear-gradient(135deg, #{primary} 0%, #{secondary} 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                                <span style="color: white; font-size: 28px; font-weight: bold;">
+                                    <t t-esc="o.client_id.name[:2].upper() if o.client_id.name else 'CL'"/>
+                                </span>
+                            </div>
+                            <div>
+                                <div style="font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 5px;">
+                                    Client
+                                </div>
+                                <div t-attf-style="font-size: 38px; font-weight: 900; color: #{primary}; line-height: 1; text-transform: uppercase; letter-spacing: 1px;">
+                                    <span t-field="o.client_id.name"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Carte Consigne -->
+                <div class="col-4" t-if="not o.client_id.est_fidel and o.montant_total_consigne > 0">
+                    <div t-attf-style="background: linear-gradient(135deg, #{accent}15 0%, #{accent}05 100%); border-radius: 15px; padding: 20px; height: 100%; border: 2px dashed #{accent};">
+                        <div class="text-center">
+                            <div style="font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 1px;">Consigne Emballages</div>
+                            <div t-attf-style="font-size: 32px; font-weight: 900; color: #{accent}; margin: 10px 0;">
+                                <span t-field="o.montant_total_consigne"/> DA
+                            </div>
+                            <div style="font-size: 11px; color: #888;">
+                                <span t-field="o.emballages_consigne_desc"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══════════ ÉTATS ══════════ -->
+            <div t-if="o.state == 'annule'" class="text-center mb-3">
+                <div style="display: inline-block; background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); color: white; padding: 10px 40px; border-radius: 25px; font-size: 16px; font-weight: bold; box-shadow: 0 4px 15px rgba(231,76,60,0.4);">
+                    VENTE ANNULÉE
+                </div>
+            </div>
+            <div t-if="o.state == 'brouillon'" class="text-center mb-3">
+                <div style="display: inline-block; background: linear-gradient(135deg, #f39c12 0%, #d68910 100%); color: white; padding: 10px 40px; border-radius: 25px; font-size: 16px; font-weight: bold;">
+                    BROUILLON
+                </div>
+            </div>
+            <div t-if="is_duplicata" class="text-center mb-3">
+                <div t-attf-style="display: inline-block; background: linear-gradient(135deg, #{secondary} 0%, #{primary} 100%); color: white; padding: 10px 40px; border-radius: 25px; font-size: 16px; font-weight: bold;">
+                    DUPLICATA
+                </div>
+            </div>
+
+            <!-- ══════════ TABLEAU MODERNE CARD-STYLE ══════════ -->
+            <div style="background: #f8f9fa; border-radius: 15px; padding: 20px; margin-bottom: 20px;">
+                <!-- En-tête du tableau -->
+                <div t-attf-style="background: #{primary}; color: white; border-radius: 10px; padding: 12px 15px; margin-bottom: 10px; font-size: 11px; font-weight: 600;">
+                    <div class="row">
+                        <div class="col-1 text-center">N°BR</div>
+                        <div class="col-2">Producteur</div>
+                        <div class="col-1 text-center">Colis</div>
+                        <div class="col-2">Produit</div>
+                        <div class="col-1 text-center">Type</div>
+                        <div class="col-1 text-right">P.Brut</div>
+                        <div class="col-1 text-right">P.Net</div>
+                        <div class="col-1 text-right">Prix/U</div>
+                        <div class="col-2 text-right">Total</div>
+                    </div>
+                </div>
+
+                <!-- Lignes en cartes -->
+                <t t-foreach="o.detail_vente_ids" t-as="line">
+                    <div style="background: white; border-radius: 8px; padding: 12px 15px; margin-bottom: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); font-size: 11px;">
+                        <div class="row align-items-center">
+                            <div class="col-1 text-center" style="color: #888;">
+                                <span t-field="line.reception_id.name"/>
+                            </div>
+                            <div class="col-2" style="font-weight: 500;">
+                                <span t-field="line.producteur_id.name"/>
+                            </div>
+                            <div class="col-1 text-center">
+                                <span t-attf-style="background: #{secondary}; color: white; padding: 3px 10px; border-radius: 12px; font-weight: bold;">
+                                    <t t-esc="line.nombre_colis"/>
+                                </span>
+                            </div>
+                            <div class="col-2" t-attf-style="font-weight: 700; color: #{primary};">
+                                <span t-field="line.produit_id.name"/>
+                            </div>
+                            <div class="col-1 text-center" style="color: #666;">
+                                <span t-field="line.type_colis_id.name"/>
+                            </div>
+                            <div class="col-1 text-right" style="color: #888;">
+                                <span t-esc="'%.2f' % line.poids_brut"/>
+                            </div>
+                            <div class="col-1 text-right" style="font-weight: bold;">
+                                <span t-esc="'%.2f' % line.poids_net"/>
+                            </div>
+                            <div class="col-1 text-right">
+                                <span t-esc="o.format_number(line.prix_unitaire)"/>
+                            </div>
+                            <div class="col-2 text-right" t-attf-style="font-weight: 800; color: #{accent}; font-size: 13px;">
+                                <span t-esc="o.format_number(line.montant_net)"/> DA
+                            </div>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- Ligne Total -->
+                <div t-attf-style="background: linear-gradient(135deg, #{primary} 0%, #{secondary} 100%); color: white; border-radius: 10px; padding: 15px; margin-top: 15px;">
+                    <div class="row align-items-center">
+                        <div class="col-3">
+                            <span style="font-size: 16px; font-weight: 800;">TOTAUX</span>
+                        </div>
+                        <div class="col-1 text-center" style="font-size: 18px; font-weight: bold;">
+                            <t t-esc="sum(o.detail_vente_ids.mapped('nombre_colis'))"/>
+                        </div>
+                        <div class="col-3"/>
+                        <div class="col-1 text-right" style="font-size: 14px;">
+                            <t t-esc="'%.2f' % sum(o.detail_vente_ids.mapped('poids_net'))"/> kg
+                        </div>
+                        <div class="col-1"/>
+                        <div class="col-3 text-right" style="font-size: 20px; font-weight: 900;">
+                            <span t-field="o.montant_total_net"/> DA
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══════════ RÉCAPITULATIF MODERNE ══════════ -->
+            <div class="row">
+                <div class="col-6">
+                    <div t-if="o.notes or o.observation" style="background: #f8f9fa; border-radius: 10px; padding: 15px;">
+                        <div t-if="o.notes" style="margin-bottom: 10px;">
+                            <div t-attf-style="font-size: 11px; color: #{primary}; font-weight: bold; margin-bottom: 5px;">CONDITIONS GÉNÉRALES</div>
+                            <p style="font-size: 11px; color: #666; margin: 0;" t-field="o.notes"/>
+                        </div>
+                        <div t-if="o.observation">
+                            <div t-attf-style="font-size: 11px; color: #{primary}; font-weight: bold; margin-bottom: 5px;">OBSERVATIONS</div>
+                            <p style="font-size: 11px; color: #666; margin: 0;" t-field="o.observation"/>
+                        </div>
+                    </div>
+                    <div style="margin-top: 15px; font-size: 12px; color: #888;">
+                        <strong>Vendeur:</strong> <span t-field="o.user_id.name"/>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div style="background: white; border-radius: 15px; padding: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.1);">
+                        <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee;">
+                            <span style="color: #666;">Montant Colis</span>
+                            <span style="font-weight: 600;"><span t-field="o.montant_total_emballages"/> DA</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee;">
+                            <span style="color: #666;">Montant Net</span>
+                            <span style="font-weight: 600;"><span t-field="o.montant_total_net"/> DA</span>
+                        </div>
+                        <div t-if="o.montant_remise_globale > 0" style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee;">
+                            <span style="color: #666;">Remise</span>
+                            <span style="font-weight: 600; color: #e74c3c;">-<span t-field="o.montant_remise_globale"/> DA</span>
+                        </div>
+                        <div t-attf-style="display: flex; justify-content: space-between; padding: 15px 0; margin-top: 10px; background: linear-gradient(135deg, #{accent}15 0%, #{accent}05 100%); margin: 10px -20px -20px -20px; padding: 20px; border-radius: 0 0 15px 15px;">
+                            <span t-attf-style="font-size: 18px; font-weight: bold; color: #{primary};">TOTAL À PAYER</span>
+                            <span t-attf-style="font-size: 28px; font-weight: 900; color: #{accent};">
+                                <span t-field="o.montant_total_a_payer"/> DA
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+</odoo>

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Héritage des paramètres de configuration -->
+    <record id="res_config_settings_view_form_sequence" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.sequence</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="priority">50</field>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app data-string="Configuration Séquences GECAFLE" string="Séquences GECAFLE" name="gecafle_sequence_config">
+                    <block title="Format des Numéros de Séquence" name="sequence_format_settings">
+                        <setting string="Configuration N° de Vente" help="Définir le format du numéro de vente">
+                            <div class="content-group">
+                                <div class="row mt16">
+                                    <label for="vente_prefix" class="col-lg-3"/>
+                                    <field name="vente_prefix" placeholder="Ex: VTE, VENTE..." class="col-lg-4"/>
+                                </div>
+                                <div class="row mt8">
+                                    <label for="vente_separator" class="col-lg-3"/>
+                                    <field name="vente_separator" class="col-lg-4"/>
+                                </div>
+                                <div class="row mt8">
+                                    <label for="vente_year_position" class="col-lg-3"/>
+                                    <field name="vente_year_position" class="col-lg-4"/>
+                                </div>
+                                <div class="row mt8">
+                                    <label for="vente_yearly_reset" class="col-lg-3"/>
+                                    <field name="vente_yearly_reset"/>
+                                    <span class="text-muted ms-2">Repart à 1 chaque année</span>
+                                </div>
+                                <div class="row mt8">
+                                    <label for="vente_preview" class="col-lg-3"/>
+                                    <field name="vente_preview" class="col-lg-4 fw-bold text-primary"/>
+                                </div>
+                            </div>
+                        </setting>
+                        <setting string="Configuration N° de Réception" help="Définir le format du numéro de réception">
+                            <div class="content-group">
+                                <div class="row mt16">
+                                    <label for="reception_prefix" class="col-lg-3"/>
+                                    <field name="reception_prefix" placeholder="Ex: REC, BR..." class="col-lg-4"/>
+                                </div>
+                                <div class="row mt8">
+                                    <label for="reception_separator" class="col-lg-3"/>
+                                    <field name="reception_separator" class="col-lg-4"/>
+                                </div>
+                                <div class="row mt8">
+                                    <label for="reception_year_position" class="col-lg-3"/>
+                                    <field name="reception_year_position" class="col-lg-4"/>
+                                </div>
+                                <div class="row mt8">
+                                    <label for="reception_yearly_reset" class="col-lg-3"/>
+                                    <field name="reception_yearly_reset"/>
+                                    <span class="text-muted ms-2">Repart à 1 chaque année</span>
+                                </div>
+                                <div class="row mt8">
+                                    <label for="reception_preview" class="col-lg-3"/>
+                                    <field name="reception_preview" class="col-lg-4 fw-bold text-success"/>
+                                </div>
+                            </div>
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Action pour ouvrir la configuration -->
+    <record id="action_gecafle_sequence_config" model="ir.actions.act_window">
+        <field name="name">Configuration Séquences</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+        <field name="context">{'module': 'adi_gecafle_sequence_config'}</field>
+    </record>
+</odoo>

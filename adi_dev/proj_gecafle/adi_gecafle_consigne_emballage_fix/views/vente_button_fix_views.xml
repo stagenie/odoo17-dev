@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--
+    Correction de la visibilité du bouton "Rendre l'emballage"
+
+    Avant: Le bouton apparaissait si consigne_appliquee = True (client non fidèle)
+    Après: Le bouton n'apparaît que s'il y a des emballages réellement consignés (R)
+    -->
+    <record id="view_gecafle_vente_form_button_fix" model="ir.ui.view">
+        <field name="name">gecafle.vente.form.button.fix</field>
+        <field name="model">gecafle.vente</field>
+        <field name="inherit_id" ref="adi_gecafle_consigne_management.view_gecafle_vente_form_inherit_consigne"/>
+        <field name="priority">200</field>
+        <field name="arch" type="xml">
+            <!-- Ajouter le champ has_emballages_consignes pour l'utiliser dans les conditions -->
+            <xpath expr="//field[@name='consigne_appliquee']" position="after">
+                <field name="has_emballages_consignes" invisible="1"/>
+            </xpath>
+
+            <!-- Remplacer le bouton avec la nouvelle condition -->
+            <xpath expr="//button[@name='action_create_consigne_retour']" position="attributes">
+                <attribute name="invisible">state != 'valide' or not consigne_appliquee or not has_emballages_consignes or etat_consigne == 'rendu'</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Amélioration de l'affichage de l'état de consigne -->
+    <record id="view_gecafle_vente_form_consigne_info_fix" model="ir.ui.view">
+        <field name="name">gecafle.vente.form.consigne.info.fix</field>
+        <field name="model">gecafle.vente</field>
+        <field name="inherit_id" ref="adi_gecafle_consigne_management.view_gecafle_vente_form_inherit_consigne"/>
+        <field name="priority">201</field>
+        <field name="arch" type="xml">
+            <!-- Modifier la condition d'affichage de l'état consigne -->
+            <xpath expr="//field[@name='etat_consigne']" position="attributes">
+                <attribute name="invisible">not consigne_appliquee or not has_emballages_consignes</attribute>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

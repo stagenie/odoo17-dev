@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- ═══════════════════════════════════════════════════════════════════════════
+         CORPS STYLE PREMIUM MINIMALISTE
+         Design épuré et élégant avec typographie raffinée
+    ═══════════════════════════════════════════════════════════════════════════ -->
+    <template id="body_premium">
+        <t t-set="primary" t-value="primary_color or '#1a5276'"/>
+        <t t-set="secondary" t-value="secondary_color or '#2980b9'"/>
+        <t t-set="accent" t-value="accent_color or '#c0a062'"/>
+
+        <div class="bv-body-premium">
+            <!-- ══════════ EN-TÊTE PREMIUM ══════════ -->
+            <div class="text-center mb-4">
+                <div style="display: flex; align-items: center; justify-content: center;">
+                    <div t-attf-style="flex: 1; height: 1px; background: linear-gradient(to right, transparent, #{accent});"/>
+                    <div style="padding: 0 30px;">
+                        <div t-attf-style="font-size: 14px; color: #{accent}; letter-spacing: 8px; text-transform: uppercase; font-weight: 300;">
+                            Bon de Vente
+                        </div>
+                        <div t-attf-style="font-size: 42px; font-weight: 200; color: #{primary}; letter-spacing: 3px; margin-top: 5px;">
+                            N° <span t-field="o.name" style="font-weight: 600;"/>
+                        </div>
+                    </div>
+                    <div t-attf-style="flex: 1; height: 1px; background: linear-gradient(to left, transparent, #{accent});"/>
+                </div>
+                <div style="margin-top: 10px; font-size: 13px; color: #888; letter-spacing: 1px;">
+                    <span t-field="o.date_vente" t-options='{"widget": "datetime", "format": "dd MMMM yyyy - HH:mm"}'/>
+                </div>
+            </div>
+
+            <!-- ══════════ CLIENT PREMIUM - MAJESTUEUX ══════════ -->
+            <div class="row mb-5">
+                <div t-att-class="'col-8' if (not o.client_id.est_fidel and o.montant_total_consigne > 0) else 'col-12'">
+                    <div t-attf-style="border: 2px solid #{accent}; padding: 30px 40px; position: relative;">
+                        <!-- Ornement coin -->
+                        <div t-attf-style="position: absolute; top: -8px; left: 30px; background: white; padding: 0 15px; font-size: 11px; color: #{accent}; letter-spacing: 3px; text-transform: uppercase;">
+                            Client
+                        </div>
+                        <div t-attf-style="font-size: 44px; font-weight: 300; color: #{primary}; text-transform: uppercase; letter-spacing: 4px; line-height: 1.1;">
+                            <span t-field="o.client_id.name"/>
+                        </div>
+                    </div>
+                </div>
+                <!-- Section Consigne Premium -->
+                <div class="col-4" t-if="not o.client_id.est_fidel and o.montant_total_consigne > 0">
+                    <div t-attf-style="border: 1px solid #{accent}; padding: 20px; height: 100%; position: relative;">
+                        <div t-attf-style="position: absolute; top: -8px; left: 20px; background: white; padding: 0 10px; font-size: 10px; color: #{accent}; letter-spacing: 2px;">
+                            CONSIGNE
+                        </div>
+                        <div class="text-center" style="padding-top: 10px;">
+                            <div t-attf-style="font-size: 36px; font-weight: 300; color: #{accent};">
+                                <span t-field="o.montant_total_consigne"/> <span style="font-size: 18px;">DA</span>
+                            </div>
+                            <div style="font-size: 11px; color: #888; margin-top: 10px;">
+                                <span t-field="o.emballages_consigne_desc"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══════════ ÉTATS PREMIUM ══════════ -->
+            <div t-if="o.state == 'annule'" class="text-center mb-4">
+                <div style="display: inline-block; border: 2px solid #e74c3c; color: #e74c3c; padding: 8px 40px; font-size: 14px; letter-spacing: 3px;">
+                    VENTE ANNULÉE
+                </div>
+            </div>
+            <div t-if="o.state == 'brouillon'" class="text-center mb-4">
+                <div style="display: inline-block; border: 2px solid #f39c12; color: #f39c12; padding: 8px 40px; font-size: 14px; letter-spacing: 3px;">
+                    BROUILLON
+                </div>
+            </div>
+            <div t-if="is_duplicata" class="text-center mb-4">
+                <div t-attf-style="display: inline-block; border: 2px solid #{secondary}; color: #{secondary}; padding: 8px 40px; font-size: 14px; letter-spacing: 3px;">
+                    DUPLICATA
+                </div>
+            </div>
+
+            <!-- ══════════ TABLEAU PREMIUM ÉPURÉ ══════════ -->
+            <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 30px;">
+                <thead>
+                    <tr t-attf-style="border-bottom: 2px solid #{primary};">
+                        <th style="padding: 15px 10px; text-align: left; font-weight: 400; color: #888; letter-spacing: 1px; text-transform: uppercase; font-size: 10px;">N°BR</th>
+                        <th style="padding: 15px 10px; text-align: left; font-weight: 400; color: #888; letter-spacing: 1px; text-transform: uppercase; font-size: 10px;">Producteur</th>
+                        <th style="padding: 15px 10px; text-align: center; font-weight: 400; color: #888; letter-spacing: 1px; text-transform: uppercase; font-size: 10px;">Colis</th>
+                        <th style="padding: 15px 10px; text-align: left; font-weight: 400; color: #888; letter-spacing: 1px; text-transform: uppercase; font-size: 10px;">Produit</th>
+                        <th style="padding: 15px 10px; text-align: center; font-weight: 400; color: #888; letter-spacing: 1px; text-transform: uppercase; font-size: 10px;">Type</th>
+                        <th style="padding: 15px 10px; text-align: right; font-weight: 400; color: #888; letter-spacing: 1px; text-transform: uppercase; font-size: 10px;">P.Net</th>
+                        <th style="padding: 15px 10px; text-align: right; font-weight: 400; color: #888; letter-spacing: 1px; text-transform: uppercase; font-size: 10px;">Prix/U</th>
+                        <th style="padding: 15px 10px; text-align: right; font-weight: 400; color: #888; letter-spacing: 1px; text-transform: uppercase; font-size: 10px;">Montant</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <t t-foreach="o.detail_vente_ids" t-as="line">
+                        <tr style="border-bottom: 1px solid #eee;">
+                            <td style="padding: 12px 10px; color: #888;">
+                                <span t-field="line.reception_id.name"/>
+                            </td>
+                            <td style="padding: 12px 10px;">
+                                <span t-field="line.producteur_id.name"/>
+                            </td>
+                            <td style="padding: 12px 10px; text-align: center; font-weight: 600;">
+                                <span t-field="line.nombre_colis"/>
+                            </td>
+                            <td t-attf-style="padding: 12px 10px; font-weight: 600; color: #{primary};">
+                                <span t-field="line.produit_id.name"/>
+                            </td>
+                            <td style="padding: 12px 10px; text-align: center; color: #888;">
+                                <span t-field="line.type_colis_id.name"/>
+                            </td>
+                            <td style="padding: 12px 10px; text-align: right; font-weight: 500;">
+                                <span t-esc="'%.2f' % line.poids_net"/> kg
+                            </td>
+                            <td style="padding: 12px 10px; text-align: right;">
+                                <span t-esc="o.format_number(line.prix_unitaire)"/>
+                            </td>
+                            <td t-attf-style="padding: 12px 10px; text-align: right; font-weight: 600; color: #{primary};">
+                                <span t-esc="o.format_number(line.montant_net)"/> DA
+                            </td>
+                        </tr>
+                    </t>
+                </tbody>
+                <tfoot>
+                    <tr t-attf-style="border-top: 2px solid #{primary};">
+                        <td colspan="2" style="padding: 15px 10px;">
+                            <span t-attf-style="font-size: 13px; font-weight: 600; color: #{primary}; letter-spacing: 2px;">TOTAUX</span>
+                        </td>
+                        <td style="padding: 15px 10px; text-align: center; font-size: 14px; font-weight: 600;">
+                            <t t-esc="sum(o.detail_vente_ids.mapped('nombre_colis'))"/>
+                        </td>
+                        <td colspan="2"/>
+                        <td style="padding: 15px 10px; text-align: right; font-size: 13px; font-weight: 600;">
+                            <t t-esc="'%.2f' % sum(o.detail_vente_ids.mapped('poids_net'))"/> kg
+                        </td>
+                        <td/>
+                        <td t-attf-style="padding: 15px 10px; text-align: right; font-size: 15px; font-weight: 700; color: #{primary};">
+                            <span t-field="o.montant_total_net"/> DA
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+
+            <!-- ══════════ SECTION FINALE PREMIUM ══════════ -->
+            <div class="row">
+                <div class="col-6">
+                    <div t-if="o.notes" style="margin-bottom: 20px;">
+                        <div t-attf-style="font-size: 10px; color: #{accent}; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px;">
+                            Conditions Générales
+                        </div>
+                        <p style="font-size: 11px; color: #666; line-height: 1.6;" t-field="o.notes"/>
+                    </div>
+                    <div t-if="o.observation">
+                        <div t-attf-style="font-size: 10px; color: #{accent}; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px;">
+                            Observations
+                        </div>
+                        <p style="font-size: 11px; color: #666; line-height: 1.6;" t-field="o.observation"/>
+                    </div>
+                    <div style="margin-top: 25px; padding-top: 15px; border-top: 1px solid #eee;">
+                        <span style="font-size: 11px; color: #888;">Vendeur: </span>
+                        <span style="font-size: 11px;" t-field="o.user_id.name"/>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div t-attf-style="border: 2px solid #{primary}; padding: 25px;">
+                        <table style="width: 100%;">
+                            <tr>
+                                <td style="padding: 8px 0; font-size: 12px; color: #666;">Montant Colis</td>
+                                <td style="padding: 8px 0; text-align: right; font-size: 13px;">
+                                    <span t-field="o.montant_total_emballages"/> DA
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px 0; font-size: 12px; color: #666;">Montant Net</td>
+                                <td style="padding: 8px 0; text-align: right; font-size: 13px;">
+                                    <span t-field="o.montant_total_net"/> DA
+                                </td>
+                            </tr>
+                            <tr t-if="o.montant_remise_globale > 0">
+                                <td style="padding: 8px 0; font-size: 12px; color: #666;">Remise</td>
+                                <td style="padding: 8px 0; text-align: right; font-size: 13px; color: #e74c3c;">
+                                    -<span t-field="o.montant_remise_globale"/> DA
+                                </td>
+                            </tr>
+                        </table>
+                        <div t-attf-style="border-top: 2px solid #{accent}; margin-top: 15px; padding-top: 20px;">
+                            <div class="row align-items-center">
+                                <div class="col-6">
+                                    <div t-attf-style="font-size: 11px; color: #{accent}; letter-spacing: 3px; text-transform: uppercase;">
+                                        Total à Payer
+                                    </div>
+                                </div>
+                                <div class="col-6 text-right">
+                                    <div t-attf-style="font-size: 32px; font-weight: 300; color: #{primary};">
+                                        <span t-field="o.montant_total_a_payer"/>
+                                        <span style="font-size: 16px; color: #888;"> DA</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══════════ SIGNATURE PREMIUM ══════════ -->
+            <div class="text-center mt-5">
+                <div style="display: flex; align-items: center; justify-content: center;">
+                    <div t-attf-style="flex: 1; height: 1px; background: linear-gradient(to right, transparent, #{accent}40);"/>
+                    <div t-attf-style="padding: 0 30px; font-size: 10px; color: #{accent}; letter-spacing: 3px;">
+                        MERCI DE VOTRE CONFIANCE
+                    </div>
+                    <div t-attf-style="flex: 1; height: 1px; background: linear-gradient(to left, transparent, #{accent}40);"/>
+                </div>
+            </div>
+        </div>
+    </template>
+</odoo>

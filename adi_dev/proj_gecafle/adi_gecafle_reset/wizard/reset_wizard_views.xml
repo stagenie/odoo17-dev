@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue Form du Wizard de Reset -->
+    <record id="view_gecafle_reset_wizard_form" model="ir.ui.view">
+        <field name="name">gecafle.reset.wizard.form</field>
+        <field name="model">gecafle.reset.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Réinitialisation des données GECAFLE">
+                <header>
+                    <button name="action_reset" string="Réinitialiser" type="object"
+                            class="btn-danger" confirm="ATTENTION : Cette action est IRRÉVERSIBLE ! Êtes-vous sûr de vouloir continuer ?"/>
+                    <button name="action_cancel" string="Annuler" type="object" class="btn-secondary"/>
+                </header>
+
+                <div class="alert alert-danger" role="alert">
+                    <h4 class="alert-heading">
+                        <i class="fa fa-exclamation-triangle"/> ATTENTION - ACTION IRRÉVERSIBLE
+                    </h4>
+                    <p>
+                        Cette opération va <strong>supprimer définitivement</strong> toutes les données
+                        transactionnelles sélectionnées. Cette action ne peut pas être annulée !
+                    </p>
+                    <hr/>
+                    <p class="mb-0">
+                        <strong>Données conservées :</strong> Produits, Producteurs, Clients, Qualités,
+                        Types d'Emballages, Régions, Caisses, Coffres
+                    </p>
+                </div>
+
+                <group>
+                    <group string="Données GECAFLE" col="2">
+                        <field name="reset_receptions"/>
+                        <field name="info_receptions" readonly="1" class="text-danger fw-bold"/>
+                        <field name="reset_ventes"/>
+                        <field name="info_ventes" readonly="1" class="text-danger fw-bold"/>
+                        <field name="reset_emballages"/>
+                        <field name="info_emballages" readonly="1" class="text-danger fw-bold"/>
+                        <field name="reset_avoirs"/>
+                        <field name="reset_bordereaux"/>
+                        <field name="reset_statistiques"/>
+                    </group>
+                    <group string="Comptabilité et Trésorerie" col="2">
+                        <field name="reset_comptabilite"/>
+                        <field name="info_factures" readonly="1" class="text-warning fw-bold"/>
+                        <label for="info_paiements" string="Paiements"/>
+                        <field name="info_paiements" readonly="1" class="text-warning fw-bold" nolabel="1"/>
+                        <field name="reset_tresorerie"/>
+                        <field name="info_tresorerie" readonly="1" class="text-warning fw-bold"/>
+                        <field name="reset_rh"/>
+                        <field name="info_rh" readonly="1" class="text-info fw-bold"/>
+                    </group>
+                </group>
+
+                <group>
+                    <group string="Options">
+                        <field name="reset_counters"/>
+                    </group>
+                </group>
+
+                <separator string="Confirmation de sécurité"/>
+
+                <group>
+                    <div class="alert alert-warning" role="alert" colspan="2">
+                        <p>Pour confirmer cette opération, tapez exactement :</p>
+                        <p class="text-center">
+                            <code style="font-size: 18px; background: #fff; padding: 10px 20px; border-radius: 5px;">
+                                RESET GECAFLE
+                            </code>
+                        </p>
+                    </div>
+                    <field name="confirmation_text" placeholder="Tapez 'RESET GECAFLE' pour confirmer"
+                           class="text-center" style="font-size: 16px;"/>
+                </group>
+
+                <footer>
+                    <button name="action_reset" string="Confirmer la Réinitialisation"
+                            type="object" class="btn-danger oe_highlight"/>
+                    <button name="action_cancel" string="Annuler" type="object" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action pour ouvrir le wizard -->
+    <record id="action_gecafle_reset_wizard" model="ir.actions.act_window">
+        <field name="name">Réinitialiser les données GECAFLE</field>
+        <field name="res_model">gecafle.reset.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="groups_id" eval="[(4, ref('base.group_system'))]"/>
+    </record>
+</odoo>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Extension de la vue dans le formulaire de vente -->
+    <!-- Ajoute la colonne R/NR (est_consigne) dans l'onglet Emballages -->
+    <record id="view_gecafle_vente_form_emballage_fix" model="ir.ui.view">
+        <field name="name">gecafle.vente.form.emballage.fix</field>
+        <field name="model">gecafle.vente</field>
+        <field name="inherit_id" ref="adi_gecafle_ventes.view_gecafle_vente_form"/>
+        <field name="priority">100</field>
+        <field name="arch" type="xml">
+            <!-- Ajouter la colonne R/NR dans la liste des emballages -->
+            <xpath expr="//field[@name='detail_emballage_vente_ids']/tree/field[@name='emballage_id']" position="after">
+                <field name="est_consigne" string="R" widget="boolean"
+                       help="Coché = Rendu (consigné), Décoché = Non Rendu"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Groupe pour accès à la configuration des séquences -->
+    <record id="group_sequence_config_user" model="res.groups">
+        <field name="name">Utilisateur - Configuration Séquences</field>
+        <field name="category_id" ref="base.module_category_sales_sales"/>
+        <field name="comment">Permet de configurer les formats de séquences (Vente et Réception)</field>
+    </record>
+
+    <!-- Règle d'accès pour permettre à tous les utilisateurs de lire la configuration -->
+    <record id="rule_company_sequence_config_read" model="ir.rule">
+        <field name="name">Configuration Séquences : Lecture pour tous</field>
+        <field name="model_id" ref="base.model_res_company"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <!-- Règle pour permettre aux utilisateurs du groupe de modifier -->
+    <record id="rule_company_sequence_config_write" model="ir.rule">
+        <field name="name">Configuration Séquences : Modification autorisée</field>
+        <field name="model_id" ref="base.model_res_company"/>
+        <field name="domain_force">[('id', '=', user.company_id.id)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+        <field name="groups" eval="[(4, ref('group_sequence_config_user'))]"/>
+    </record>
+</odoo>

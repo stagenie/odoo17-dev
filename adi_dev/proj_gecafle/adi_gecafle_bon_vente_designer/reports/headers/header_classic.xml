@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- EN-TÊTE STYLE CLASSIQUE ÉLÉGANT -->
+    <template id="header_classic">
+        <!-- Utiliser les variables passées par le modèle de rapport -->
+        <t t-set="primary" t-value="primary_color or '#1a5276'"/>
+        <t t-set="secondary" t-value="secondary_color or '#2980b9'"/>
+        <t t-set="has_logo" t-value="use_logo and header_info.get('logo')"/>
+        <t t-set="logo_pos" t-value="logo_position or 'left'"/>
+
+        <div class="bv-header-classic" t-attf-style="border-bottom: 2px solid #{primary}; padding-bottom: 6px; margin-bottom: 8px;">
+            <div class="row align-items-center">
+                <!-- Logo à GAUCHE -->
+                <div class="col-2 text-center" t-if="has_logo and logo_pos == 'left'">
+                    <t t-set="logo_data" t-value="header_info.get('logo')"/>
+                    <img t-if="logo_data"
+                         t-att-src="'data:image/png;base64,%s' % (logo_data.decode('utf-8') if isinstance(logo_data, bytes) else logo_data)"
+                         style="max-height: 50px; max-width: 100%;"/>
+                </div>
+
+                <!-- Contenu central -->
+                <div t-att-class="'col-8 text-center' if has_logo and logo_pos != 'center' else 'col-10 text-center' if has_logo and logo_pos == 'center' else 'col-12 text-center'">
+                    <!-- Titre principal -->
+                    <h1 t-attf-style="font-size: 18px; font-weight: 800; color: #{primary}; margin: 0; letter-spacing: 1px; text-transform: uppercase;">
+                        <t t-esc="header_info.get('title', company.name)"/>
+                    </h1>
+
+                    <!-- Sous-titre activité -->
+                    <div t-if="header_info.get('subtitle')"
+                         t-attf-style="font-size: 10px; color: #{secondary}; font-style: italic; margin-top: 2px;">
+                        <t t-esc="header_info.get('subtitle', '')"/>
+                    </div>
+                </div>
+
+                <!-- Logo à DROITE -->
+                <div class="col-2 text-center" t-if="has_logo and logo_pos == 'right'">
+                    <t t-set="logo_data" t-value="header_info.get('logo')"/>
+                    <img t-if="logo_data"
+                         t-att-src="'data:image/png;base64,%s' % (logo_data.decode('utf-8') if isinstance(logo_data, bytes) else logo_data)"
+                         style="max-height: 50px; max-width: 100%;"/>
+                </div>
+
+                <!-- Espace si logo à gauche -->
+                <div class="col-2" t-if="has_logo and logo_pos == 'left'"/>
+            </div>
+
+            <!-- Logo au CENTRE (sous le titre) -->
+            <div class="text-center" t-if="has_logo and logo_pos == 'center'" style="margin-top: 4px;">
+                <t t-set="logo_data" t-value="header_info.get('logo')"/>
+                <img t-if="logo_data"
+                     t-att-src="'data:image/png;base64,%s' % (logo_data.decode('utf-8') if isinstance(logo_data, bytes) else logo_data)"
+                     style="max-height: 40px;"/>
+            </div>
+
+            <!-- Adresse et contacts sur une ligne -->
+            <div class="text-center" style="font-size: 9px; color: #555; margin-top: 4px;">
+                <span t-if="header_info.get('address_line1')"><t t-esc="header_info.get('address_line1', '')"/></span>
+                <span t-if="header_info.get('address_line1') and header_info.get('address_line2')"> - </span>
+                <span t-if="header_info.get('address_line2')"><t t-esc="header_info.get('address_line2', '')"/></span>
+                <t t-if="header_info.get('phone1')">
+                    <span t-attf-style="margin-left: 10px;"><strong>Tél:</strong> <t t-esc="header_info.get('phone1', '')"/></span>
+                </t>
+                <t t-if="header_info.get('mobile')">
+                    <span style="margin-left: 10px;"><strong>Mob:</strong> <t t-esc="header_info.get('mobile', '')"/></span>
+                </t>
+            </div>
+
+            <!-- Informations fiscales si présentes -->
+            <div class="text-center" style="font-size: 8px; color: #888;"
+                 t-if="header_info.get('rc') or header_info.get('nif') or header_info.get('nis') or header_info.get('ai')">
+                <t t-if="header_info.get('rc')"><span style="margin-right: 8px;"><strong>RC:</strong> <t t-esc="header_info.get('rc', '')"/></span></t>
+                <t t-if="header_info.get('nif')"><span style="margin-right: 8px;"><strong>NIF:</strong> <t t-esc="header_info.get('nif', '')"/></span></t>
+                <t t-if="header_info.get('nis')"><span style="margin-right: 8px;"><strong>NIS:</strong> <t t-esc="header_info.get('nis', '')"/></span></t>
+                <t t-if="header_info.get('ai')"><span><strong>AI:</strong> <t t-esc="header_info.get('ai', '')"/></span></t>
+            </div>
+        </div>
+    </template>
+</odoo>

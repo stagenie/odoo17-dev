@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- EN-TÊTE STYLE PREMIUM LUXE -->
+    <template id="header_premium">
+        <t t-set="primary" t-value="primary_color or '#1a5276'"/>
+        <t t-set="secondary" t-value="secondary_color or '#2980b9'"/>
+        <t t-set="accent" t-value="accent_color or '#c0a062'"/>
+        <t t-set="has_logo" t-value="use_logo and header_info.get('logo')"/>
+
+        <div class="bv-header-premium" style="margin-bottom: 30px;">
+            <!-- Cadre premium avec double bordure -->
+            <div t-attf-style="border: 3px solid #{primary}; padding: 3px;">
+                <div t-attf-style="border: 1px solid #{accent}; padding: 20px;">
+
+                    <div class="row align-items-center">
+                        <!-- Logo dans un cercle élégant -->
+                        <div class="col-2 text-center" t-if="has_logo">
+                            <div t-attf-style="width: 100px; height: 100px; border: 3px solid #{accent}; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; background: white;">
+                                <t t-set="logo_data" t-value="header_info.get('logo')"/>
+                                <img t-if="logo_data"
+                                     t-att-src="'data:image/png;base64,%s' % (logo_data.decode('utf-8') if isinstance(logo_data, bytes) else logo_data)"
+                                     style="max-height: 70px; max-width: 70px;"/>
+                            </div>
+                        </div>
+
+                        <!-- Contenu central -->
+                        <div t-att-class="'col-8 text-center' if has_logo else 'col-12 text-center'">
+                            <!-- Titre MAJESTUEUX -->
+                            <h1 t-attf-style="font-size: 38px; font-weight: 900; color: #{primary}; margin: 0; letter-spacing: 5px; text-transform: uppercase;">
+                                <t t-esc="header_info.get('title', company.name)"/>
+                            </h1>
+
+                            <!-- Ligne ornementale -->
+                            <div style="display: flex; align-items: center; justify-content: center; margin: 12px 0;">
+                                <div t-attf-style="flex: 1; height: 2px; background: linear-gradient(to right, transparent, #{accent});"/>
+                                <div t-attf-style="color: #{accent}; margin: 0 15px; font-size: 18px;">&#9733;</div>
+                                <div t-attf-style="flex: 1; height: 2px; background: linear-gradient(to left, transparent, #{accent});"/>
+                            </div>
+
+                            <!-- Sous-titre élégant -->
+                            <div t-if="header_info.get('subtitle')"
+                                 t-attf-style="font-size: 18px; color: #{secondary}; font-style: italic; letter-spacing: 2px;">
+                                <t t-esc="header_info.get('subtitle', '')"/>
+                            </div>
+                        </div>
+
+                        <!-- Espace pour équilibre -->
+                        <div class="col-2" t-if="has_logo"/>
+                    </div>
+
+                    <!-- Séparateur élégant -->
+                    <div style="display: flex; align-items: center; justify-content: center; margin: 20px 0 15px 0;">
+                        <div t-attf-style="flex: 1; height: 1px; background-color: #{accent}; opacity: 0.5;"/>
+                    </div>
+
+                    <!-- Informations dans un design raffiné -->
+                    <div class="row" style="font-size: 12px;">
+                        <!-- Bloc Adresse -->
+                        <div class="col-4 text-center">
+                            <div t-attf-style="border-right: 1px solid #{accent}; padding-right: 15px;">
+                                <div t-attf-style="color: #{accent}; font-weight: bold; font-size: 11px; letter-spacing: 2px; margin-bottom: 5px;">
+                                    ADRESSE
+                                </div>
+                                <div style="color: #333;">
+                                    <div t-if="header_info.get('address_line1')">
+                                        <t t-esc="header_info.get('address_line1', '')"/>
+                                    </div>
+                                    <div t-if="header_info.get('address_line2')">
+                                        <t t-esc="header_info.get('address_line2', '')"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bloc Téléphones -->
+                        <div class="col-4 text-center">
+                            <div t-attf-style="border-right: 1px solid #{accent}; padding: 0 15px;">
+                                <div t-attf-style="color: #{accent}; font-weight: bold; font-size: 11px; letter-spacing: 2px; margin-bottom: 5px;">
+                                    TÉLÉPHONE
+                                </div>
+                                <div style="color: #333;">
+                                    <div t-if="header_info.get('phone1')">
+                                        <t t-esc="header_info.get('phone1', '')"/>
+                                    </div>
+                                    <div t-if="header_info.get('phone2')">
+                                        <t t-esc="header_info.get('phone2', '')"/>
+                                    </div>
+                                    <div t-if="header_info.get('mobile')">
+                                        <strong>Mob:</strong> <t t-esc="header_info.get('mobile', '')"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bloc Contact Digital -->
+                        <div class="col-4 text-center">
+                            <div style="padding-left: 15px;">
+                                <div t-attf-style="color: #{accent}; font-weight: bold; font-size: 11px; letter-spacing: 2px; margin-bottom: 5px;">
+                                    CONTACT
+                                </div>
+                                <div style="color: #333;">
+                                    <div t-if="header_info.get('email')">
+                                        <t t-esc="header_info.get('email', '')"/>
+                                    </div>
+                                    <div t-if="header_info.get('website')">
+                                        <t t-esc="header_info.get('website', '')"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bandeau fiscal premium -->
+            <div t-if="header_info.get('rc') or header_info.get('nif') or header_info.get('nis') or header_info.get('ai')"
+                 t-attf-style="background: linear-gradient(to right, #{primary}, #{secondary}); color: white; padding: 10px 20px; margin-top: -1px; font-size: 11px;">
+                <div class="row text-center">
+                    <div class="col-3" t-if="header_info.get('rc')">
+                        <span style="opacity: 0.7;">RC:</span> <strong><t t-esc="header_info.get('rc', '')"/></strong>
+                    </div>
+                    <div class="col-3" t-if="header_info.get('nif')">
+                        <span style="opacity: 0.7;">NIF:</span> <strong><t t-esc="header_info.get('nif', '')"/></strong>
+                    </div>
+                    <div class="col-3" t-if="header_info.get('nis')">
+                        <span style="opacity: 0.7;">NIS:</span> <strong><t t-esc="header_info.get('nis', '')"/></strong>
+                    </div>
+                    <div class="col-3" t-if="header_info.get('ai')">
+                        <span style="opacity: 0.7;">AI:</span> <strong><t t-esc="header_info.get('ai', '')"/></strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+</odoo>

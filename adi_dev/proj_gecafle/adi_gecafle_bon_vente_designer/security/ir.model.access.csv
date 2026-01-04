@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_bon_vente_template_config_user,bon.vente.template.config.user,model_bon_vente_template_config,base.group_user,1,0,0,0
+access_bon_vente_template_config_manager,bon.vente.template.config.manager,model_bon_vente_template_config,adi_gecafle_ventes.group_gecafle_manager,1,1,1,1
+access_print_bon_vente_wizard_user,print.bon.vente.wizard.user,model_print_bon_vente_wizard,base.group_user,1,1,1,1

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Règle d'accès : uniquement les administrateurs système -->
+    <record id="rule_gecafle_reset_admin_only" model="ir.rule">
+        <field name="name">Reset GECAFLE : Administrateurs uniquement</field>
+        <field name="model_id" ref="model_gecafle_reset_wizard"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('base.group_system'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+</odoo>

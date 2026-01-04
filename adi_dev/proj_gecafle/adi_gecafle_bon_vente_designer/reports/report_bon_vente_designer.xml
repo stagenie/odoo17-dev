@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- ═══════════════════════════════════════════════════════════════════════════
+         TEMPLATE PRINCIPAL - BON DE VENTE DESIGNER
+         Utilise EXACTEMENT la même structure que le rapport original qui fonctionne
+    ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <!-- Template Wrapper Principal - IDENTIQUE au rapport original -->
+    <template id="report_bon_vente_designer">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="adi_gecafle_bon_vente_designer.report_bon_vente_designer_document"/>
+            </t>
+        </t>
+    </template>
+
+    <!-- Template du Document - LAYOUT PROPRE SANS HEADER ODOO -->
+    <template id="report_bon_vente_designer_document">
+        <t t-set="company" t-value="doc.company_id or env.company"/>
+        <t t-call="adi_gecafle_bon_vente_designer.external_layout_clean">
+            <t t-set="o" t-value="doc"/>
+
+            <!-- CSS pour nos styles Designer (dans le contenu, pas en remplacement du layout) -->
+            <style>
+                /* Reset et base */
+                body {
+                    font-family: 'Lato', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+                    font-size: 12px;
+                    line-height: 1.4;
+                    color: #333;
+                }
+
+                /* Grid Bootstrap-like */
+                .row { display: flex; flex-wrap: wrap; margin-left: -15px; margin-right: -15px; }
+                .col-2 { flex: 0 0 16.666667%; max-width: 16.666667%; padding: 0 15px; box-sizing: border-box; }
+                .col-3 { flex: 0 0 25%; max-width: 25%; padding: 0 15px; box-sizing: border-box; }
+                .col-4 { flex: 0 0 33.333333%; max-width: 33.333333%; padding: 0 15px; box-sizing: border-box; }
+                .col-5 { flex: 0 0 41.666667%; max-width: 41.666667%; padding: 0 15px; box-sizing: border-box; }
+                .col-6 { flex: 0 0 50%; max-width: 50%; padding: 0 15px; box-sizing: border-box; }
+                .col-7 { flex: 0 0 58.333333%; max-width: 58.333333%; padding: 0 15px; box-sizing: border-box; }
+                .col-8 { flex: 0 0 66.666667%; max-width: 66.666667%; padding: 0 15px; box-sizing: border-box; }
+                .col-9 { flex: 0 0 75%; max-width: 75%; padding: 0 15px; box-sizing: border-box; }
+                .col-12 { flex: 0 0 100%; max-width: 100%; padding: 0 15px; box-sizing: border-box; }
+
+                /* Utilities */
+                .text-center { text-align: center; }
+                .text-right { text-align: right; }
+                .text-left { text-align: left; }
+                .mb-2 { margin-bottom: 8px; }
+                .mb-3 { margin-bottom: 16px; }
+                .mb-4 { margin-bottom: 24px; }
+                .mt-2 { margin-top: 8px; }
+                .mt-3 { margin-top: 16px; }
+                .mt-4 { margin-top: 24px; }
+                .mt-5 { margin-top: 32px; }
+                .align-items-center { align-items: center; }
+                .d-flex { display: flex; }
+
+                /* Tables */
+                .table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+                .table th, .table td { padding: 8px; vertical-align: top; }
+                .table-sm th, .table-sm td { padding: 4px 8px; }
+                .table-bordered { border: 1px solid #dee2e6; }
+                .table-bordered th, .table-bordered td { border: 1px solid #dee2e6; }
+
+                /* Typography */
+                strong, .font-weight-bold { font-weight: 700; }
+                h1, h2, h3, h4 { margin: 0 0 10px 0; font-weight: 700; }
+
+                /* Page Designer */
+                .bv-designer-page { padding: 10px; }
+
+                /* Print */
+                @media print {
+                    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                }
+            </style>
+
+            <!-- Variables de couleurs -->
+            <t t-set="primary" t-value="primary_color or '#1a5276'"/>
+            <t t-set="secondary" t-value="secondary_color or '#2980b9'"/>
+            <t t-set="accent" t-value="accent_color or '#e74c3c'"/>
+
+            <!-- Styles à utiliser -->
+            <t t-set="h_style" t-value="header_style or 'classic'"/>
+            <t t-set="b_style" t-value="body_style or 'standard'"/>
+            <t t-set="show_border_val" t-value="show_border"/>
+            <t t-set="show_watermark" t-value="show_duplicata_watermark"/>
+
+            <!-- Contenu du document dans div.page - COMME LE RAPPORT ORIGINAL -->
+            <div class="page bv-designer-page">
+                <!-- Version avec bordure -->
+                <t t-if="show_border_val">
+                    <div t-att-class="'bv-border-' + (border_style or 'simple')"
+                         t-attf-style="border: 2px solid #{primary}; padding: 20px; min-height: 100%;">
+
+                        <!-- Filigrane DUPLICATA si activé -->
+                        <div t-if="is_duplicata and show_watermark"
+                             class="bv-watermark"
+                             style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 120px; color: rgba(0,0,0,0.05); font-weight: bold; z-index: -1; pointer-events: none;">
+                            DUPLICATA
+                        </div>
+
+                        <!-- APPEL EN-TÊTE DYNAMIQUE -->
+                        <t t-if="h_style == 'classic'">
+                            <t t-call="adi_gecafle_bon_vente_designer.header_classic"/>
+                        </t>
+                        <t t-elif="h_style == 'modern'">
+                            <t t-call="adi_gecafle_bon_vente_designer.header_modern"/>
+                        </t>
+                        <t t-elif="h_style == 'premium'">
+                            <t t-call="adi_gecafle_bon_vente_designer.header_premium"/>
+                        </t>
+                        <t t-else="">
+                            <t t-call="adi_gecafle_bon_vente_designer.header_classic"/>
+                        </t>
+
+                        <!-- APPEL CORPS DYNAMIQUE -->
+                        <t t-if="b_style == 'standard'">
+                            <t t-call="adi_gecafle_bon_vente_designer.body_standard"/>
+                        </t>
+                        <t t-elif="b_style == 'modern'">
+                            <t t-call="adi_gecafle_bon_vente_designer.body_modern"/>
+                        </t>
+                        <t t-elif="b_style == 'premium'">
+                            <t t-call="adi_gecafle_bon_vente_designer.body_premium"/>
+                        </t>
+                        <t t-else="">
+                            <t t-call="adi_gecafle_bon_vente_designer.body_standard"/>
+                        </t>
+                    </div>
+                </t>
+
+                <!-- Version sans bordure -->
+                <t t-if="not show_border_val">
+                    <!-- Filigrane DUPLICATA si activé -->
+                    <div t-if="is_duplicata and show_watermark"
+                         class="bv-watermark"
+                         style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 120px; color: rgba(0,0,0,0.05); font-weight: bold; z-index: -1; pointer-events: none;">
+                        DUPLICATA
+                    </div>
+
+                    <!-- APPEL EN-TÊTE DYNAMIQUE -->
+                    <t t-if="h_style == 'classic'">
+                        <t t-call="adi_gecafle_bon_vente_designer.header_classic"/>
+                    </t>
+                    <t t-elif="h_style == 'modern'">
+                        <t t-call="adi_gecafle_bon_vente_designer.header_modern"/>
+                    </t>
+                    <t t-elif="h_style == 'premium'">
+                        <t t-call="adi_gecafle_bon_vente_designer.header_premium"/>
+                    </t>
+                    <t t-else="">
+                        <t t-call="adi_gecafle_bon_vente_designer.header_classic"/>
+                    </t>
+
+                    <!-- APPEL CORPS DYNAMIQUE -->
+                    <t t-if="b_style == 'standard'">
+                        <t t-call="adi_gecafle_bon_vente_designer.body_standard"/>
+                    </t>
+                    <t t-elif="b_style == 'modern'">
+                        <t t-call="adi_gecafle_bon_vente_designer.body_modern"/>
+                    </t>
+                    <t t-elif="b_style == 'premium'">
+                        <t t-call="adi_gecafle_bon_vente_designer.body_premium"/>
+                    </t>
+                    <t t-else="">
+                        <t t-call="adi_gecafle_bon_vente_designer.body_standard"/>
+                    </t>
+                </t>
+            </div>
+        </t>
+    </template>
+</odoo>
