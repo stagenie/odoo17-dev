@@ -161,6 +161,14 @@ class RonProductionConfig(models.Model):
         help="Créer automatiquement les factures fournisseur pour les achats validés"
     )
 
+    # ================== CALCUL EMBALLAGE ==================
+    separate_packaging_costs = fields.Boolean(
+        string='Séparer les Coûts Emballage',
+        default=False,
+        help="Si activé, les coûts d'emballage sont affectés par type de produit (SOLO/CLASSICO).\n"
+             "Si désactivé, tous les emballages sont répartis avec le ratio."
+    )
+
     currency_id = fields.Many2one(
         'res.currency',
         string='Devise',

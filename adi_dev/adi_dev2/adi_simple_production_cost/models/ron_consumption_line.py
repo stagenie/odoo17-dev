@@ -147,10 +147,14 @@ class RonConsumptionLine(models.Model):
 
     @api.constrains('quantity')
     def _check_quantity(self):
-        """Vérifie que la quantité est positive."""
+        """Vérifie que la quantité n'est pas négative.
+
+        La quantité peut être 0 lors du chargement du template.
+        La validation quantity > 0 se fait lors de la confirmation de la production.
+        """
         for rec in self:
-            if rec.quantity <= 0:
-                raise ValidationError(_("La quantité doit être supérieure à 0."))
+            if rec.quantity < 0:
+                raise ValidationError(_("La quantité ne peut pas être négative."))
 
     @api.constrains('weight_per_unit')
     def _check_weight(self):

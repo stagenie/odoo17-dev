@@ -26,12 +26,12 @@
                             <group col="2">
                                 <group string="Produit SOLO">
                                     <field name="product_solo_id" placeholder="Sélectionner le produit SOLO"/>
-                                    <field name="solo_weight_per_carton" string="Poids/Carton (kg)"/>
+                                    <field name="solo_weight_per_carton" string="Poids/Carton (kg)" invisible="1"/>
                                     <field name="solo_units_per_carton" string="Unités/Carton"/>
                                 </group>
                                 <group string="Produit CLASSICO">
                                     <field name="product_classico_id" placeholder="Sélectionner le produit CLASSICO"/>
-                                    <field name="classico_weight_per_carton" string="Poids/Carton (kg)"/>
+                                    <field name="classico_weight_per_carton" string="Poids/Carton (kg)" invisible="1"/>
                                     <field name="classico_units_per_carton" string="Unités/Carton"/>
                                 </group>
                             </group>
@@ -48,7 +48,7 @@
                             <group col="2">
                                 <group string="Produit Sandwich GF">
                                     <field name="product_sandwich_id" placeholder="Sélectionner le produit Sandwich"/>
-                                    <field name="sandwich_weight_per_carton" string="Poids/Carton (kg)"/>
+                                    <field name="sandwich_weight_per_carton" string="Poids/Carton (kg)" invisible="1"/>
                                     <field name="sandwich_units_per_carton" string="Unités/Carton"/>
                                 </group>
                                 <group>
@@ -69,14 +69,12 @@
                                     <field name="location_production_id"/>
                                 </group>
                             </group>
-                            <group col="1">
-                                <div class="alert alert-info" role="alert">
-                                    <strong>Architecture des Dépôts:</strong><br/>
-                                    - <b>DMP:</b> Dépôt Matière Première (achats avec méthode AVCO)<br/>
-                                    - <b>DPR:</b> Dépôt Production (simulation via BL vers contact Consommation)<br/>
-                                    - <b>DPF:</b> Dépôt Produits Finis (réception via achat depuis fournisseur Production)
-                                </div>
-                            </group>
+                            <div class="alert alert-info mt-3" role="alert">
+                                <strong>Architecture des Dépôts:</strong><br/>
+                                - <b>DMP:</b> Dépôt Matière Première (achats avec méthode AVCO)<br/>
+                                - <b>DPR:</b> Dépôt Production (simulation via BL vers contact Consommation)<br/>
+                                - <b>DPF:</b> Dépôt Produits Finis (réception via achat depuis fournisseur Production)
+                            </div>
                         </page>
 
                         <!-- Partenaires -->
@@ -88,13 +86,11 @@
                                 </group>
                                 <group/>
                             </group>
-                            <group col="1">
-                                <div class="alert alert-warning" role="alert">
-                                    <strong>Partenaires Fictifs:</strong><br/>
-                                    - <b>Contact Consommation:</b> Pour les BL de déstockage des matières premières<br/>
-                                    - <b>Fournisseur Production:</b> Pour les achats de produits finis (entrée en stock avec coût calculé)
-                                </div>
-                            </group>
+                            <div class="alert alert-warning mt-3" role="alert">
+                                <strong>Partenaires Fictifs:</strong><br/>
+                                - <b>Contact Consommation:</b> Pour les BL de déstockage des matières premières<br/>
+                                - <b>Fournisseur Production:</b> Pour les achats de produits finis (entrée en stock avec coût calculé)
+                            </div>
                         </page>
 
                         <!-- Paramètres -->
@@ -116,26 +112,44 @@
                                     <field name="auto_create_supplier_invoice" widget="boolean_toggle"
                                            invisible="not auto_validate_operations"/>
                                 </group>
-                                <group>
-                                    <div class="alert alert-warning" role="alert"
-                                         invisible="not auto_validate_operations">
-                                        <strong>Attention:</strong> Si activé, lors de la validation:<br/>
-                                        - Le BL de consommation sera validé (sortie de stock)<br/>
-                                        - Les achats seront confirmés et réceptionnés<br/>
-                                        - Les factures fournisseur seront créées (si coché)
-                                    </div>
-                                </group>
+                                <group/>
                             </group>
+                            <div class="alert alert-warning mt-2" role="alert"
+                                 invisible="not auto_validate_operations">
+                                <strong>Attention:</strong> Si activé, lors de la validation:<br/>
+                                - Le BL de consommation sera validé (sortie de stock)<br/>
+                                - Les achats seront confirmés et réceptionnés<br/>
+                                - Les factures fournisseur seront créées (si coché)
+                            </div>
+
+                            <separator string="Calcul des Coûts Emballage"/>
+                            <group col="2">
+                                <group>
+                                    <field name="separate_packaging_costs" widget="boolean_toggle"/>
+                                </group>
+                                <group/>
+                            </group>
+                            <div class="alert alert-info mt-2" role="alert"
+                                 invisible="separate_packaging_costs">
+                                <strong>Mode Standard:</strong> Tous les coûts d'emballage sont répartis avec le ratio SOLO/CLASSICO.<br/>
+                                <em>Formule: Coût SOLO = Ratio × Coût CLASSICO</em>
+                            </div>
+                            <div class="alert alert-warning mt-2" role="alert"
+                                 invisible="not separate_packaging_costs">
+                                <strong>Mode Séparation des Emballages:</strong><br/>
+                                - <b>Commun:</b> Réparti avec le ratio SOLO/CLASSICO (comme les matières premières)<br/>
+                                - <b>SOLO:</b> Affecté directement au coût SOLO (divisé par nombre de cartons SOLO)<br/>
+                                - <b>CLASSICO:</b> Affecté directement au coût CLASSICO (divisé par nombre de cartons CLASSICO)<br/><br/>
+                                <em>Exemple: 100 cartons SOLO + 1000 DA emballage SOLO = 10 DA/carton supplémentaire pour SOLO uniquement</em>
+                            </div>
 
                             <separator string="Informations"/>
-                            <group col="1">
-                                <div class="alert alert-info" role="alert">
-                                    <strong>Produit Pâte:</strong> Ce produit sera utilisé pour créer l'achat de pâte récupérable (stock AVCO).<br/><br/>
-                                    <strong>Produits Rebuts:</strong> Les rebuts récupérables sont configurés directement sur la fiche produit.<br/>
-                                    Allez dans <b>Inventaire &gt; Produits</b> et cochez <b>"Est un Rebut Récupérable"</b> pour les produits vendables issus de la production.<br/><br/>
-                                    <strong>Contrôle Stock:</strong> La validation vérifie automatiquement que le stock est disponible pour toutes les matières premières.
-                                </div>
-                            </group>
+                            <div class="alert alert-info" role="alert">
+                                <strong>Produit Pâte:</strong> Ce produit sera utilisé pour créer l'achat de pâte récupérable (stock AVCO).<br/><br/>
+                                <strong>Produits Rebuts:</strong> Les rebuts récupérables sont configurés directement sur la fiche produit.
+                                Allez dans <b>Inventaire &gt; Produits</b> et cochez <b>"Est un Rebut Récupérable"</b> pour les produits vendables issus de la production.<br/><br/>
+                                <strong>Contrôle Stock:</strong> La validation vérifie automatiquement que le stock est disponible pour toutes les matières premières.
+                            </div>
                         </page>
                     </notebook>
                 </sheet>

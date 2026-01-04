@@ -39,6 +39,34 @@ class RonPackagingLine(models.Model):
         ('other', 'Autre'),
     ], string='Type', required=True, default='carton')
 
+    # ================== TYPE DE PRODUCTION (depuis parent) ==================
+    parent_production_type = fields.Selection(
+        related='daily_production_id.production_type',
+        string='Type Production',
+        store=True,
+        readonly=True
+    )
+
+    # ================== AFFECTATION PRODUIT (si séparation activée) ==================
+    target_product_type = fields.Selection([
+        ('common', 'Commun'),
+        ('solo', 'SOLO'),
+        ('classico', 'CLASSICO'),
+        ('sandwich_gf', 'Sandwich GF'),
+    ], string='Affectation', default='common',
+       help="Si 'Séparer les Coûts Emballage' est activé dans la configuration:\n"
+            "- Commun: Réparti avec le ratio\n"
+            "- SOLO/CLASSICO/Sandwich: Affecté directement au produit"
+    )
+
+    @api.onchange('parent_production_type')
+    def _onchange_parent_production_type(self):
+        """Réinitialise l'affectation si le type de production change."""
+        if self.parent_production_type == 'sandwich_gf' and self.target_product_type in ('solo', 'classico'):
+            self.target_product_type = 'common'
+        elif self.parent_production_type == 'solo_classico' and self.target_product_type == 'sandwich_gf':
+            self.target_product_type = 'common'
+
     # ================== PRODUIT ==================
     product_id = fields.Many2one(
         'product.product',
@@ -171,3 +199,23 @@ class RonPackagingLine(models.Model):
         for rec in self:
             if rec.unit_cost < 0:
                 raise ValidationError(_("Le prix unitaire ne peut pas être négatif."))
+
+    @api.constrains('target_product_type', 'parent_production_type')
+    def _check_target_product_type(self):
+        """Vérifie que l'affectation est cohérente avec le type de production."""
+        for rec in self:
+            if not rec.parent_production_type or rec.target_product_type == 'common':
+                continue
+
+            if rec.parent_production_type == 'solo_classico':
+                if rec.target_product_type == 'sandwich_gf':
+                    raise ValidationError(_(
+                        "L'affectation 'Sandwich GF' n'est pas valide pour une production SOLO/CLASSICO.\n"
+                        "Veuillez choisir: Commun, SOLO ou CLASSICO."
+                    ))
+            elif rec.parent_production_type == 'sandwich_gf':
+                if rec.target_product_type in ('solo', 'classico'):
+                    raise ValidationError(_(
+                        "L'affectation '%s' n'est pas valide pour une production Sandwich GF.\n"
+                        "Veuillez choisir: Commun ou Sandwich GF."
+                    ) % rec.target_product_type.upper())

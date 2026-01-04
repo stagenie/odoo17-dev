@@ -57,7 +57,7 @@ Production de biscuits avec deux variantes:
 
         # 3. Vues
         'views/product_views.xml',
-        'views/ron_bom_views.xml',
+        'views/ron_consumption_template_views.xml',
         'views/ron_daily_production_views.xml',
         'views/ron_config_views.xml',
         'views/menu_views.xml',

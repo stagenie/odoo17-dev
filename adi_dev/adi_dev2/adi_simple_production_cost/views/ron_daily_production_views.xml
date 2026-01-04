@@ -33,7 +33,13 @@
                                 type="object" class="oe_stat_button" icon="fa-truck"
                                 invisible="not picking_consumption_id">
                             <field name="picking_consumption_id" invisible="1"/>
-                            <span>BL Consommation</span>
+                            <span>BL Conso. MP</span>
+                        </button>
+                        <button name="action_view_packaging_picking"
+                                type="object" class="oe_stat_button" icon="fa-cube"
+                                invisible="not picking_packaging_id">
+                            <field name="picking_packaging_id" invisible="1"/>
+                            <span>BL Conso. Emb.</span>
                         </button>
                         <button name="action_view_finished_purchase"
                                 type="object" class="oe_stat_button" icon="fa-shopping-cart"
@@ -71,7 +77,170 @@
                     </group>
 
                     <notebook>
-                        <!-- Onglet Produits Finis (EN PREMIER) -->
+                        <!-- Onglet Consommations (EN PREMIER) -->
+                        <page string="Consommations" name="consumptions">
+                            <div class="mb-3" invisible="state != 'draft'">
+                                <button name="action_load_from_template" type="object"
+                                        string="Charger Template"
+                                        class="btn-secondary"
+                                        icon="fa-list"
+                                        confirm="Charger les matières premières depuis le template ? Les lignes existantes seront remplacées."/>
+                                <span class="text-muted ms-2">
+                                    Charge la liste des matières premières. Les quantités sont à saisir manuellement.
+                                </span>
+                            </div>
+                            <field name="consumption_line_ids">
+                                <tree editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="product_id"/>
+                                    <field name="quantity"/>
+                                    <field name="product_uom_id"/>
+                                    <field name="weight_per_unit"/>
+                                    <field name="weight_kg" sum="Total Poids"/>
+                                    <field name="unit_cost"/>
+                                    <field name="total_cost" sum="Total Coût"/>
+                                    <field name="stock_available"/>
+                                    <field name="notes"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                </tree>
+                            </field>
+                            <group class="oe_subtotal_footer">
+                                <field name="total_consumption_weight"
+                                       class="oe_subtotal_footer_separator"/>
+                                <field name="total_consumption_cost"
+                                       class="oe_subtotal_footer_separator"/>
+                                <field name="cost_per_kg"
+                                       class="oe_subtotal_footer_separator oe_right"/>
+                            </group>
+                        </page>
+
+                        <!-- Onglet Rebuts Récupérables -->
+                        <page string="Rebuts Récupérables" name="scraps">
+                            <field name="scrap_line_ids"
+                                   context="{'default_scrap_type': 'scrap_recoverable'}">
+                                <tree editable="bottom">
+                                    <field name="scrap_type" column_invisible="1"/>
+                                    <field name="product_id" required="1"
+                                           domain="[('product_tmpl_id.is_recoverable_scrap', '=', True), ('type', '=', 'product')]"
+                                           options="{'no_create': True}"/>
+                                    <field name="weight_kg" string="Poids (kg)" sum="Total Poids"/>
+                                    <field name="cost_per_kg"/>
+                                    <field name="total_cost" sum="Total Coût"/>
+                                    <field name="reason"/>
+                                    <field name="notes"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                </tree>
+                            </field>
+                            <group class="oe_subtotal_footer">
+                                <field name="scrap_recoverable_weight"
+                                       class="oe_subtotal_footer_separator"
+                                       string="Poids Total Rebuts (kg)"/>
+                                <field name="scrap_recoverable_cost"
+                                       class="oe_subtotal_footer_separator oe_right"
+                                       string="Coût Total Rebuts"/>
+                            </group>
+                            <div class="alert alert-info" role="alert">
+                                <strong>Rebuts Récupérables:</strong> Produits vendables issus de la production (brisures, morceaux, etc.).<br/>
+                                <em>Filtrage: Seuls les produits marqués "Est un Rebut Récupérable" sont affichés.</em>
+                            </div>
+                        </page>
+
+                        <!-- Onglet Pâte Récupérable -->
+                        <page string="Pâte Récupérable" name="paste">
+                            <field name="paste_line_ids"
+                                   context="{'default_scrap_type': 'paste_recoverable'}">
+                                <tree editable="bottom">
+                                    <field name="scrap_type" column_invisible="1"/>
+                                    <field name="product_id" required="1"
+                                           domain="[('type', '=', 'product')]"/>
+                                    <field name="weight_kg" string="Poids (kg)" sum="Total Poids"/>
+                                    <field name="cost_per_kg"/>
+                                    <field name="total_cost" sum="Total Coût"/>
+                                    <field name="reason" string="Observation"/>
+                                    <field name="notes"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                </tree>
+                            </field>
+                            <group class="oe_subtotal_footer">
+                                <field name="paste_recoverable_weight"
+                                       class="oe_subtotal_footer_separator"
+                                       string="Poids Total Pâte (kg)"/>
+                                <field name="paste_recoverable_cost"
+                                       class="oe_subtotal_footer_separator oe_right"
+                                       string="Coût Total Pâte"/>
+                            </group>
+                            <div class="alert alert-warning" role="alert">
+                                <strong>Pâte Récupérable:</strong> Stock valorisé en AVCO (Prix Moyen Pondéré).<br/>
+                                Peut être réutilisée comme matière première le lendemain.<br/>
+                                <em>Le produit Pâte par défaut est configuré dans les paramètres.</em>
+                            </div>
+                        </page>
+
+                        <!-- Onglet Emballage -->
+                        <page string="Emballage" name="packaging">
+                            <field name="separate_packaging_costs" invisible="1"/>
+                            <field name="packaging_line_ids"
+                                   context="{'default_parent_production_type': production_type}">
+                                <tree editable="bottom">
+                                    <field name="parent_production_type" column_invisible="1"/>
+                                    <field name="packaging_type"/>
+                                    <field name="target_product_type" string="Affectation"
+                                           column_invisible="not parent.separate_packaging_costs"
+                                           optional="show"/>
+                                    <field name="product_id"/>
+                                    <field name="quantity" string="Qté/Poids"/>
+                                    <field name="product_uom_id"/>
+                                    <field name="unit_cost" string="Prix Unit."/>
+                                    <field name="total_cost" sum="Total Coût"/>
+                                    <field name="linked_to_production"/>
+                                    <field name="notes"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                </tree>
+                            </field>
+                            <group col="4">
+                                <group string="Détail Coûts Emballage">
+                                    <field name="packaging_carton_cost" string="Cartons"/>
+                                    <field name="packaging_film_cost" string="Film Ondulé"/>
+                                    <field name="packaging_other_cost" string="Autres"/>
+                                </group>
+                                <group string="Total">
+                                    <field name="total_packaging_cost" class="oe_subtotal_footer_separator"/>
+                                </group>
+                            </group>
+                            <!-- Alertes Mode Standard -->
+                            <div class="alert alert-info" role="alert"
+                                 invisible="separate_packaging_costs or production_type != 'solo_classico'">
+                                <strong>Types d'emballage (SOLO/CLASSICO):</strong><br/>
+                                - Carton: Nombre × Prix unitaire<br/>
+                                - Film Ondulé: Poids (kg) × Prix/kg<br/>
+                                <em>Les coûts d'emballage sont répartis avec le ratio SOLO/CLASSICO.</em>
+                            </div>
+                            <div class="alert alert-info" role="alert"
+                                 invisible="separate_packaging_costs or production_type != 'sandwich_gf'">
+                                <strong>Types d'emballage (Sandwich GF):</strong><br/>
+                                - Carton: Nombre × Prix unitaire<br/>
+                                - Film Ondulé: Poids (kg) × Prix/kg<br/>
+                                <em>Les coûts d'emballage sont divisés par le nombre de cartons Sandwich.</em>
+                            </div>
+                            <!-- Alertes Mode Séparation -->
+                            <div class="alert alert-warning" role="alert"
+                                 invisible="not separate_packaging_costs or production_type != 'solo_classico'">
+                                <strong>Mode Séparation des Coûts Emballage (SOLO/CLASSICO):</strong><br/>
+                                - <b>Commun:</b> Réparti avec le ratio SOLO/CLASSICO<br/>
+                                - <b>SOLO:</b> Affecté directement au coût SOLO<br/>
+                                - <b>CLASSICO:</b> Affecté directement au coût CLASSICO<br/>
+                                <em>Utilisez la colonne "Affectation" pour définir la destination de chaque emballage.</em>
+                            </div>
+                            <div class="alert alert-warning" role="alert"
+                                 invisible="not separate_packaging_costs or production_type != 'sandwich_gf'">
+                                <strong>Mode Séparation des Coûts Emballage (Sandwich GF):</strong><br/>
+                                - <b>Commun:</b> Divisé par le nombre de cartons Sandwich<br/>
+                                - <b>Sandwich GF:</b> Affecté directement au coût Sandwich<br/>
+                                <em>Pour Sandwich GF, le résultat est identique au mode standard (un seul produit).</em>
+                            </div>
+                        </page>
+
+                        <!-- Onglet Produits Finis (AVANT Résumé) -->
                         <page string="Produits Finis" name="finished">
                             <field name="finished_product_ids"
                                    context="{'default_parent_production_type': production_type}">
@@ -81,8 +250,8 @@
                                     <field name="quantity" sum="Total Cartons"/>
                                     <field name="units_per_carton"/>
                                     <field name="total_units" sum="Total Unités"/>
-                                    <field name="weight_per_carton"/>
-                                    <field name="total_weight" sum="Total Poids"/>
+                                    <field name="weight_per_carton" column_invisible="1"/>
+                                    <field name="total_weight" column_invisible="1"/>
                                     <field name="unit_cost"/>
                                     <field name="total_cost" sum="Total Coût"/>
                                     <field name="sale_price"/>
@@ -119,139 +288,6 @@
                             </group>
                         </page>
 
-                        <!-- Onglet Consommations -->
-                        <page string="Consommations" name="consumptions">
-                            <div class="mb-3" invisible="state != 'draft'">
-                                <button name="action_load_from_bom" type="object"
-                                        string="Charger depuis Nomenclatures"
-                                        class="btn-primary"
-                                        icon="fa-magic"
-                                        confirm="Charger les composants depuis les nomenclatures ? Les lignes existantes seront remplacées."/>
-                                <span class="text-muted ms-2">
-                                    Charge automatiquement les consommations en fonction des produits finis saisis.
-                                </span>
-                            </div>
-                            <field name="consumption_line_ids">
-                                <tree editable="bottom">
-                                    <field name="sequence" widget="handle"/>
-                                    <field name="product_id"/>
-                                    <field name="quantity"/>
-                                    <field name="product_uom_id"/>
-                                    <field name="weight_per_unit"/>
-                                    <field name="weight_kg" sum="Total Poids"/>
-                                    <field name="unit_cost"/>
-                                    <field name="total_cost" sum="Total Coût"/>
-                                    <field name="stock_available"/>
-                                    <field name="notes"/>
-                                    <field name="currency_id" column_invisible="1"/>
-                                </tree>
-                            </field>
-                            <group class="oe_subtotal_footer">
-                                <field name="total_consumption_weight"
-                                       class="oe_subtotal_footer_separator"/>
-                                <field name="total_consumption_cost"
-                                       class="oe_subtotal_footer_separator"/>
-                                <field name="cost_per_kg"
-                                       class="oe_subtotal_footer_separator oe_right"/>
-                            </group>
-                        </page>
-
-                        <!-- Onglet Rebuts Récupérables -->
-                        <page string="Rebuts Récupérables" name="scraps">
-                            <field name="scrap_line_ids"
-                                   context="{'default_scrap_type': 'scrap_recoverable'}"
-                                   domain="[('scrap_type', '=', 'scrap_recoverable')]">
-                                <tree editable="bottom">
-                                    <field name="scrap_type" column_invisible="1"/>
-                                    <field name="product_id" required="1"
-                                           domain="[('product_tmpl_id.is_recoverable_scrap', '=', True), ('type', '=', 'product')]"
-                                           options="{'no_create': True}"/>
-                                    <field name="weight_kg" string="Poids (kg)" sum="Total Poids"/>
-                                    <field name="cost_per_kg"/>
-                                    <field name="total_cost" sum="Total Coût"/>
-                                    <field name="reason"/>
-                                    <field name="notes"/>
-                                    <field name="currency_id" column_invisible="1"/>
-                                </tree>
-                            </field>
-                            <group class="oe_subtotal_footer">
-                                <field name="scrap_recoverable_weight"
-                                       class="oe_subtotal_footer_separator"
-                                       string="Poids Total Rebuts (kg)"/>
-                                <field name="scrap_recoverable_cost"
-                                       class="oe_subtotal_footer_separator oe_right"
-                                       string="Coût Total Rebuts"/>
-                            </group>
-                            <div class="alert alert-info" role="alert">
-                                <strong>Rebuts Récupérables:</strong> Produits vendables issus de la production (brisures, morceaux, etc.).<br/>
-                                <em>Filtrage: Seuls les produits marqués "Est un Rebut Récupérable" sont affichés.</em>
-                            </div>
-                        </page>
-
-                        <!-- Onglet Pâte Récupérable -->
-                        <page string="Pâte Récupérable" name="paste">
-                            <field name="scrap_line_ids"
-                                   context="{'default_scrap_type': 'paste_recoverable'}"
-                                   domain="[('scrap_type', '=', 'paste_recoverable')]">
-                                <tree editable="bottom">
-                                    <field name="scrap_type" column_invisible="1"/>
-                                    <field name="product_id" required="1"
-                                           domain="[('type', '=', 'product')]"/>
-                                    <field name="weight_kg" string="Poids (kg)" sum="Total Poids"/>
-                                    <field name="cost_per_kg"/>
-                                    <field name="total_cost" sum="Total Coût"/>
-                                    <field name="reason" string="Observation"/>
-                                    <field name="notes"/>
-                                    <field name="currency_id" column_invisible="1"/>
-                                </tree>
-                            </field>
-                            <group class="oe_subtotal_footer">
-                                <field name="paste_recoverable_weight"
-                                       class="oe_subtotal_footer_separator"
-                                       string="Poids Total Pâte (kg)"/>
-                                <field name="paste_recoverable_cost"
-                                       class="oe_subtotal_footer_separator oe_right"
-                                       string="Coût Total Pâte"/>
-                            </group>
-                            <div class="alert alert-warning" role="alert">
-                                <strong>Pâte Récupérable:</strong> Stock valorisé en AVCO (Prix Moyen Pondéré).<br/>
-                                Peut être réutilisée comme matière première le lendemain.<br/>
-                                <em>Le produit Pâte par défaut est configuré dans les paramètres.</em>
-                            </div>
-                        </page>
-
-                        <!-- Onglet Emballage -->
-                        <page string="Emballage" name="packaging">
-                            <field name="packaging_line_ids">
-                                <tree editable="bottom">
-                                    <field name="packaging_type"/>
-                                    <field name="product_id"/>
-                                    <field name="quantity" string="Qté/Poids"/>
-                                    <field name="product_uom_id"/>
-                                    <field name="unit_cost" string="Prix Unit."/>
-                                    <field name="total_cost" sum="Total Coût"/>
-                                    <field name="linked_to_production"/>
-                                    <field name="notes"/>
-                                    <field name="currency_id" column_invisible="1"/>
-                                </tree>
-                            </field>
-                            <group col="4">
-                                <group string="Détail Coûts Emballage">
-                                    <field name="packaging_carton_cost" string="Cartons"/>
-                                    <field name="packaging_film_cost" string="Film Ondulé"/>
-                                    <field name="packaging_other_cost" string="Autres"/>
-                                </group>
-                                <group string="Total">
-                                    <field name="total_packaging_cost" class="oe_subtotal_footer_separator"/>
-                                </group>
-                            </group>
-                            <div class="alert alert-info" role="alert">
-                                <strong>Types d'emballage:</strong><br/>
-                                - Carton: Nombre × Prix unitaire<br/>
-                                - Film Ondulé: Poids (kg) × Prix/kg
-                            </div>
-                        </page>
-
                         <!-- Onglet Résumé -->
                         <page string="Résumé des Coûts" name="summary">
                             <group col="4">
@@ -278,7 +314,8 @@
                             </group>
                             <group>
                                 <group string="Documents Générés">
-                                    <field name="picking_consumption_id"/>
+                                    <field name="picking_consumption_id" string="BL Conso. MP"/>
+                                    <field name="picking_packaging_id" string="BL Conso. Emballage"/>
                                     <field name="purchase_finished_id"/>
                                     <field name="purchase_scrap_id"/>
                                     <field name="purchase_paste_id"/>
@@ -308,13 +345,17 @@
                 <field name="name"/>
                 <field name="production_date"/>
                 <field name="production_type" widget="badge"/>
-                <field name="total_consumption_weight" string="Poids Conso."/>
-                <field name="cost_per_kg"/>
-                <field name="good_weight"/>
+                <field name="total_consumption_weight" string="Poids Conso." optional="show"/>
+                <field name="good_weight" string="Poids Bon" optional="show"/>
                 <field name="total_cartons_produced" string="Cartons"/>
                 <field name="qty_solo_cartons" string="SOLO" optional="show"/>
                 <field name="qty_classico_cartons" string="CLASSICO" optional="show"/>
-                <field name="qty_sandwich_cartons" string="Sandwich" optional="show"/>
+                <field name="qty_sandwich_cartons" string="Sandwich" optional="hide"/>
+                <field name="total_consumption_cost" string="Coût MP" optional="hide"/>
+                <field name="total_packaging_cost" string="Coût Emb." optional="hide"/>
+                <field name="total_good_cost" string="Coût Total" optional="show"/>
+                <field name="cost_per_kg" string="Coût/kg MP" optional="hide"/>
+                <field name="cost_per_kg_good" string="Coût/kg Bon" optional="show"/>
                 <field name="cost_solo_per_carton" string="Coût SOLO" optional="hide"/>
                 <field name="cost_classico_per_carton" string="Coût CLASSICO" optional="hide"/>
                 <field name="cost_sandwich_per_carton" string="Coût Sandwich" optional="hide"/>
@@ -365,15 +406,26 @@
         <field name="name">ron.daily.production.pivot</field>
         <field name="model">ron.daily.production</field>
         <field name="arch" type="xml">
-            <pivot string="Analyse Productions">
+            <pivot string="Analyse Productions" default_order="production_date desc">
                 <field name="production_type" type="row"/>
                 <field name="production_date" type="row" interval="month"/>
-                <field name="total_consumption_cost" type="measure"/>
-                <field name="total_good_cost" type="measure"/>
-                <field name="total_cartons_produced" type="measure"/>
-                <field name="qty_solo_cartons" type="measure"/>
-                <field name="qty_classico_cartons" type="measure"/>
-                <field name="qty_sandwich_cartons" type="measure"/>
+                <!-- Poids -->
+                <field name="total_consumption_weight" type="measure" string="Poids Conso."/>
+                <field name="good_weight" type="measure" string="Poids Bon"/>
+                <!-- Coûts -->
+                <field name="total_consumption_cost" type="measure" string="Coût MP"/>
+                <field name="total_packaging_cost" type="measure" string="Coût Emballage"/>
+                <field name="total_good_cost" type="measure" string="Coût Total"/>
+                <field name="cost_per_kg_good" type="measure" string="Coût/kg"/>
+                <!-- Quantités -->
+                <field name="total_cartons_produced" type="measure" string="Total Cartons"/>
+                <field name="qty_solo_cartons" type="measure" string="Cartons SOLO"/>
+                <field name="qty_classico_cartons" type="measure" string="Cartons CLASSICO"/>
+                <field name="qty_sandwich_cartons" type="measure" string="Cartons Sandwich"/>
+                <!-- Coûts par carton -->
+                <field name="cost_solo_per_carton" type="measure" string="Coût/Carton SOLO"/>
+                <field name="cost_classico_per_carton" type="measure" string="Coût/Carton CLASSICO"/>
+                <field name="cost_sandwich_per_carton" type="measure" string="Coût/Carton Sandwich"/>
             </pivot>
         </field>
     </record>
@@ -386,14 +438,20 @@
             <graph string="Évolution des Coûts" type="line">
                 <field name="production_date"/>
                 <field name="production_type" type="row"/>
-                <field name="cost_per_kg_good" type="measure"/>
-                <field name="total_cartons_produced" type="measure"/>
-                <field name="qty_solo_cartons" type="measure"/>
-                <field name="qty_classico_cartons" type="measure"/>
-                <field name="qty_sandwich_cartons" type="measure"/>
-                <field name="cost_solo_per_carton" type="measure"/>
-                <field name="cost_classico_per_carton" type="measure"/>
-                <field name="cost_sandwich_per_carton" type="measure"/>
+                <!-- Coûts globaux -->
+                <field name="total_consumption_cost" type="measure" string="Coût MP"/>
+                <field name="total_packaging_cost" type="measure" string="Coût Emballage"/>
+                <field name="total_good_cost" type="measure" string="Coût Total"/>
+                <field name="cost_per_kg_good" type="measure" string="Coût/kg Bon"/>
+                <!-- Quantités -->
+                <field name="total_cartons_produced" type="measure" string="Total Cartons"/>
+                <field name="qty_solo_cartons" type="measure" string="SOLO"/>
+                <field name="qty_classico_cartons" type="measure" string="CLASSICO"/>
+                <field name="qty_sandwich_cartons" type="measure" string="Sandwich"/>
+                <!-- Coûts par carton -->
+                <field name="cost_solo_per_carton" type="measure" string="Coût SOLO"/>
+                <field name="cost_classico_per_carton" type="measure" string="Coût CLASSICO"/>
+                <field name="cost_sandwich_per_carton" type="measure" string="Coût Sandwich"/>
             </graph>
         </field>
     </record>

@@ -87,7 +87,15 @@ class RonDailyProduction(models.Model):
     scrap_line_ids = fields.One2many(
         'ron.scrap.line',
         'daily_production_id',
-        string='Rebuts et Pâte'
+        string='Rebuts Récupérables',
+        domain=[('scrap_type', '=', 'scrap_recoverable')]
+    )
+
+    paste_line_ids = fields.One2many(
+        'ron.scrap.line',
+        'daily_production_id',
+        string='Pâte Récupérable',
+        domain=[('scrap_type', '=', 'paste_recoverable')]
     )
 
     # ================== PRODUITS FINIS ==================
@@ -103,6 +111,20 @@ class RonDailyProduction(models.Model):
         'daily_production_id',
         string='Coûts Emballage'
     )
+
+    # Configuration pour séparation emballages
+    separate_packaging_costs = fields.Boolean(
+        string='Séparer les Coûts Emballage',
+        compute='_compute_separate_packaging_costs',
+        help="Récupéré depuis la configuration"
+    )
+
+    @api.depends('company_id')
+    def _compute_separate_packaging_costs(self):
+        """Récupère le paramètre de séparation des coûts emballage depuis la config."""
+        for rec in self:
+            config = self.env['ron.production.config'].get_config(rec.company_id.id)
+            rec.separate_packaging_costs = config.separate_packaging_costs
 
     # ================== TOTAUX CONSOMMATION ==================
     total_consumption_cost = fields.Monetary(
@@ -300,9 +322,18 @@ class RonDailyProduction(models.Model):
     # ================== DOCUMENTS LIÉS ==================
     picking_consumption_id = fields.Many2one(
         'stock.picking',
-        string='BL Consommation',
+        string='BL Consommation MP',
         readonly=True,
-        copy=False
+        copy=False,
+        help="Bon de Livraison pour la consommation des matières premières"
+    )
+
+    picking_packaging_id = fields.Many2one(
+        'stock.picking',
+        string='BL Consommation Emballage',
+        readonly=True,
+        copy=False,
+        help="Bon de Livraison pour la consommation des emballages (cartons, film, etc.)"
     )
 
     purchase_finished_id = fields.Many2one(
@@ -350,20 +381,18 @@ class RonDailyProduction(models.Model):
             rec.total_consumption_weight = total_weight
             rec.cost_per_kg = total_cost / total_weight if total_weight > 0 else 0
 
-    @api.depends('scrap_line_ids', 'scrap_line_ids.weight_kg',
-                 'scrap_line_ids.total_cost', 'scrap_line_ids.scrap_type')
+    @api.depends('scrap_line_ids', 'scrap_line_ids.weight_kg', 'scrap_line_ids.total_cost',
+                 'paste_line_ids', 'paste_line_ids.weight_kg', 'paste_line_ids.total_cost')
     def _compute_scrap_totals(self):
         """Calcule les totaux de rebuts et pâte récupérables."""
         for rec in self:
-            # Rebuts récupérables (vendables)
-            scrap_rec = rec.scrap_line_ids.filtered(lambda l: l.scrap_type == 'scrap_recoverable')
-            rec.scrap_recoverable_weight = sum(scrap_rec.mapped('weight_kg'))
-            rec.scrap_recoverable_cost = sum(scrap_rec.mapped('total_cost'))
+            # Rebuts récupérables (vendables) - depuis scrap_line_ids
+            rec.scrap_recoverable_weight = sum(rec.scrap_line_ids.mapped('weight_kg'))
+            rec.scrap_recoverable_cost = sum(rec.scrap_line_ids.mapped('total_cost'))
 
-            # Pâte récupérable
-            paste_rec = rec.scrap_line_ids.filtered(lambda l: l.scrap_type == 'paste_recoverable')
-            rec.paste_recoverable_weight = sum(paste_rec.mapped('weight_kg'))
-            rec.paste_recoverable_cost = sum(paste_rec.mapped('total_cost'))
+            # Pâte récupérable - depuis paste_line_ids
+            rec.paste_recoverable_weight = sum(rec.paste_line_ids.mapped('weight_kg'))
+            rec.paste_recoverable_cost = sum(rec.paste_line_ids.mapped('total_cost'))
 
             # Totaux globaux (rebuts + pâte récupérables)
             # Ces totaux sont utilisés pour calculer le poids bon
@@ -420,13 +449,19 @@ class RonDailyProduction(models.Model):
 
     @api.depends('finished_product_ids', 'finished_product_ids.quantity',
                  'finished_product_ids.product_type', 'total_good_cost',
-                 'good_weight', 'production_type')
+                 'good_weight', 'production_type',
+                 'packaging_line_ids', 'packaging_line_ids.total_cost',
+                 'packaging_line_ids.target_product_type')
     def _compute_finished_totals(self):
         """Calcule les coûts par produit fini.
 
         Deux modes de calcul:
         - SOLO/CLASSICO: Utilise le ratio de coût configuré
         - Sandwich GF: Calcul direct (coût total / quantité)
+
+        Pour l'emballage, deux sous-modes:
+        - Standard: Tous les emballages répartis avec le ratio
+        - Séparé: Emballages affectés directement par type + communs avec ratio
         """
         for rec in self:
             config = self.env['ron.production.config'].get_config(rec.company_id.id)
@@ -462,130 +497,147 @@ class RonDailyProduction(models.Model):
             if rec.production_type == 'solo_classico':
                 ratio = config.cost_ratio_solo_classico or 1.65
 
-                # Formule de répartition avec ratio:
-                # S = ratio × C (Coût SOLO = ratio × Coût CLASSICO)
-                # Total = qty_solo × S + qty_classico × C
-                # Total = C × (qty_solo × ratio + qty_classico)
-                # C = Total / (qty_solo × ratio + qty_classico)
+                # ========== MODE SÉPARATION EMBALLAGES ==========
+                if config.separate_packaging_costs:
+                    # Calculer les coûts emballage par affectation
+                    pkg_solo = sum(rec.packaging_line_ids.filtered(
+                        lambda l: l.target_product_type == 'solo'
+                    ).mapped('total_cost'))
+                    pkg_classico = sum(rec.packaging_line_ids.filtered(
+                        lambda l: l.target_product_type == 'classico'
+                    ).mapped('total_cost'))
+                    pkg_common = sum(rec.packaging_line_ids.filtered(
+                        lambda l: l.target_product_type == 'common'
+                    ).mapped('total_cost'))
 
-                denominator = (qty_solo * ratio + qty_classico)
-                if denominator > 0:
-                    cost_classico = rec.total_good_cost / denominator
-                    cost_solo = cost_classico * ratio
+                    # Coût matières (sans emballage)
+                    cost_matieres = rec.total_consumption_cost
 
-                    rec.cost_classico_per_carton = cost_classico
-                    rec.cost_solo_per_carton = cost_solo
-                    rec.total_classico_cost = cost_classico * qty_classico
-                    rec.total_solo_cost = cost_solo * qty_solo
+                    # Formule de répartition pour matières + emballages communs:
+                    # Total à répartir = matières + emballages communs
+                    # S = ratio × C (Coût SOLO = ratio × Coût CLASSICO)
+                    # Total = C × (qty_solo × ratio + qty_classico)
+                    # C_base = Total / (qty_solo × ratio + qty_classico)
 
-            # MODE SANDWICH GF - Calcul direct
+                    total_a_repartir = cost_matieres + pkg_common
+                    denominator = (qty_solo * ratio + qty_classico)
+
+                    if denominator > 0:
+                        # Coût de base (matières + emballages communs)
+                        cost_classico_base = total_a_repartir / denominator
+                        cost_solo_base = cost_classico_base * ratio
+
+                        # Ajouter les emballages dédiés
+                        # Emballage dédié par carton = total dédié / quantité
+                        pkg_solo_per_carton = pkg_solo / qty_solo if qty_solo > 0 else 0
+                        pkg_classico_per_carton = pkg_classico / qty_classico if qty_classico > 0 else 0
+
+                        cost_solo_final = cost_solo_base + pkg_solo_per_carton
+                        cost_classico_final = cost_classico_base + pkg_classico_per_carton
+
+                        rec.cost_classico_per_carton = cost_classico_final
+                        rec.cost_solo_per_carton = cost_solo_final
+                        rec.total_classico_cost = cost_classico_final * qty_classico
+                        rec.total_solo_cost = cost_solo_final * qty_solo
+                else:
+                    # ========== MODE STANDARD ==========
+                    # Formule de répartition avec ratio:
+                    # S = ratio × C (Coût SOLO = ratio × Coût CLASSICO)
+                    # Total = qty_solo × S + qty_classico × C
+                    # Total = C × (qty_solo × ratio + qty_classico)
+                    # C = Total / (qty_solo × ratio + qty_classico)
+
+                    denominator = (qty_solo * ratio + qty_classico)
+                    if denominator > 0:
+                        cost_classico = rec.total_good_cost / denominator
+                        cost_solo = cost_classico * ratio
+
+                        rec.cost_classico_per_carton = cost_classico
+                        rec.cost_solo_per_carton = cost_solo
+                        rec.total_classico_cost = cost_classico * qty_classico
+                        rec.total_solo_cost = cost_solo * qty_solo
+
+            # MODE SANDWICH GF - Calcul direct (sans ratio)
             elif rec.production_type == 'sandwich_gf':
                 if qty_sandwich > 0:
-                    cost_sandwich = rec.total_good_cost / qty_sandwich
+                    # ========== MODE SÉPARATION EMBALLAGES ==========
+                    if config.separate_packaging_costs:
+                        # Pour Sandwich GF : un seul produit, donc tous les emballages
+                        # (commun + sandwich_gf) vont au même produit
+                        pkg_sandwich = sum(rec.packaging_line_ids.filtered(
+                            lambda l: l.target_product_type == 'sandwich_gf'
+                        ).mapped('total_cost'))
+                        pkg_common = sum(rec.packaging_line_ids.filtered(
+                            lambda l: l.target_product_type == 'common'
+                        ).mapped('total_cost'))
 
-                    rec.cost_sandwich_per_carton = cost_sandwich
-                    rec.total_sandwich_cost = rec.total_good_cost
+                        # Coût = Matières + Emballages (commun + dédié) / Quantité
+                        total_cost = rec.total_consumption_cost + pkg_common + pkg_sandwich
+                        cost_sandwich = total_cost / qty_sandwich
+
+                        rec.cost_sandwich_per_carton = cost_sandwich
+                        rec.total_sandwich_cost = total_cost
+                    else:
+                        # ========== MODE STANDARD ==========
+                        cost_sandwich = rec.total_good_cost / qty_sandwich
+
+                        rec.cost_sandwich_per_carton = cost_sandwich
+                        rec.total_sandwich_cost = rec.total_good_cost
 
     # ================== ACTIONS ==================
 
-    def action_load_from_bom(self):
-        """Charge les composants depuis les nomenclatures validées.
+    def action_load_from_template(self):
+        """Charge la liste des matières premières depuis le template actif.
 
-        Calcule les quantités en fonction du nombre de cartons de chaque produit fini.
-        Les lignes de consommation existantes sont supprimées et remplacées.
+        Crée les lignes de consommation avec quantité = 0 (à saisir manuellement).
+        Le poids par unité et le coût unitaire sont pré-remplis.
         """
         self.ensure_one()
 
         if self.state != 'draft':
-            raise UserError(_("Vous ne pouvez charger les composants qu'en état brouillon."))
+            raise UserError(_("Vous ne pouvez charger le template qu'en état brouillon."))
 
-        if not self.finished_product_ids:
-            raise UserError(_("Veuillez d'abord saisir les produits finis (nombre de cartons)."))
+        # Récupérer le template actif
+        TemplateModel = self.env['ron.consumption.template']
+        template = TemplateModel.get_active_template(self.company_id.id)
 
-        # Récupérer les quantités par type de produit
-        product_quantities = {}
-        for line in self.finished_product_ids:
-            if line.product_type not in product_quantities:
-                product_quantities[line.product_type] = 0
-            product_quantities[line.product_type] += line.quantity
-
-        if not product_quantities:
-            raise UserError(_("Aucune quantité de produit fini saisie."))
-
-        # Vérifier que les nomenclatures validées existent pour les types de produits
-        BomModel = self.env['ron.bom']
-        missing_boms = []
-        for product_type in product_quantities.keys():
-            bom = BomModel.get_validated_bom(product_type, self.company_id.id)
-            if not bom:
-                type_label = dict(self.finished_product_ids._fields['product_type'].selection).get(product_type, product_type)
-                missing_boms.append(type_label)
-
-        if missing_boms:
+        if not template:
             raise UserError(_(
-                "Nomenclature validée manquante pour: %s\n"
-                "Veuillez créer et valider une nomenclature dans Configuration > Nomenclatures."
-            ) % ', '.join(missing_boms))
+                "Aucun template de consommation actif trouvé.\n"
+                "Veuillez créer et activer un template dans Configuration > Template Consommation."
+            ))
 
-        # Calculer les consommations totales par produit
-        # (agrège les composants de toutes les nomenclatures)
-        consumption_dict = {}  # {product_id: total_quantity}
-
-        for product_type, qty_cartons in product_quantities.items():
-            bom = BomModel.get_validated_bom(product_type, self.company_id.id)
-            for bom_line in bom.line_ids:
-                product_id = bom_line.product_id.id
-                quantity = bom_line.quantity * qty_cartons
-                if product_id in consumption_dict:
-                    consumption_dict[product_id] += quantity
-                else:
-                    consumption_dict[product_id] = quantity
+        if not template.line_ids:
+            raise UserError(_(
+                "Le template '%s' ne contient aucune matière première.\n"
+                "Veuillez ajouter des matières premières au template."
+            ) % template.name)
 
         # Supprimer les lignes de consommation existantes
         self.consumption_line_ids.unlink()
 
-        # Créer les nouvelles lignes de consommation
+        # Créer les nouvelles lignes de consommation depuis le template
         ConsumptionLine = self.env['ron.consumption.line']
-        for product_id, quantity in consumption_dict.items():
-            product = self.env['product.product'].browse(product_id)
-
-            # Récupérer le poids par unité depuis le produit
-            weight_per_unit = 1.0
-            if product.weight > 0:
-                weight_per_unit = product.weight
-            else:
-                # Essayer de déduire le poids du nom (ex: "Farine 25kg")
-                name = product.name.lower()
-                if '25kg' in name or '25 kg' in name:
-                    weight_per_unit = 25.0
-                elif '50kg' in name or '50 kg' in name:
-                    weight_per_unit = 50.0
-                elif '10kg' in name or '10 kg' in name:
-                    weight_per_unit = 10.0
+        for tpl_line in template.line_ids:
+            product = tpl_line.product_id
 
             ConsumptionLine.create({
                 'daily_production_id': self.id,
-                'product_id': product_id,
-                'quantity': quantity,
+                'product_id': product.id,
+                'quantity': 0,  # À saisir manuellement
                 'unit_cost': product.standard_price,
-                'weight_per_unit': weight_per_unit,
+                'weight_per_unit': tpl_line.weight_per_unit,
             })
 
-        # Invalider le cache pour forcer le recalcul de tous les champs
-        self.invalidate_recordset()
-        self.consumption_line_ids.invalidate_recordset()
+        # Message de confirmation
+        self.message_post(
+            body=_("Template '%s' chargé avec %d matières premières. "
+                   "Veuillez saisir les quantités consommées.") % (
+                template.name, len(template.line_ids)
+            )
+        )
 
-        # Forcer le recalcul des champs stockés des lignes de consommation
-        for line in self.consumption_line_ids:
-            line._compute_weight_kg()
-            line._compute_total_cost()
-
-        # Forcer le recalcul des totaux
-        self._compute_consumption_totals()
-        self._compute_final_costs()
-        self._compute_finished_totals()
-
-        # Recharger le formulaire pour voir les nouvelles valeurs
+        # Recharger le formulaire
         return {
             'type': 'ir.actions.act_window',
             'res_model': 'ron.daily.production',
@@ -602,9 +654,20 @@ class RonDailyProduction(models.Model):
             if not rec.finished_product_ids:
                 raise UserError(_("Veuillez ajouter au moins un produit fini."))
 
-            # Mise à jour du coût/kg dans les lignes de rebut
+            # Vérifier que toutes les quantités de consommation sont > 0
+            zero_qty_lines = rec.consumption_line_ids.filtered(lambda l: l.quantity <= 0)
+            if zero_qty_lines:
+                products = ', '.join(zero_qty_lines.mapped('product_id.name'))
+                raise UserError(_(
+                    "Les quantités de consommation doivent être supérieures à 0.\n"
+                    "Produits avec quantité nulle ou non saisie: %s"
+                ) % products)
+
+            # Mise à jour du coût/kg dans les lignes de rebut et pâte
             for scrap in rec.scrap_line_ids:
                 scrap.cost_per_kg = rec.cost_per_kg
+            for paste in rec.paste_line_ids:
+                paste.cost_per_kg = rec.cost_per_kg
 
             rec.write({'state': 'confirmed'})
 
@@ -639,7 +702,7 @@ class RonDailyProduction(models.Model):
                 )
 
     def _check_stock_availability(self):
-        """Vérifie la disponibilité du stock pour toutes les consommations.
+        """Vérifie la disponibilité du stock pour les consommations et emballages.
 
         Utilise l'emplacement de Production s'il est configuré,
         sinon utilise l'emplacement source du dépôt Matière Première.
@@ -669,18 +732,19 @@ class RonDailyProduction(models.Model):
             if not location:
                 location = config.warehouse_mp_id.lot_stock_id
 
-        missing_products = []
+        # Récupérer les emplacements enfants une seule fois
+        child_locations = self.env['stock.location'].search([
+            ('id', 'child_of', location.id),
+            ('usage', '=', 'internal')
+        ])
 
+        missing_mp = []  # Matières premières manquantes
+        missing_emb = []  # Emballages manquants
+
+        # ========== Vérifier les Matières Premières ==========
         for line in self.consumption_line_ids:
             if not line.product_id:
                 continue
-
-            # Calculer le stock disponible dans l'emplacement source
-            # Inclure les emplacements enfants
-            child_locations = self.env['stock.location'].search([
-                ('id', 'child_of', location.id),
-                ('usage', '=', 'internal')
-            ])
 
             quant = self.env['stock.quant'].search([
                 ('product_id', '=', line.product_id.id),
@@ -689,21 +753,50 @@ class RonDailyProduction(models.Model):
             available_qty = sum(quant.mapped('quantity')) - sum(quant.mapped('reserved_quantity'))
 
             if available_qty < line.quantity:
-                missing_products.append({
+                missing_mp.append({
                     'product': line.product_id.name,
                     'required': line.quantity,
                     'available': max(0, available_qty),
                     'missing': line.quantity - available_qty,
-                    'location': location.complete_name,
                 })
 
-        if missing_products:
-            location_name = missing_products[0]['location'] if missing_products else ''
-            message = _("Stock insuffisant dans '%s' pour les produits suivants:\n\n") % location_name
-            for mp in missing_products:
-                message += _("- %s: Requis %.2f, Disponible %.2f (Manquant: %.2f)\n") % (
-                    mp['product'], mp['required'], mp['available'], mp['missing']
-                )
+        # ========== Vérifier les Emballages ==========
+        for line in self.packaging_line_ids:
+            if not line.product_id or line.quantity <= 0:
+                continue
+
+            quant = self.env['stock.quant'].search([
+                ('product_id', '=', line.product_id.id),
+                ('location_id', 'in', child_locations.ids),
+            ])
+            available_qty = sum(quant.mapped('quantity')) - sum(quant.mapped('reserved_quantity'))
+
+            if available_qty < line.quantity:
+                missing_emb.append({
+                    'product': line.product_id.name,
+                    'required': line.quantity,
+                    'available': max(0, available_qty),
+                    'missing': line.quantity - available_qty,
+                })
+
+        # ========== Générer le message d'erreur ==========
+        if missing_mp or missing_emb:
+            message = _("Stock insuffisant dans '%s':\n") % location.complete_name
+
+            if missing_mp:
+                message += _("\n📦 MATIÈRES PREMIÈRES:\n")
+                for mp in missing_mp:
+                    message += _("  - %s: Requis %.2f, Disponible %.2f (Manquant: %.2f)\n") % (
+                        mp['product'], mp['required'], mp['available'], mp['missing']
+                    )
+
+            if missing_emb:
+                message += _("\n📋 EMBALLAGES:\n")
+                for emb in missing_emb:
+                    message += _("  - %s: Requis %.2f, Disponible %.2f (Manquant: %.2f)\n") % (
+                        emb['product'], emb['required'], emb['available'], emb['missing']
+                    )
+
             raise UserError(message)
 
         return True
@@ -719,9 +812,13 @@ class RonDailyProduction(models.Model):
             # Vérifier la disponibilité du stock AVANT de créer les documents
             rec._check_stock_availability()
 
-            # Générer le BL de consommation si configuré
+            # Générer le BL de consommation MP si configuré
             if config.auto_create_delivery and not rec.picking_consumption_id:
                 rec._create_consumption_picking()
+
+            # Générer le BL de consommation Emballage si configuré
+            if config.auto_create_delivery and not rec.picking_packaging_id:
+                rec._create_packaging_picking()
 
             # Générer l'achat de produits finis si configuré
             if config.auto_create_purchase and not rec.purchase_finished_id:
@@ -746,29 +843,39 @@ class RonDailyProduction(models.Model):
         """Valide automatiquement les BL et les achats si configuré."""
         self.ensure_one()
 
-        # 1. Valider le BL de consommation
+        # 1. Valider le BL de consommation MP
         if self.picking_consumption_id and self.picking_consumption_id.state not in ('done', 'cancel'):
             try:
-                # Confirmer le picking
                 if self.picking_consumption_id.state == 'draft':
                     self.picking_consumption_id.action_confirm()
-
-                # Assigner les quantités
                 if self.picking_consumption_id.state == 'confirmed':
                     self.picking_consumption_id.action_assign()
-
-                # Valider le picking (transfert immédiat)
                 if self.picking_consumption_id.state == 'assigned':
                     for move in self.picking_consumption_id.move_ids:
                         move.quantity = move.product_uom_qty
                     self.picking_consumption_id.button_validate()
-
-                _logger.info(f"BL Consommation validé: {self.picking_consumption_id.name}")
+                _logger.info(f"BL Consommation MP validé: {self.picking_consumption_id.name}")
             except Exception as e:
-                _logger.error(f"Erreur validation BL: {e}")
-                raise UserError(_("Erreur lors de la validation du BL de consommation: %s") % str(e))
+                _logger.error(f"Erreur validation BL Consommation MP: {e}")
+                raise UserError(_("Erreur lors de la validation du BL de consommation MP: %s") % str(e))
 
-        # 2. Valider les achats (Demande -> Commande -> Réception)
+        # 2. Valider le BL de consommation Emballage
+        if self.picking_packaging_id and self.picking_packaging_id.state not in ('done', 'cancel'):
+            try:
+                if self.picking_packaging_id.state == 'draft':
+                    self.picking_packaging_id.action_confirm()
+                if self.picking_packaging_id.state == 'confirmed':
+                    self.picking_packaging_id.action_assign()
+                if self.picking_packaging_id.state == 'assigned':
+                    for move in self.picking_packaging_id.move_ids:
+                        move.quantity = move.product_uom_qty
+                    self.picking_packaging_id.button_validate()
+                _logger.info(f"BL Consommation Emballage validé: {self.picking_packaging_id.name}")
+            except Exception as e:
+                _logger.error(f"Erreur validation BL Emballage: {e}")
+                raise UserError(_("Erreur lors de la validation du BL d'emballage: %s") % str(e))
+
+        # 3. Valider les achats (Demande -> Commande -> Réception)
         purchases = [
             self.purchase_finished_id,
             self.purchase_scrap_id,
@@ -916,7 +1023,78 @@ class RonDailyProduction(models.Model):
             })
 
         self.picking_consumption_id = picking.id
-        _logger.info(f"BL Consommation créé: {picking.name}")
+        _logger.info(f"BL Consommation MP créé: {picking.name}")
+
+    def _create_packaging_picking(self):
+        """Crée le BL de consommation des emballages vers le contact Consommation.
+
+        Génère un BL séparé pour les emballages (cartons, film ondulé, etc.)
+        uniquement pour les lignes ayant un produit stockable défini.
+        """
+        self.ensure_one()
+        config = self.env['ron.production.config'].get_config(self.company_id.id)
+
+        # Filtrer les lignes d'emballage avec un produit défini
+        packaging_lines = self.packaging_line_ids.filtered(
+            lambda l: l.product_id and l.quantity > 0
+        )
+
+        if not packaging_lines:
+            _logger.info("Pas de lignes d'emballage avec produit - BL Emballage non créé")
+            return
+
+        if not config.partner_consumption_id:
+            raise UserError(_("Veuillez configurer le contact Consommation."))
+
+        # Déterminer l'emplacement source (même logique que pour les MP)
+        if config.location_production_id:
+            location_src = config.location_production_id
+            warehouse = config.location_production_id.warehouse_id or config.warehouse_mp_id
+            if not warehouse:
+                raise UserError(_("Veuillez configurer le dépôt associé à l'emplacement Production."))
+        else:
+            if not config.warehouse_mp_id:
+                raise UserError(_("Veuillez configurer l'emplacement Production ou le dépôt Matière Première."))
+            warehouse = config.warehouse_mp_id
+            location_src = None
+
+        # Récupérer le type de picking (livraison sortante)
+        picking_type = self.env['stock.picking.type'].search([
+            ('warehouse_id', '=', warehouse.id),
+            ('code', '=', 'outgoing')
+        ], limit=1)
+
+        if not picking_type:
+            raise UserError(_("Type de picking sortant non trouvé pour le dépôt."))
+
+        if not location_src:
+            location_src = picking_type.default_location_src_id
+
+        # Créer le picking
+        picking_vals = {
+            'partner_id': config.partner_consumption_id.id,
+            'picking_type_id': picking_type.id,
+            'location_id': location_src.id,
+            'location_dest_id': config.partner_consumption_id.property_stock_customer.id,
+            'origin': f"{self.name} - Emballage",
+            'scheduled_date': self.production_date,
+        }
+        picking = self.env['stock.picking'].create(picking_vals)
+
+        # Créer les lignes de mouvement pour chaque emballage
+        for line in packaging_lines:
+            self.env['stock.move'].create({
+                'name': f"[Emballage] {line.product_id.name}",
+                'picking_id': picking.id,
+                'product_id': line.product_id.id,
+                'product_uom_qty': line.quantity,
+                'product_uom': line.product_id.uom_id.id,
+                'location_id': picking.location_id.id,
+                'location_dest_id': picking.location_dest_id.id,
+            })
+
+        self.picking_packaging_id = picking.id
+        _logger.info(f"BL Consommation Emballage créé: {picking.name}")
 
     def _create_finished_purchase(self):
         """Crée l'achat de produits finis depuis le fournisseur Production."""
@@ -1055,17 +1233,32 @@ class RonDailyProduction(models.Model):
     # ================== ACTIONS SMART BUTTONS ==================
 
     def action_view_consumption_picking(self):
-        """Ouvre le BL de consommation lié à cette production."""
+        """Ouvre le BL de consommation MP lié à cette production."""
         self.ensure_one()
         if not self.picking_consumption_id:
             return {'type': 'ir.actions.act_window_close'}
 
         return {
             'type': 'ir.actions.act_window',
-            'name': _('BL Consommation'),
+            'name': _('BL Consommation MP'),
             'res_model': 'stock.picking',
             'view_mode': 'form',
             'res_id': self.picking_consumption_id.id,
+            'target': 'current',
+        }
+
+    def action_view_packaging_picking(self):
+        """Ouvre le BL de consommation emballage lié à cette production."""
+        self.ensure_one()
+        if not self.picking_packaging_id:
+            return {'type': 'ir.actions.act_window_close'}
+
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('BL Consommation Emballage'),
+            'res_model': 'stock.picking',
+            'view_mode': 'form',
+            'res_id': self.picking_packaging_id.id,
             'target': 'current',
         }
 

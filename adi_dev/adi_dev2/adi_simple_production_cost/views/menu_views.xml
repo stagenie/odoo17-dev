@@ -46,10 +46,10 @@
               action="ron_production_config_action_open"
               sequence="10"/>
 
-    <menuitem id="spc_bom_menu"
-              name="Nomenclatures"
+    <menuitem id="spc_consumption_template_menu"
+              name="Template Consommation"
               parent="spc_production_menu_config"
-              action="action_ron_bom"
+              action="action_ron_consumption_template"
               sequence="20"/>
 
 </odoo>
