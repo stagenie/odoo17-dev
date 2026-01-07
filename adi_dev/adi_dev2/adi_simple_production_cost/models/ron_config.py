@@ -161,12 +161,48 @@ class RonProductionConfig(models.Model):
         help="Créer automatiquement les factures fournisseur pour les achats validés"
     )
 
-    # ================== CALCUL EMBALLAGE ==================
-    separate_packaging_costs = fields.Boolean(
-        string='Séparer les Coûts Emballage',
-        default=False,
-        help="Si activé, les coûts d'emballage sont affectés par type de produit (SOLO/CLASSICO).\n"
-             "Si désactivé, tous les emballages sont répartis avec le ratio."
+    # ================== EMBALLAGES SOLO/CLASSICO ==================
+    product_emballage_solo_id = fields.Many2one(
+        'product.product',
+        string='Emballage SOLO',
+        domain="[('type', '=', 'product')]",
+        help="Produit emballage (carton) pour SOLO"
+    )
+
+    product_emballage_classico_id = fields.Many2one(
+        'product.product',
+        string='Emballage CLASSICO',
+        domain="[('type', '=', 'product')]",
+        help="Produit emballage (carton) pour CLASSICO"
+    )
+
+    product_film_solo_id = fields.Many2one(
+        'product.product',
+        string='Film SOLO',
+        domain="[('type', '=', 'product')]",
+        help="Produit film plastique pour SOLO"
+    )
+
+    product_film_classico_id = fields.Many2one(
+        'product.product',
+        string='Film CLASSICO',
+        domain="[('type', '=', 'product')]",
+        help="Produit film plastique pour CLASSICO"
+    )
+
+    # ================== EMBALLAGES SANDWICH GF ==================
+    product_emballage_sandwich_id = fields.Many2one(
+        'product.product',
+        string='Emballage Sandwich GF',
+        domain="[('type', '=', 'product')]",
+        help="Produit emballage (carton) pour Sandwich Grand Format"
+    )
+
+    product_film_sandwich_id = fields.Many2one(
+        'product.product',
+        string='Film Sandwich GF',
+        domain="[('type', '=', 'product')]",
+        help="Produit film plastique pour Sandwich Grand Format"
     )
 
     currency_id = fields.Many2one(

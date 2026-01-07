@@ -57,6 +57,37 @@
                             </group>
                         </page>
 
+                        <!-- Emballages -->
+                        <page string="Emballage" name="packaging">
+                            <group string="SOLO / CLASSICO" col="2">
+                                <group string="Emballages">
+                                    <field name="product_emballage_solo_id" placeholder="Emballage SOLO"/>
+                                    <field name="product_emballage_classico_id" placeholder="Emballage CLASSICO"/>
+                                </group>
+                                <group string="Films">
+                                    <field name="product_film_solo_id" placeholder="Film SOLO"/>
+                                    <field name="product_film_classico_id" placeholder="Film CLASSICO"/>
+                                </group>
+                            </group>
+
+                            <group string="Sandwich Grand Format" col="2">
+                                <group string="Emballage">
+                                    <field name="product_emballage_sandwich_id" placeholder="Emballage Sandwich GF"/>
+                                </group>
+                                <group string="Film">
+                                    <field name="product_film_sandwich_id" placeholder="Film Sandwich GF"/>
+                                </group>
+                            </group>
+
+                            <div class="alert alert-info mt-3" role="alert">
+                                <strong>Configuration des Emballages:</strong><br/>
+                                - Les coûts d'emballage sont affectés <b>directement</b> par type de produit (pas de ratio)<br/>
+                                - SOLO: Coût Emb. SOLO / Qté cartons SOLO<br/>
+                                - CLASSICO: Coût Emb. CLASSICO / Qté cartons CLASSICO<br/>
+                                - Le ratio s'applique uniquement aux matières premières
+                            </div>
+                        </page>
+
                         <!-- Dépôts et Emplacements -->
                         <page string="Dépôts" name="warehouses">
                             <group col="2">
@@ -120,27 +151,6 @@
                                 - Le BL de consommation sera validé (sortie de stock)<br/>
                                 - Les achats seront confirmés et réceptionnés<br/>
                                 - Les factures fournisseur seront créées (si coché)
-                            </div>
-
-                            <separator string="Calcul des Coûts Emballage"/>
-                            <group col="2">
-                                <group>
-                                    <field name="separate_packaging_costs" widget="boolean_toggle"/>
-                                </group>
-                                <group/>
-                            </group>
-                            <div class="alert alert-info mt-2" role="alert"
-                                 invisible="separate_packaging_costs">
-                                <strong>Mode Standard:</strong> Tous les coûts d'emballage sont répartis avec le ratio SOLO/CLASSICO.<br/>
-                                <em>Formule: Coût SOLO = Ratio × Coût CLASSICO</em>
-                            </div>
-                            <div class="alert alert-warning mt-2" role="alert"
-                                 invisible="not separate_packaging_costs">
-                                <strong>Mode Séparation des Emballages:</strong><br/>
-                                - <b>Commun:</b> Réparti avec le ratio SOLO/CLASSICO (comme les matières premières)<br/>
-                                - <b>SOLO:</b> Affecté directement au coût SOLO (divisé par nombre de cartons SOLO)<br/>
-                                - <b>CLASSICO:</b> Affecté directement au coût CLASSICO (divisé par nombre de cartons CLASSICO)<br/><br/>
-                                <em>Exemple: 100 cartons SOLO + 1000 DA emballage SOLO = 10 DA/carton supplémentaire pour SOLO uniquement</em>
                             </div>
 
                             <separator string="Informations"/>

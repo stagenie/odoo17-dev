@@ -138,6 +138,76 @@
                             </div>
                         </div>
 
+                        <!-- Section Emballage - SOLO/CLASSICO -->
+                        <t t-if="doc.production_type == 'solo_classico' and doc.total_packaging_cost > 0">
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <h5 class="bg-secondary text-white p-2">Coûts Emballage</h5>
+                                    <table class="table table-sm table-bordered">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Type</th>
+                                                <th class="text-end">SOLO</th>
+                                                <th class="text-end">CLASSICO</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Emballage (cartons)</td>
+                                                <td class="text-end"><t t-esc="'%.2f' % doc.emballage_solo_cost"/> <t t-esc="doc.currency_id.symbol"/></td>
+                                                <td class="text-end"><t t-esc="'%.2f' % doc.emballage_classico_cost"/> <t t-esc="doc.currency_id.symbol"/></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Film</td>
+                                                <td class="text-end"><t t-esc="'%.2f' % doc.film_solo_cost"/> <t t-esc="doc.currency_id.symbol"/></td>
+                                                <td class="text-end"><t t-esc="'%.2f' % doc.film_classico_cost"/> <t t-esc="doc.currency_id.symbol"/></td>
+                                            </tr>
+                                        </tbody>
+                                        <tfoot class="table-info">
+                                            <tr>
+                                                <td><strong>Total</strong></td>
+                                                <td class="text-end"><strong><t t-esc="'%.2f' % (doc.emballage_solo_cost + doc.film_solo_cost)"/> <t t-esc="doc.currency_id.symbol"/></strong></td>
+                                                <td class="text-end"><strong><t t-esc="'%.2f' % (doc.emballage_classico_cost + doc.film_classico_cost)"/> <t t-esc="doc.currency_id.symbol"/></strong></td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </t>
+
+                        <!-- Section Emballage - SANDWICH GF -->
+                        <t t-if="doc.production_type == 'sandwich_gf' and doc.total_packaging_cost > 0">
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <h5 class="bg-secondary text-white p-2">Coûts Emballage</h5>
+                                    <table class="table table-sm table-bordered">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Type</th>
+                                                <th class="text-end">Sandwich GF</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Emballage (cartons)</td>
+                                                <td class="text-end"><t t-esc="'%.2f' % doc.emballage_sandwich_cost"/> <t t-esc="doc.currency_id.symbol"/></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Film</td>
+                                                <td class="text-end"><t t-esc="'%.2f' % doc.film_sandwich_cost"/> <t t-esc="doc.currency_id.symbol"/></td>
+                                            </tr>
+                                        </tbody>
+                                        <tfoot class="table-info">
+                                            <tr>
+                                                <td><strong>Total</strong></td>
+                                                <td class="text-end"><strong><t t-esc="'%.2f' % doc.total_packaging_cost"/> <t t-esc="doc.currency_id.symbol"/></strong></td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </t>
+
                         <!-- Section Produits Finis -->
                         <div class="row mt-4">
                             <div class="col-12">

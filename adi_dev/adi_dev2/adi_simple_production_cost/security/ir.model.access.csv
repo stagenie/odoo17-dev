@@ -9,8 +9,6 @@ access_ron_scrap_line_user,ron.scrap.line.user,model_ron_scrap_line,group_ron_pr
 access_ron_scrap_line_manager,ron.scrap.line.manager,model_ron_scrap_line,group_ron_production_manager,1,1,1,1
 access_ron_finished_product_user,ron.finished.product.user,model_ron_finished_product,group_ron_production_user,1,1,1,1
 access_ron_finished_product_manager,ron.finished.product.manager,model_ron_finished_product,group_ron_production_manager,1,1,1,1
-access_ron_packaging_line_user,ron.packaging.line.user,model_ron_packaging_line,group_ron_production_user,1,1,1,1
-access_ron_packaging_line_manager,ron.packaging.line.manager,model_ron_packaging_line,group_ron_production_manager,1,1,1,1
 access_ron_generate_purchase_wizard_user,ron.generate.purchase.wizard.user,model_ron_generate_purchase_wizard,group_ron_production_user,1,1,1,1
 access_ron_generate_purchase_wizard_manager,ron.generate.purchase.wizard.manager,model_ron_generate_purchase_wizard,group_ron_production_manager,1,1,1,1
 access_ron_consumption_template_user,ron.consumption.template.user,model_ron_consumption_template,group_ron_production_user,1,0,0,0

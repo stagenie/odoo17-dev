@@ -105,26 +105,124 @@ class RonDailyProduction(models.Model):
         string='Produits Finis'
     )
 
-    # ================== COÛTS D'EMBALLAGE ==================
-    packaging_line_ids = fields.One2many(
-        'ron.packaging.line',
-        'daily_production_id',
-        string='Coûts Emballage'
+    # ================== COÛTS D'EMBALLAGE - SOLO/CLASSICO ==================
+    # Emballage SOLO
+    emballage_solo_qty = fields.Float(
+        string='Qté Emb. SOLO',
+        help="Quantité d'emballages SOLO consommés"
+    )
+    emballage_solo_unit_cost = fields.Monetary(
+        string='Prix Unit. Emb. SOLO',
+        currency_field='currency_id',
+        help="Prix unitaire de l'emballage SOLO"
+    )
+    emballage_solo_cost = fields.Monetary(
+        string='Coût Emb. SOLO',
+        compute='_compute_packaging_costs',
+        store=True,
+        currency_field='currency_id'
     )
 
-    # Configuration pour séparation emballages
-    separate_packaging_costs = fields.Boolean(
-        string='Séparer les Coûts Emballage',
-        compute='_compute_separate_packaging_costs',
-        help="Récupéré depuis la configuration"
+    # Emballage CLASSICO
+    emballage_classico_qty = fields.Float(
+        string='Qté Emb. CLASSICO',
+        help="Quantité d'emballages CLASSICO consommés"
+    )
+    emballage_classico_unit_cost = fields.Monetary(
+        string='Prix Unit. Emb. CLASSICO',
+        currency_field='currency_id',
+        help="Prix unitaire de l'emballage CLASSICO"
+    )
+    emballage_classico_cost = fields.Monetary(
+        string='Coût Emb. CLASSICO',
+        compute='_compute_packaging_costs',
+        store=True,
+        currency_field='currency_id'
     )
 
-    @api.depends('company_id')
-    def _compute_separate_packaging_costs(self):
-        """Récupère le paramètre de séparation des coûts emballage depuis la config."""
-        for rec in self:
-            config = self.env['ron.production.config'].get_config(rec.company_id.id)
-            rec.separate_packaging_costs = config.separate_packaging_costs
+    # Film SOLO
+    film_solo_qty = fields.Float(
+        string='Qté Film SOLO (kg)',
+        help="Quantité de film SOLO consommé en kg"
+    )
+    film_solo_unit_cost = fields.Monetary(
+        string='Prix/kg Film SOLO',
+        currency_field='currency_id',
+        help="Prix au kg du film SOLO"
+    )
+    film_solo_cost = fields.Monetary(
+        string='Coût Film SOLO',
+        compute='_compute_packaging_costs',
+        store=True,
+        currency_field='currency_id'
+    )
+
+    # Film CLASSICO
+    film_classico_qty = fields.Float(
+        string='Qté Film CLASSICO (kg)',
+        help="Quantité de film CLASSICO consommé en kg"
+    )
+    film_classico_unit_cost = fields.Monetary(
+        string='Prix/kg Film CLASSICO',
+        currency_field='currency_id',
+        help="Prix au kg du film CLASSICO"
+    )
+    film_classico_cost = fields.Monetary(
+        string='Coût Film CLASSICO',
+        compute='_compute_packaging_costs',
+        store=True,
+        currency_field='currency_id'
+    )
+
+    # ================== COÛTS D'EMBALLAGE - SANDWICH GF ==================
+    emballage_sandwich_qty = fields.Float(
+        string='Qté Emb. Sandwich',
+        help="Quantité d'emballages Sandwich GF consommés"
+    )
+    emballage_sandwich_unit_cost = fields.Monetary(
+        string='Prix Unit. Emb. Sandwich',
+        currency_field='currency_id',
+        help="Prix unitaire de l'emballage Sandwich GF"
+    )
+    emballage_sandwich_cost = fields.Monetary(
+        string='Coût Emb. Sandwich',
+        compute='_compute_packaging_costs',
+        store=True,
+        currency_field='currency_id'
+    )
+
+    film_sandwich_qty = fields.Float(
+        string='Qté Film Sandwich (kg)',
+        help="Quantité de film Sandwich GF consommé en kg"
+    )
+    film_sandwich_unit_cost = fields.Monetary(
+        string='Prix/kg Film Sandwich',
+        currency_field='currency_id',
+        help="Prix au kg du film Sandwich GF"
+    )
+    film_sandwich_cost = fields.Monetary(
+        string='Coût Film Sandwich',
+        compute='_compute_packaging_costs',
+        store=True,
+        currency_field='currency_id'
+    )
+
+    # ================== TOTAUX EMBALLAGE ==================
+    total_emballage_cost = fields.Monetary(
+        string='Total Emballages',
+        compute='_compute_packaging_costs',
+        store=True,
+        currency_field='currency_id',
+        help="Total des coûts d'emballages (cartons)"
+    )
+
+    total_film_cost = fields.Monetary(
+        string='Total Films',
+        compute='_compute_packaging_costs',
+        store=True,
+        currency_field='currency_id',
+        help="Total des coûts de films"
+    )
 
     # ================== TOTAUX CONSOMMATION ==================
     total_consumption_cost = fields.Monetary(
@@ -196,34 +294,12 @@ class RonDailyProduction(models.Model):
         currency_field='currency_id'
     )
 
-    # ================== TOTAUX EMBALLAGE ==================
     total_packaging_cost = fields.Monetary(
         string='Coût Total Emballage',
-        compute='_compute_packaging_totals',
+        compute='_compute_packaging_costs',
         store=True,
         currency_field='currency_id',
-        help="Somme des coûts d'emballage (cartons + film ondulé + autres)"
-    )
-
-    packaging_carton_cost = fields.Monetary(
-        string='Coût Cartons',
-        compute='_compute_packaging_totals',
-        store=True,
-        currency_field='currency_id'
-    )
-
-    packaging_film_cost = fields.Monetary(
-        string='Coût Film Ondulé',
-        compute='_compute_packaging_totals',
-        store=True,
-        currency_field='currency_id'
-    )
-
-    packaging_other_cost = fields.Monetary(
-        string='Coût Autres Emballages',
-        compute='_compute_packaging_totals',
-        store=True,
-        currency_field='currency_id'
+        help="Somme des coûts d'emballage + films"
     )
 
     # ================== CALCULS FINAUX ==================
@@ -399,28 +475,37 @@ class RonDailyProduction(models.Model):
             rec.total_scrap_weight = rec.scrap_recoverable_weight + rec.paste_recoverable_weight
             rec.total_scrap_cost = rec.scrap_recoverable_cost + rec.paste_recoverable_cost
 
-    @api.depends('packaging_line_ids', 'packaging_line_ids.total_cost',
-                 'packaging_line_ids.packaging_type')
-    def _compute_packaging_totals(self):
-        """Calcule les totaux d'emballage."""
+    @api.depends(
+        'emballage_solo_qty', 'emballage_solo_unit_cost',
+        'emballage_classico_qty', 'emballage_classico_unit_cost',
+        'film_solo_qty', 'film_solo_unit_cost',
+        'film_classico_qty', 'film_classico_unit_cost',
+        'emballage_sandwich_qty', 'emballage_sandwich_unit_cost',
+        'film_sandwich_qty', 'film_sandwich_unit_cost',
+    )
+    def _compute_packaging_costs(self):
+        """Calcule les coûts d'emballage par type."""
         for rec in self:
-            # Cartons
-            cartons = rec.packaging_line_ids.filtered(lambda l: l.packaging_type == 'carton')
-            rec.packaging_carton_cost = sum(cartons.mapped('total_cost'))
+            # Coûts individuels SOLO/CLASSICO
+            rec.emballage_solo_cost = rec.emballage_solo_qty * rec.emballage_solo_unit_cost
+            rec.emballage_classico_cost = rec.emballage_classico_qty * rec.emballage_classico_unit_cost
+            rec.film_solo_cost = rec.film_solo_qty * rec.film_solo_unit_cost
+            rec.film_classico_cost = rec.film_classico_qty * rec.film_classico_unit_cost
 
-            # Film ondulé
-            film = rec.packaging_line_ids.filtered(lambda l: l.packaging_type == 'film_ondule')
-            rec.packaging_film_cost = sum(film.mapped('total_cost'))
+            # Coûts individuels SANDWICH
+            rec.emballage_sandwich_cost = rec.emballage_sandwich_qty * rec.emballage_sandwich_unit_cost
+            rec.film_sandwich_cost = rec.film_sandwich_qty * rec.film_sandwich_unit_cost
 
-            # Autres (étiquettes + autres)
-            others = rec.packaging_line_ids.filtered(
-                lambda l: l.packaging_type in ('label', 'other'))
-            rec.packaging_other_cost = sum(others.mapped('total_cost'))
+            # Totaux par catégorie
+            rec.total_emballage_cost = (rec.emballage_solo_cost +
+                                        rec.emballage_classico_cost +
+                                        rec.emballage_sandwich_cost)
+            rec.total_film_cost = (rec.film_solo_cost +
+                                   rec.film_classico_cost +
+                                   rec.film_sandwich_cost)
 
-            # Total emballage
-            rec.total_packaging_cost = (rec.packaging_carton_cost +
-                                        rec.packaging_film_cost +
-                                        rec.packaging_other_cost)
+            # Total général
+            rec.total_packaging_cost = rec.total_emballage_cost + rec.total_film_cost
 
     @api.depends('total_consumption_cost', 'total_consumption_weight',
                  'scrap_recoverable_weight', 'paste_recoverable_weight',
@@ -448,20 +533,19 @@ class RonDailyProduction(models.Model):
                                      if rec.good_weight > 0 else 0)
 
     @api.depends('finished_product_ids', 'finished_product_ids.quantity',
-                 'finished_product_ids.product_type', 'total_good_cost',
+                 'finished_product_ids.product_type', 'total_consumption_cost',
                  'good_weight', 'production_type',
-                 'packaging_line_ids', 'packaging_line_ids.total_cost',
-                 'packaging_line_ids.target_product_type')
+                 'emballage_solo_cost', 'film_solo_cost',
+                 'emballage_classico_cost', 'film_classico_cost',
+                 'emballage_sandwich_cost', 'film_sandwich_cost')
     def _compute_finished_totals(self):
         """Calcule les coûts par produit fini.
 
         Deux modes de calcul:
-        - SOLO/CLASSICO: Utilise le ratio de coût configuré
+        - SOLO/CLASSICO: Matières réparties au ratio + Emballages affectés directement
         - Sandwich GF: Calcul direct (coût total / quantité)
 
-        Pour l'emballage, deux sous-modes:
-        - Standard: Tous les emballages répartis avec le ratio
-        - Séparé: Emballages affectés directement par type + communs avec ratio
+        Les emballages sont affectés DIRECTEMENT par type (pas de ratio sur les emballages).
         """
         for rec in self:
             config = self.env['ron.production.config'].get_config(rec.company_id.id)
@@ -490,99 +574,55 @@ class RonDailyProduction(models.Model):
             rec.total_classico_cost = 0
             rec.total_sandwich_cost = 0
 
-            if rec.total_good_cost <= 0:
+            if rec.total_consumption_cost <= 0:
                 continue
 
-            # MODE SOLO/CLASSICO - Calcul avec ratio
+            # MODE SOLO/CLASSICO
             if rec.production_type == 'solo_classico':
                 ratio = config.cost_ratio_solo_classico or 1.65
 
-                # ========== MODE SÉPARATION EMBALLAGES ==========
-                if config.separate_packaging_costs:
-                    # Calculer les coûts emballage par affectation
-                    pkg_solo = sum(rec.packaging_line_ids.filtered(
-                        lambda l: l.target_product_type == 'solo'
-                    ).mapped('total_cost'))
-                    pkg_classico = sum(rec.packaging_line_ids.filtered(
-                        lambda l: l.target_product_type == 'classico'
-                    ).mapped('total_cost'))
-                    pkg_common = sum(rec.packaging_line_ids.filtered(
-                        lambda l: l.target_product_type == 'common'
-                    ).mapped('total_cost'))
+                # Coûts emballage par type (affectation DIRECTE)
+                pkg_solo = rec.emballage_solo_cost + rec.film_solo_cost
+                pkg_classico = rec.emballage_classico_cost + rec.film_classico_cost
 
-                    # Coût matières (sans emballage)
-                    cost_matieres = rec.total_consumption_cost
+                # Répartition des MATIÈRES PREMIÈRES au ratio uniquement
+                # S = ratio × C (Coût SOLO = ratio × Coût CLASSICO)
+                # Total MP = C × (qty_solo × ratio + qty_classico)
+                # C_base = Total MP / (qty_solo × ratio + qty_classico)
 
-                    # Formule de répartition pour matières + emballages communs:
-                    # Total à répartir = matières + emballages communs
-                    # S = ratio × C (Coût SOLO = ratio × Coût CLASSICO)
-                    # Total = C × (qty_solo × ratio + qty_classico)
-                    # C_base = Total / (qty_solo × ratio + qty_classico)
+                cost_matieres = rec.total_consumption_cost
+                denominator = (qty_solo * ratio + qty_classico)
 
-                    total_a_repartir = cost_matieres + pkg_common
-                    denominator = (qty_solo * ratio + qty_classico)
+                if denominator > 0:
+                    # Coût matières par carton (avec ratio)
+                    mp_classico_per_carton = cost_matieres / denominator
+                    mp_solo_per_carton = mp_classico_per_carton * ratio
 
-                    if denominator > 0:
-                        # Coût de base (matières + emballages communs)
-                        cost_classico_base = total_a_repartir / denominator
-                        cost_solo_base = cost_classico_base * ratio
+                    # Coût emballage par carton (affectation DIRECTE - pas de ratio)
+                    pkg_solo_per_carton = pkg_solo / qty_solo if qty_solo > 0 else 0
+                    pkg_classico_per_carton = pkg_classico / qty_classico if qty_classico > 0 else 0
 
-                        # Ajouter les emballages dédiés
-                        # Emballage dédié par carton = total dédié / quantité
-                        pkg_solo_per_carton = pkg_solo / qty_solo if qty_solo > 0 else 0
-                        pkg_classico_per_carton = pkg_classico / qty_classico if qty_classico > 0 else 0
+                    # Coût TOTAL par carton = Matières + Emballage
+                    cost_solo_final = mp_solo_per_carton + pkg_solo_per_carton
+                    cost_classico_final = mp_classico_per_carton + pkg_classico_per_carton
 
-                        cost_solo_final = cost_solo_base + pkg_solo_per_carton
-                        cost_classico_final = cost_classico_base + pkg_classico_per_carton
-
-                        rec.cost_classico_per_carton = cost_classico_final
-                        rec.cost_solo_per_carton = cost_solo_final
-                        rec.total_classico_cost = cost_classico_final * qty_classico
-                        rec.total_solo_cost = cost_solo_final * qty_solo
-                else:
-                    # ========== MODE STANDARD ==========
-                    # Formule de répartition avec ratio:
-                    # S = ratio × C (Coût SOLO = ratio × Coût CLASSICO)
-                    # Total = qty_solo × S + qty_classico × C
-                    # Total = C × (qty_solo × ratio + qty_classico)
-                    # C = Total / (qty_solo × ratio + qty_classico)
-
-                    denominator = (qty_solo * ratio + qty_classico)
-                    if denominator > 0:
-                        cost_classico = rec.total_good_cost / denominator
-                        cost_solo = cost_classico * ratio
-
-                        rec.cost_classico_per_carton = cost_classico
-                        rec.cost_solo_per_carton = cost_solo
-                        rec.total_classico_cost = cost_classico * qty_classico
-                        rec.total_solo_cost = cost_solo * qty_solo
+                    rec.cost_solo_per_carton = cost_solo_final
+                    rec.cost_classico_per_carton = cost_classico_final
+                    rec.total_solo_cost = cost_solo_final * qty_solo
+                    rec.total_classico_cost = cost_classico_final * qty_classico
 
             # MODE SANDWICH GF - Calcul direct (sans ratio)
             elif rec.production_type == 'sandwich_gf':
                 if qty_sandwich > 0:
-                    # ========== MODE SÉPARATION EMBALLAGES ==========
-                    if config.separate_packaging_costs:
-                        # Pour Sandwich GF : un seul produit, donc tous les emballages
-                        # (commun + sandwich_gf) vont au même produit
-                        pkg_sandwich = sum(rec.packaging_line_ids.filtered(
-                            lambda l: l.target_product_type == 'sandwich_gf'
-                        ).mapped('total_cost'))
-                        pkg_common = sum(rec.packaging_line_ids.filtered(
-                            lambda l: l.target_product_type == 'common'
-                        ).mapped('total_cost'))
+                    # Coût emballage Sandwich
+                    pkg_sandwich = rec.emballage_sandwich_cost + rec.film_sandwich_cost
 
-                        # Coût = Matières + Emballages (commun + dédié) / Quantité
-                        total_cost = rec.total_consumption_cost + pkg_common + pkg_sandwich
-                        cost_sandwich = total_cost / qty_sandwich
+                    # Coût total = Matières + Emballages
+                    total_cost = rec.total_consumption_cost + pkg_sandwich
+                    cost_sandwich = total_cost / qty_sandwich
 
-                        rec.cost_sandwich_per_carton = cost_sandwich
-                        rec.total_sandwich_cost = total_cost
-                    else:
-                        # ========== MODE STANDARD ==========
-                        cost_sandwich = rec.total_good_cost / qty_sandwich
-
-                        rec.cost_sandwich_per_carton = cost_sandwich
-                        rec.total_sandwich_cost = rec.total_good_cost
+                    rec.cost_sandwich_per_carton = cost_sandwich
+                    rec.total_sandwich_cost = total_cost
 
     # ================== ACTIONS ==================
 
@@ -761,22 +801,37 @@ class RonDailyProduction(models.Model):
                 })
 
         # ========== Vérifier les Emballages ==========
-        for line in self.packaging_line_ids:
-            if not line.product_id or line.quantity <= 0:
-                continue
+        # Liste des emballages à vérifier selon le type de production
+        emballages_to_check = []
 
+        if self.production_type == 'solo_classico':
+            if config.product_emballage_solo_id and self.emballage_solo_qty > 0:
+                emballages_to_check.append((config.product_emballage_solo_id, self.emballage_solo_qty))
+            if config.product_emballage_classico_id and self.emballage_classico_qty > 0:
+                emballages_to_check.append((config.product_emballage_classico_id, self.emballage_classico_qty))
+            if config.product_film_solo_id and self.film_solo_qty > 0:
+                emballages_to_check.append((config.product_film_solo_id, self.film_solo_qty))
+            if config.product_film_classico_id and self.film_classico_qty > 0:
+                emballages_to_check.append((config.product_film_classico_id, self.film_classico_qty))
+        elif self.production_type == 'sandwich_gf':
+            if config.product_emballage_sandwich_id and self.emballage_sandwich_qty > 0:
+                emballages_to_check.append((config.product_emballage_sandwich_id, self.emballage_sandwich_qty))
+            if config.product_film_sandwich_id and self.film_sandwich_qty > 0:
+                emballages_to_check.append((config.product_film_sandwich_id, self.film_sandwich_qty))
+
+        for product, qty in emballages_to_check:
             quant = self.env['stock.quant'].search([
-                ('product_id', '=', line.product_id.id),
+                ('product_id', '=', product.id),
                 ('location_id', 'in', child_locations.ids),
             ])
             available_qty = sum(quant.mapped('quantity')) - sum(quant.mapped('reserved_quantity'))
 
-            if available_qty < line.quantity:
+            if available_qty < qty:
                 missing_emb.append({
-                    'product': line.product_id.name,
-                    'required': line.quantity,
+                    'product': product.name,
+                    'required': qty,
                     'available': max(0, available_qty),
-                    'missing': line.quantity - available_qty,
+                    'missing': qty - available_qty,
                 })
 
         # ========== Générer le message d'erreur ==========
@@ -1028,19 +1083,32 @@ class RonDailyProduction(models.Model):
     def _create_packaging_picking(self):
         """Crée le BL de consommation des emballages vers le contact Consommation.
 
-        Génère un BL séparé pour les emballages (cartons, film ondulé, etc.)
-        uniquement pour les lignes ayant un produit stockable défini.
+        Génère un BL séparé pour les emballages (cartons, films) en utilisant
+        les produits configurés dans ron.production.config.
         """
         self.ensure_one()
         config = self.env['ron.production.config'].get_config(self.company_id.id)
 
-        # Filtrer les lignes d'emballage avec un produit défini
-        packaging_lines = self.packaging_line_ids.filtered(
-            lambda l: l.product_id and l.quantity > 0
-        )
+        # Construire la liste des emballages à consommer selon le type de production
+        emballages_to_consume = []
 
-        if not packaging_lines:
-            _logger.info("Pas de lignes d'emballage avec produit - BL Emballage non créé")
+        if self.production_type == 'solo_classico':
+            if config.product_emballage_solo_id and self.emballage_solo_qty > 0:
+                emballages_to_consume.append((config.product_emballage_solo_id, self.emballage_solo_qty))
+            if config.product_emballage_classico_id and self.emballage_classico_qty > 0:
+                emballages_to_consume.append((config.product_emballage_classico_id, self.emballage_classico_qty))
+            if config.product_film_solo_id and self.film_solo_qty > 0:
+                emballages_to_consume.append((config.product_film_solo_id, self.film_solo_qty))
+            if config.product_film_classico_id and self.film_classico_qty > 0:
+                emballages_to_consume.append((config.product_film_classico_id, self.film_classico_qty))
+        elif self.production_type == 'sandwich_gf':
+            if config.product_emballage_sandwich_id and self.emballage_sandwich_qty > 0:
+                emballages_to_consume.append((config.product_emballage_sandwich_id, self.emballage_sandwich_qty))
+            if config.product_film_sandwich_id and self.film_sandwich_qty > 0:
+                emballages_to_consume.append((config.product_film_sandwich_id, self.film_sandwich_qty))
+
+        if not emballages_to_consume:
+            _logger.info("Pas d'emballage à consommer - BL Emballage non créé")
             return
 
         if not config.partner_consumption_id:
@@ -1082,13 +1150,13 @@ class RonDailyProduction(models.Model):
         picking = self.env['stock.picking'].create(picking_vals)
 
         # Créer les lignes de mouvement pour chaque emballage
-        for line in packaging_lines:
+        for product, qty in emballages_to_consume:
             self.env['stock.move'].create({
-                'name': f"[Emballage] {line.product_id.name}",
+                'name': f"[Emballage] {product.name}",
                 'picking_id': picking.id,
-                'product_id': line.product_id.id,
-                'product_uom_qty': line.quantity,
-                'product_uom': line.product_id.uom_id.id,
+                'product_id': product.id,
+                'product_uom_qty': qty,
+                'product_uom': product.uom_id.id,
                 'location_id': picking.location_id.id,
                 'location_dest_id': picking.location_dest_id.id,
             })
@@ -1191,12 +1259,12 @@ class RonDailyProduction(models.Model):
         if not config.product_paste_id:
             raise UserError(_("Veuillez configurer le produit Pâte Récupérable."))
 
-        # Créer la commande d'achat
+        # Créer la commande d'achat - Dépôt Production (DPR)
         purchase_vals = {
             'partner_id': config.partner_production_id.id,
             'date_order': self.production_date,
             'origin': f"{self.name} - Pâte",
-            'picking_type_id': config.warehouse_pf_id.in_type_id.id if config.warehouse_pf_id else False,
+            'picking_type_id': config.warehouse_production_id.in_type_id.id if config.warehouse_production_id else False,
         }
         purchase = self.env['purchase.order'].create(purchase_vals)
 

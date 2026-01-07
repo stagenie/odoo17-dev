@@ -178,65 +178,68 @@
 
                         <!-- Onglet Emballage -->
                         <page string="Emballage" name="packaging">
-                            <field name="separate_packaging_costs" invisible="1"/>
-                            <field name="packaging_line_ids"
-                                   context="{'default_parent_production_type': production_type}">
-                                <tree editable="bottom">
-                                    <field name="parent_production_type" column_invisible="1"/>
-                                    <field name="packaging_type"/>
-                                    <field name="target_product_type" string="Affectation"
-                                           column_invisible="not parent.separate_packaging_costs"
-                                           optional="show"/>
-                                    <field name="product_id"/>
-                                    <field name="quantity" string="Qté/Poids"/>
-                                    <field name="product_uom_id"/>
-                                    <field name="unit_cost" string="Prix Unit."/>
-                                    <field name="total_cost" sum="Total Coût"/>
-                                    <field name="linked_to_production"/>
-                                    <field name="notes"/>
-                                    <field name="currency_id" column_invisible="1"/>
-                                </tree>
-                            </field>
-                            <group col="4">
-                                <group string="Détail Coûts Emballage">
-                                    <field name="packaging_carton_cost" string="Cartons"/>
-                                    <field name="packaging_film_cost" string="Film Ondulé"/>
-                                    <field name="packaging_other_cost" string="Autres"/>
+                            <!-- SOLO/CLASSICO -->
+                            <group invisible="production_type != 'solo_classico'" col="4">
+                                <group string="Emballage SOLO">
+                                    <field name="emballage_solo_qty" string="Quantité"/>
+                                    <field name="emballage_solo_unit_cost" string="Prix Unitaire"/>
+                                    <field name="emballage_solo_cost" string="Coût Total" readonly="1"/>
                                 </group>
-                                <group string="Total">
+                                <group string="Emballage CLASSICO">
+                                    <field name="emballage_classico_qty" string="Quantité"/>
+                                    <field name="emballage_classico_unit_cost" string="Prix Unitaire"/>
+                                    <field name="emballage_classico_cost" string="Coût Total" readonly="1"/>
+                                </group>
+                                <group string="Film SOLO">
+                                    <field name="film_solo_qty" string="Quantité (kg)"/>
+                                    <field name="film_solo_unit_cost" string="Prix/kg"/>
+                                    <field name="film_solo_cost" string="Coût Total" readonly="1"/>
+                                </group>
+                                <group string="Film CLASSICO">
+                                    <field name="film_classico_qty" string="Quantité (kg)"/>
+                                    <field name="film_classico_unit_cost" string="Prix/kg"/>
+                                    <field name="film_classico_cost" string="Coût Total" readonly="1"/>
+                                </group>
+                            </group>
+
+                            <!-- SANDWICH GF -->
+                            <group invisible="production_type != 'sandwich_gf'" col="2">
+                                <group string="Emballage Sandwich GF">
+                                    <field name="emballage_sandwich_qty" string="Quantité"/>
+                                    <field name="emballage_sandwich_unit_cost" string="Prix Unitaire"/>
+                                    <field name="emballage_sandwich_cost" string="Coût Total" readonly="1"/>
+                                </group>
+                                <group string="Film Sandwich GF">
+                                    <field name="film_sandwich_qty" string="Quantité (kg)"/>
+                                    <field name="film_sandwich_unit_cost" string="Prix/kg"/>
+                                    <field name="film_sandwich_cost" string="Coût Total" readonly="1"/>
+                                </group>
+                            </group>
+
+                            <!-- Totaux -->
+                            <group col="4">
+                                <group string="Totaux">
+                                    <field name="total_emballage_cost" string="Total Emballages"/>
+                                    <field name="total_film_cost" string="Total Films"/>
+                                </group>
+                                <group string="Total Général">
                                     <field name="total_packaging_cost" class="oe_subtotal_footer_separator"/>
                                 </group>
                             </group>
-                            <!-- Alertes Mode Standard -->
+
+                            <!-- Alerte informative -->
                             <div class="alert alert-info" role="alert"
-                                 invisible="separate_packaging_costs or production_type != 'solo_classico'">
-                                <strong>Types d'emballage (SOLO/CLASSICO):</strong><br/>
-                                - Carton: Nombre × Prix unitaire<br/>
-                                - Film Ondulé: Poids (kg) × Prix/kg<br/>
-                                <em>Les coûts d'emballage sont répartis avec le ratio SOLO/CLASSICO.</em>
+                                 invisible="production_type != 'solo_classico'">
+                                <strong>Coûts Emballage (SOLO/CLASSICO):</strong><br/>
+                                - Les emballages sont affectés <b>directement</b> par type de produit<br/>
+                                - Coût Emb. SOLO / Qté cartons SOLO = Coût emballage par carton SOLO<br/>
+                                - Coût Emb. CLASSICO / Qté cartons CLASSICO = Coût emballage par carton CLASSICO<br/>
+                                <em>Le ratio s'applique uniquement aux matières premières.</em>
                             </div>
                             <div class="alert alert-info" role="alert"
-                                 invisible="separate_packaging_costs or production_type != 'sandwich_gf'">
-                                <strong>Types d'emballage (Sandwich GF):</strong><br/>
-                                - Carton: Nombre × Prix unitaire<br/>
-                                - Film Ondulé: Poids (kg) × Prix/kg<br/>
-                                <em>Les coûts d'emballage sont divisés par le nombre de cartons Sandwich.</em>
-                            </div>
-                            <!-- Alertes Mode Séparation -->
-                            <div class="alert alert-warning" role="alert"
-                                 invisible="not separate_packaging_costs or production_type != 'solo_classico'">
-                                <strong>Mode Séparation des Coûts Emballage (SOLO/CLASSICO):</strong><br/>
-                                - <b>Commun:</b> Réparti avec le ratio SOLO/CLASSICO<br/>
-                                - <b>SOLO:</b> Affecté directement au coût SOLO<br/>
-                                - <b>CLASSICO:</b> Affecté directement au coût CLASSICO<br/>
-                                <em>Utilisez la colonne "Affectation" pour définir la destination de chaque emballage.</em>
-                            </div>
-                            <div class="alert alert-warning" role="alert"
-                                 invisible="not separate_packaging_costs or production_type != 'sandwich_gf'">
-                                <strong>Mode Séparation des Coûts Emballage (Sandwich GF):</strong><br/>
-                                - <b>Commun:</b> Divisé par le nombre de cartons Sandwich<br/>
-                                - <b>Sandwich GF:</b> Affecté directement au coût Sandwich<br/>
-                                <em>Pour Sandwich GF, le résultat est identique au mode standard (un seul produit).</em>
+                                 invisible="production_type != 'sandwich_gf'">
+                                <strong>Coûts Emballage (Sandwich GF):</strong><br/>
+                                - Coût Total Emballage / Qté cartons Sandwich = Coût emballage par carton
                             </div>
                         </page>
 
@@ -297,8 +300,8 @@
                                     <field name="cost_per_kg"/>
                                 </group>
                                 <group string="Emballage">
-                                    <field name="packaging_carton_cost"/>
-                                    <field name="packaging_film_cost"/>
+                                    <field name="total_emballage_cost" string="Emballages"/>
+                                    <field name="total_film_cost" string="Films"/>
                                     <field name="total_packaging_cost"/>
                                 </group>
                                 <group string="Pertes (Rebuts + Pâte)">
