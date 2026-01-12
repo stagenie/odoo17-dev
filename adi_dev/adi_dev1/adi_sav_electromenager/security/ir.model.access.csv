@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_sav_category_user,sav.category.user,model_sav_category,group_sav_user,1,0,0,0
+access_sav_category_manager,sav.category.manager,model_sav_category,group_sav_manager,1,1,1,1
+access_sav_fault_type_user,sav.fault.type.user,model_sav_fault_type,group_sav_user,1,0,0,0
+access_sav_fault_type_manager,sav.fault.type.manager,model_sav_fault_type,group_sav_manager,1,1,1,1
+access_sav_return_user,sav.return.user,model_sav_return,group_sav_user,1,1,1,0
+access_sav_return_manager,sav.return.manager,model_sav_return,group_sav_manager,1,1,1,1

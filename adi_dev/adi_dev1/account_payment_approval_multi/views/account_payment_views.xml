@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Hériter de la vue liste pour masquer le bouton Confirm et ajouter nos boutons -->
+    <record id="view_account_payment_tree_inherit_approval_multi" model="ir.ui.view">
+        <field name="name">account.payment.tree.inherit.approval.multi</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_tree"/>
+        <field name="arch" type="xml">
+            <!-- Masquer le bouton Confirm original -->
+            <xpath expr="//header/button[@name='action_post']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <!-- Ajouter nos boutons après le bouton Confirm masqué -->
+            <xpath expr="//header/button[@name='action_post']" position="after">
+                <button name="action_approve_multi" type="object"
+                        string="Approuver les Paiements" class="btn-primary"/>
+                <button name="action_reject_multi" type="object"
+                        string="Rejeter les Paiements" class="btn-secondary"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Action serveur pour approuver plusieurs paiements (gardé dans Action menu aussi) -->
+    <record id="action_approve_payments_multi" model="ir.actions.server">
+        <field name="name">Approuver les Paiements</field>
+        <field name="model_id" ref="account.model_account_payment"/>
+        <field name="binding_model_id" ref="account.model_account_payment"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">
+if records:
+    action = records.action_approve_multi()
+        </field>
+    </record>
+
+    <!-- Action serveur pour rejeter plusieurs paiements -->
+    <record id="action_reject_payments_multi" model="ir.actions.server">
+        <field name="name">Rejeter les Paiements</field>
+        <field name="model_id" ref="account.model_account_payment"/>
+        <field name="binding_model_id" ref="account.model_account_payment"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">
+if records:
+    action = records.action_reject_multi()
+        </field>
+    </record>
+
+</odoo>

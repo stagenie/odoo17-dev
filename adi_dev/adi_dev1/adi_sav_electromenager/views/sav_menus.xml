@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Menu Principal de l'Application -->
+    <menuitem id="sav_menu_root"
+              name="SAV Electroménager"
+              web_icon="adi_sav_electromenager,static/description/icon.png"
+              sequence="50"/>
+
+    <!-- Menu Retours -->
+    <menuitem id="sav_menu_returns"
+              name="Retours"
+              parent="sav_menu_root"
+              sequence="10"/>
+
+    <menuitem id="sav_menu_returns_all"
+              name="Tous les Retours"
+              parent="sav_menu_returns"
+              action="sav_return_action"
+              sequence="10"/>
+
+    <menuitem id="sav_menu_returns_today"
+              name="Retours du Jour"
+              parent="sav_menu_returns"
+              action="sav_return_action_today"
+              sequence="20"/>
+
+    <menuitem id="sav_menu_returns_my"
+              name="Mes Retours"
+              parent="sav_menu_returns"
+              action="sav_return_action_my"
+              sequence="30"/>
+
+    <menuitem id="sav_menu_returns_in_progress"
+              name="En Réparation"
+              parent="sav_menu_returns"
+              action="sav_return_action_in_progress"
+              sequence="40"/>
+
+    <!-- Menu Rapports -->
+    <menuitem id="sav_menu_reporting"
+              name="Rapports"
+              parent="sav_menu_root"
+              sequence="20"/>
+
+    <menuitem id="sav_menu_reporting_stats"
+              name="Statistiques SAV"
+              parent="sav_menu_reporting"
+              action="sav_return_action_reporting"
+              sequence="10"/>
+
+    <!-- Menu Configuration -->
+    <menuitem id="sav_menu_config"
+              name="Configuration"
+              parent="sav_menu_root"
+              groups="base.group_system"
+              sequence="100"/>
+
+    <menuitem id="sav_menu_config_categories"
+              name="Catégories"
+              parent="sav_menu_config"
+              action="sav_category_action"
+              sequence="10"/>
+
+    <menuitem id="sav_menu_config_fault_types"
+              name="Types de Pannes"
+              parent="sav_menu_config"
+              action="sav_fault_type_action"
+              sequence="20"/>
+
+</odoo>

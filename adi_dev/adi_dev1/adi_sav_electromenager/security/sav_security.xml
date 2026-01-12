@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Catégorie du module -->
+    <record id="module_category_sav" model="ir.module.category">
+        <field name="name">SAV Electroménager</field>
+        <field name="description">Gestion du Service Après-Vente</field>
+        <field name="sequence">50</field>
+    </record>
+
+    <!-- Groupe Utilisateur SAV -->
+    <record id="group_sav_user" model="res.groups">
+        <field name="name">Utilisateur SAV</field>
+        <field name="category_id" ref="module_category_sav"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+        <field name="comment">Peut créer et modifier les retours SAV</field>
+    </record>
+
+    <!-- Groupe Responsable SAV -->
+    <record id="group_sav_manager" model="res.groups">
+        <field name="name">Responsable SAV</field>
+        <field name="category_id" ref="module_category_sav"/>
+        <field name="implied_ids" eval="[(4, ref('group_sav_user'))]"/>
+        <field name="comment">Accès complet à la gestion SAV, configuration incluse</field>
+    </record>
+
+    <!-- Règles d'accès par enregistrement -->
+    <record id="sav_return_rule_user" model="ir.rule">
+        <field name="name">SAV Return: Voir ses propres retours</field>
+        <field name="model_id" ref="model_sav_return"/>
+        <field name="domain_force">[('user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('group_sav_user'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <record id="sav_return_rule_manager" model="ir.rule">
+        <field name="name">SAV Return: Responsable voit tout</field>
+        <field name="model_id" ref="model_sav_return"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('group_sav_manager'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <!-- Multi-company rule -->
+    <record id="sav_return_rule_company" model="ir.rule">
+        <field name="name">SAV Return: Multi-Company</field>
+        <field name="model_id" ref="model_sav_return"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="global" eval="True"/>
+    </record>
+
+</odoo>

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- Catégories Electroménager -->
+        <record id="sav_category_congelation" model="sav.category">
+            <field name="name">Congélation</field>
+            <field name="code">CONG</field>
+            <field name="sequence">10</field>
+            <field name="color">1</field>
+            <field name="description">Congélateurs, compartiments de congélation</field>
+        </record>
+
+        <record id="sav_category_refroidissement" model="sav.category">
+            <field name="name">Refroidissement</field>
+            <field name="code">REFR</field>
+            <field name="sequence">20</field>
+            <field name="color">4</field>
+            <field name="description">Réfrigérateurs, climatiseurs</field>
+        </record>
+
+        <record id="sav_category_cuisson" model="sav.category">
+            <field name="name">Cuisson</field>
+            <field name="code">CUIS</field>
+            <field name="sequence">30</field>
+            <field name="color">3</field>
+            <field name="description">Cuisinières, fours, plaques de cuisson</field>
+        </record>
+
+        <record id="sav_category_lavage" model="sav.category">
+            <field name="name">Lavage</field>
+            <field name="code">LAVA</field>
+            <field name="sequence">40</field>
+            <field name="color">5</field>
+            <field name="description">Lave-linge, lave-vaisselle</field>
+        </record>
+
+        <record id="sav_category_sechage" model="sav.category">
+            <field name="name">Séchage</field>
+            <field name="code">SECH</field>
+            <field name="sequence">50</field>
+            <field name="color">2</field>
+            <field name="description">Sèche-linge</field>
+        </record>
+
+        <record id="sav_category_petit_electro" model="sav.category">
+            <field name="name">Petit Electroménager</field>
+            <field name="code">PEM</field>
+            <field name="sequence">60</field>
+            <field name="color">6</field>
+            <field name="description">Robots, mixeurs, cafetières, etc.</field>
+        </record>
+
+        <record id="sav_category_chauffage" model="sav.category">
+            <field name="name">Chauffage</field>
+            <field name="code">CHAU</field>
+            <field name="sequence">70</field>
+            <field name="color">3</field>
+            <field name="description">Chauffages, chauffe-eau</field>
+        </record>
+
+        <record id="sav_category_ventilation" model="sav.category">
+            <field name="name">Ventilation</field>
+            <field name="code">VENT</field>
+            <field name="sequence">80</field>
+            <field name="color">4</field>
+            <field name="description">Ventilateurs, hottes aspirantes</field>
+        </record>
+
+    </data>
+</odoo>

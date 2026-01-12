@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- Types de Pannes Electroménager -->
+
+        <!-- Pannes liées au froid -->
+        <record id="sav_fault_no_cooling" model="sav.fault.type">
+            <field name="name">Problème de Refroidissement</field>
+            <field name="code">NO_COOL</field>
+            <field name="sequence">10</field>
+            <field name="color">4</field>
+            <field name="description">L'appareil ne refroidit pas ou refroidit mal</field>
+            <field name="category_ids" eval="[(6, 0, [ref('sav_category_congelation'), ref('sav_category_refroidissement')])]"/>
+        </record>
+
+        <record id="sav_fault_frost" model="sav.fault.type">
+            <field name="name">Formation de Givre</field>
+            <field name="code">FROST</field>
+            <field name="sequence">15</field>
+            <field name="color">4</field>
+            <field name="description">Formation excessive de givre dans l'appareil</field>
+            <field name="category_ids" eval="[(6, 0, [ref('sav_category_congelation'), ref('sav_category_refroidissement')])]"/>
+        </record>
+
+        <!-- Pannes liées au chauffage -->
+        <record id="sav_fault_no_heating" model="sav.fault.type">
+            <field name="name">Problème de Chauffage</field>
+            <field name="code">NO_HEAT</field>
+            <field name="sequence">20</field>
+            <field name="color">3</field>
+            <field name="description">L'appareil ne chauffe pas ou chauffe mal</field>
+            <field name="category_ids" eval="[(6, 0, [ref('sav_category_cuisson'), ref('sav_category_chauffage')])]"/>
+        </record>
+
+        <record id="sav_fault_overheating" model="sav.fault.type">
+            <field name="name">Surchauffe</field>
+            <field name="code">OVERHEAT</field>
+            <field name="sequence">25</field>
+            <field name="color">1</field>
+            <field name="description">L'appareil surchauffe anormalement</field>
+        </record>
+
+        <!-- Pannes électriques -->
+        <record id="sav_fault_no_power" model="sav.fault.type">
+            <field name="name">Ne S'allume Pas</field>
+            <field name="code">NO_PWR</field>
+            <field name="sequence">30</field>
+            <field name="color">1</field>
+            <field name="description">L'appareil ne démarre pas, pas d'alimentation</field>
+        </record>
+
+        <record id="sav_fault_electrical" model="sav.fault.type">
+            <field name="name">Problème Électrique</field>
+            <field name="code">ELEC</field>
+            <field name="sequence">35</field>
+            <field name="color">1</field>
+            <field name="description">Court-circuit, fusible, carte électronique</field>
+        </record>
+
+        <record id="sav_fault_display" model="sav.fault.type">
+            <field name="name">Problème d'Affichage</field>
+            <field name="code">DISPLAY</field>
+            <field name="sequence">40</field>
+            <field name="color">2</field>
+            <field name="description">Écran ne fonctionne pas, affichage défectueux</field>
+        </record>
+
+        <!-- Pannes mécaniques -->
+        <record id="sav_fault_noise" model="sav.fault.type">
+            <field name="name">Bruit Anormal</field>
+            <field name="code">NOISE</field>
+            <field name="sequence">50</field>
+            <field name="color">2</field>
+            <field name="description">Bruits inhabituels lors du fonctionnement</field>
+        </record>
+
+        <record id="sav_fault_vibration" model="sav.fault.type">
+            <field name="name">Vibration Excessive</field>
+            <field name="code">VIBR</field>
+            <field name="sequence">55</field>
+            <field name="color">2</field>
+            <field name="description">Vibrations anormales pendant le fonctionnement</field>
+            <field name="category_ids" eval="[(6, 0, [ref('sav_category_lavage'), ref('sav_category_sechage')])]"/>
+        </record>
+
+        <record id="sav_fault_motor" model="sav.fault.type">
+            <field name="name">Problème Moteur</field>
+            <field name="code">MOTOR</field>
+            <field name="sequence">60</field>
+            <field name="color">1</field>
+            <field name="description">Moteur défectueux ou ne tourne pas</field>
+        </record>
+
+        <!-- Pannes liées à l'eau -->
+        <record id="sav_fault_leak" model="sav.fault.type">
+            <field name="name">Fuite d'Eau</field>
+            <field name="code">LEAK</field>
+            <field name="sequence">70</field>
+            <field name="color">4</field>
+            <field name="description">Fuite d'eau de l'appareil</field>
+            <field name="category_ids" eval="[(6, 0, [ref('sav_category_lavage'), ref('sav_category_refroidissement')])]"/>
+        </record>
+
+        <record id="sav_fault_drain" model="sav.fault.type">
+            <field name="name">Problème de Vidange</field>
+            <field name="code">DRAIN</field>
+            <field name="sequence">75</field>
+            <field name="color">4</field>
+            <field name="description">L'eau ne s'évacue pas correctement</field>
+            <field name="category_ids" eval="[(6, 0, [ref('sav_category_lavage')])]"/>
+        </record>
+
+        <record id="sav_fault_water_inlet" model="sav.fault.type">
+            <field name="name">Problème d'Arrivée d'Eau</field>
+            <field name="code">WATER_IN</field>
+            <field name="sequence">80</field>
+            <field name="color">4</field>
+            <field name="description">L'eau n'arrive pas ou mal dans l'appareil</field>
+            <field name="category_ids" eval="[(6, 0, [ref('sav_category_lavage')])]"/>
+        </record>
+
+        <!-- Autres pannes -->
+        <record id="sav_fault_door" model="sav.fault.type">
+            <field name="name">Problème de Porte</field>
+            <field name="code">DOOR</field>
+            <field name="sequence">90</field>
+            <field name="color">2</field>
+            <field name="description">Porte ne ferme pas, joint défectueux</field>
+        </record>
+
+        <record id="sav_fault_thermostat" model="sav.fault.type">
+            <field name="name">Thermostat Défectueux</field>
+            <field name="code">THERMO</field>
+            <field name="sequence">95</field>
+            <field name="color">3</field>
+            <field name="description">Problème de régulation de température</field>
+        </record>
+
+        <record id="sav_fault_compressor" model="sav.fault.type">
+            <field name="name">Compresseur HS</field>
+            <field name="code">COMPR</field>
+            <field name="sequence">100</field>
+            <field name="color">1</field>
+            <field name="description">Compresseur en panne</field>
+            <field name="category_ids" eval="[(6, 0, [ref('sav_category_congelation'), ref('sav_category_refroidissement')])]"/>
+        </record>
+
+        <record id="sav_fault_other" model="sav.fault.type">
+            <field name="name">Autre</field>
+            <field name="code">OTHER</field>
+            <field name="sequence">999</field>
+            <field name="color">0</field>
+            <field name="description">Autre type de panne non listée</field>
+        </record>
+
+    </data>
+</odoo>

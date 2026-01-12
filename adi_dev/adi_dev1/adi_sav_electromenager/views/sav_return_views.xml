@@ -1,0 +1,425 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Tree View -->
+    <record id="sav_return_view_tree" model="ir.ui.view">
+        <field name="name">sav.return.view.tree</field>
+        <field name="model">sav.return</field>
+        <field name="arch" type="xml">
+            <tree decoration-danger="state == 'not_repaired'"
+                  decoration-success="state in ['repaired', 'delivered']"
+                  decoration-warning="state == 'in_progress'"
+                  decoration-info="state == 'received'"
+                  decoration-muted="state == 'cancelled'"
+                  multi_edit="1">
+                <field name="name"/>
+                <field name="date"/>
+                <field name="partner_id"/>
+                <field name="product_id"/>
+                <field name="category_id" optional="show"/>
+                <field name="serial_number"/>
+                <field name="fault_type_id"/>
+                <field name="product_condition" optional="show"/>
+                <field name="action_taken" optional="show"/>
+                <field name="state" widget="badge"
+                       decoration-danger="state == 'not_repaired'"
+                       decoration-success="state in ['repaired', 'delivered']"
+                       decoration-warning="state == 'in_progress'"
+                       decoration-info="state == 'received'"/>
+                <field name="user_id" widget="many2one_avatar_user" optional="hide"/>
+                <field name="priority" widget="priority" optional="hide"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="sav_return_view_form" model="ir.ui.view">
+        <field name="name">sav.return.view.form</field>
+        <field name="model">sav.return</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <!-- Boutons d'action selon l'état -->
+                    <button name="action_confirm" string="Confirmer Réception"
+                            type="object" class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_start_repair" string="Démarrer Réparation"
+                            type="object" class="btn-primary"
+                            invisible="state != 'received'"/>
+                    <button name="action_mark_repaired" string="Marquer Réparé"
+                            type="object" class="btn-success"
+                            invisible="state != 'in_progress'"/>
+                    <button name="action_mark_replaced" string="Marquer Changé"
+                            type="object" class="btn-warning"
+                            invisible="state != 'in_progress'"/>
+                    <button name="action_mark_not_repaired" string="Non Réparable"
+                            type="object" class="btn-danger"
+                            invisible="state != 'in_progress'"/>
+                    <button name="action_deliver" string="Marquer Livré"
+                            type="object" class="btn-success"
+                            invisible="state not in ['repaired', 'not_repaired']"/>
+                    <button name="action_cancel" string="Annuler"
+                            type="object"
+                            invisible="state in ['delivered', 'cancelled']"/>
+                    <button name="action_reset_draft" string="Remettre en Brouillon"
+                            type="object"
+                            invisible="state != 'cancelled'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,received,in_progress,repaired,delivered"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_print_repair_order" type="object"
+                                class="oe_stat_button" icon="fa-wrench"
+                                invisible="state == 'draft'">
+                            <span>Bon de Réparation</span>
+                        </button>
+                        <button name="action_print_delivery_order" type="object"
+                                class="oe_stat_button" icon="fa-truck"
+                                invisible="state not in ['repaired', 'not_repaired', 'delivered']">
+                            <span>Bon de Livraison</span>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Annulé" bg_color="text-bg-danger"
+                            invisible="state != 'cancelled'"/>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Informations Générales">
+                            <field name="date"/>
+                            <field name="partner_id"/>
+                            <field name="user_id" widget="many2one_avatar_user" readonly="1"/>
+                            <field name="priority" widget="priority"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group string="Origine">
+                            <field name="sale_order_id"
+                                   context="{'default_partner_id': partner_id}"/>
+                            <field name="picking_id"
+                                   context="{'default_partner_id': partner_id}"/>
+                            <field name="sale_date" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Article Retourné">
+                            <field name="filter_from_picking" widget="boolean_toggle"
+                                   invisible="not picking_id"/>
+                            <field name="available_product_ids" invisible="1"/>
+                            <field name="product_id"
+                                   domain="filter_from_picking and picking_id and [('id', 'in', available_product_ids)] or []"/>
+                            <field name="category_id"/>
+                            <field name="serial_number"/>
+                        </group>
+                        <group string="Diagnostic">
+                            <field name="fault_type_id"/>
+                            <field name="product_condition"/>
+                            <field name="action_taken"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Observations" name="observations">
+                            <field name="observations" placeholder="Observations générales..."
+                                   nolabel="1" class="oe_inline"/>
+                        </page>
+                        <page string="Diagnostic &amp; Réparation" name="repair">
+                            <group>
+                                <group>
+                                    <field name="diagnostic" placeholder="Diagnostic technique..."/>
+                                </group>
+                                <group>
+                                    <field name="repair_notes" placeholder="Notes de réparation..."/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Suivi" name="tracking">
+                            <group>
+                                <group string="Dates">
+                                    <field name="reception_date"/>
+                                    <field name="repair_start_date"/>
+                                    <field name="repair_end_date"/>
+                                    <field name="delivery_date"/>
+                                </group>
+                                <group string="Durées">
+                                    <field name="repair_duration"/>
+                                    <field name="total_duration"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- Kanban View -->
+    <record id="sav_return_view_kanban" model="ir.ui.view">
+        <field name="name">sav.return.view.kanban</field>
+        <field name="model">sav.return</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state" class="o_kanban_small_column"
+                    quick_create="false" group_create="false" group_delete="false"
+                    group_edit="false" archivable="false" sample="1">
+                <field name="color"/>
+                <field name="priority"/>
+                <progressbar field="state"
+                    colors='{"draft": "muted", "received": "info", "in_progress": "warning", "repaired": "success", "not_repaired": "danger", "delivered": "success", "cancelled": "danger"}'/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="#{!selection_mode ? kanban_color(record.color.raw_value) : ''} oe_kanban_global_click oe_kanban_card">
+                            <div class="oe_kanban_content">
+                                <div class="o_kanban_record_top">
+                                    <div class="o_kanban_record_headings">
+                                        <strong class="o_kanban_record_title">
+                                            <field name="name"/>
+                                        </strong>
+                                    </div>
+                                    <div class="o_dropdown_kanban dropdown">
+                                        <a role="button" class="dropdown-toggle o-no-caret btn"
+                                           data-bs-toggle="dropdown" href="#" aria-label="Dropdown menu">
+                                            <span class="fa fa-ellipsis-v"/>
+                                        </a>
+                                        <div class="dropdown-menu" role="menu">
+                                            <t t-if="widget.editable">
+                                                <a role="menuitem" type="edit" class="dropdown-item">Modifier</a>
+                                            </t>
+                                            <t t-if="widget.deletable">
+                                                <a role="menuitem" type="delete" class="dropdown-item">Supprimer</a>
+                                            </t>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="o_kanban_record_body">
+                                    <field name="partner_id"/>
+                                    <div class="mt-1">
+                                        <strong><field name="product_id"/></strong>
+                                    </div>
+                                    <div class="text-muted">
+                                        <field name="serial_number"/>
+                                    </div>
+                                    <div class="mt-1">
+                                        <field name="category_id" widget="badge"/>
+                                        <field name="fault_type_id" widget="badge"/>
+                                    </div>
+                                </div>
+                                <div class="o_kanban_record_bottom">
+                                    <div class="oe_kanban_bottom_left">
+                                        <field name="priority" widget="priority"/>
+                                        <field name="date"/>
+                                    </div>
+                                    <div class="oe_kanban_bottom_right">
+                                        <field name="user_id" widget="many2one_avatar_user"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Pivot View -->
+    <record id="sav_return_view_pivot" model="ir.ui.view">
+        <field name="name">sav.return.view.pivot</field>
+        <field name="model">sav.return</field>
+        <field name="arch" type="xml">
+            <pivot string="Analyse des Retours" sample="1">
+                <field name="category_id" type="row"/>
+                <field name="fault_type_id" type="row"/>
+                <field name="state" type="col"/>
+                <field name="date" interval="month" type="col"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Graph View -->
+    <record id="sav_return_view_graph" model="ir.ui.view">
+        <field name="name">sav.return.view.graph</field>
+        <field name="model">sav.return</field>
+        <field name="arch" type="xml">
+            <graph string="Statistiques des Retours" type="bar" sample="1">
+                <field name="category_id"/>
+                <field name="fault_type_id" type="row"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Calendar View -->
+    <record id="sav_return_view_calendar" model="ir.ui.view">
+        <field name="name">sav.return.view.calendar</field>
+        <field name="model">sav.return</field>
+        <field name="arch" type="xml">
+            <calendar string="Retours SAV" date_start="date" color="state" mode="month"
+                      event_limit="5" quick_create="0">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="product_id"/>
+                <field name="state"/>
+            </calendar>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="sav_return_view_search" model="ir.ui.view">
+        <field name="name">sav.return.view.search</field>
+        <field name="model">sav.return</field>
+        <field name="arch" type="xml">
+            <search>
+                <!-- Champs de recherche -->
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="product_id"/>
+                <field name="serial_number"/>
+                <field name="category_id"/>
+                <field name="fault_type_id"/>
+                <field name="user_id"/>
+                <field name="sale_order_id"/>
+
+                <!-- Filtres par état -->
+                <separator/>
+                <filter name="filter_draft" string="Brouillon"
+                        domain="[('state', '=', 'draft')]"/>
+                <filter name="filter_received" string="Reçu"
+                        domain="[('state', '=', 'received')]"/>
+                <filter name="filter_in_progress" string="En Réparation"
+                        domain="[('state', '=', 'in_progress')]"/>
+                <filter name="filter_repaired" string="Réparé"
+                        domain="[('state', '=', 'repaired')]"/>
+                <filter name="filter_not_repaired" string="Non Réparé"
+                        domain="[('state', '=', 'not_repaired')]"/>
+                <filter name="filter_delivered" string="Livré"
+                        domain="[('state', '=', 'delivered')]"/>
+                <filter name="filter_cancelled" string="Annulé"
+                        domain="[('state', '=', 'cancelled')]"/>
+
+                <!-- Filtres par condition -->
+                <separator/>
+                <filter name="filter_good" string="Bon État"
+                        domain="[('product_condition', '=', 'good')]"/>
+                <filter name="filter_damaged" string="Endommagé"
+                        domain="[('product_condition', '=', 'damaged')]"/>
+                <filter name="filter_broken" string="Cassé"
+                        domain="[('product_condition', '=', 'broken')]"/>
+
+                <!-- Filtres par action -->
+                <separator/>
+                <filter name="filter_action_repaired" string="Action: Réparé"
+                        domain="[('action_taken', '=', 'repaired')]"/>
+                <filter name="filter_action_replaced" string="Action: Changé"
+                        domain="[('action_taken', '=', 'replaced')]"/>
+
+                <!-- Filtres temporels -->
+                <separator/>
+                <filter name="filter_today" string="Aujourd'hui"
+                        domain="[('date', '=', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter name="filter_week" string="Cette Semaine"
+                        domain="[('date', '>=', (context_today() - datetime.timedelta(days=context_today().weekday())).strftime('%Y-%m-%d'))]"/>
+                <filter name="filter_month" string="Ce Mois"
+                        domain="[('date', '>=', context_today().strftime('%Y-%m-01'))]"/>
+
+                <!-- Mes retours -->
+                <separator/>
+                <filter name="filter_my_returns" string="Mes Retours"
+                        domain="[('user_id', '=', uid)]"/>
+                <filter name="filter_urgent" string="Urgent"
+                        domain="[('priority', '=', '3')]"/>
+
+                <!-- En attente de traitement -->
+                <separator/>
+                <filter name="filter_pending" string="À Traiter"
+                        domain="[('state', 'in', ['received', 'in_progress'])]"/>
+
+                <!-- Groupements -->
+                <group expand="1" string="Grouper par">
+                    <filter name="group_state" string="État"
+                            context="{'group_by': 'state'}"/>
+                    <filter name="group_category" string="Catégorie"
+                            context="{'group_by': 'category_id'}"/>
+                    <filter name="group_fault" string="Type de Panne"
+                            context="{'group_by': 'fault_type_id'}"/>
+                    <filter name="group_partner" string="Client"
+                            context="{'group_by': 'partner_id'}"/>
+                    <filter name="group_product" string="Article"
+                            context="{'group_by': 'product_id'}"/>
+                    <filter name="group_user" string="Responsable"
+                            context="{'group_by': 'user_id'}"/>
+                    <filter name="group_condition" string="État du Produit"
+                            context="{'group_by': 'product_condition'}"/>
+                    <filter name="group_action" string="Action"
+                            context="{'group_by': 'action_taken'}"/>
+                    <separator/>
+                    <filter name="group_date_day" string="Date (Jour)"
+                            context="{'group_by': 'date:day'}"/>
+                    <filter name="group_date_week" string="Date (Semaine)"
+                            context="{'group_by': 'date:week'}"/>
+                    <filter name="group_date_month" string="Date (Mois)"
+                            context="{'group_by': 'date:month'}"/>
+                    <filter name="group_date_year" string="Date (Année)"
+                            context="{'group_by': 'date:year'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action principale -->
+    <record id="sav_return_action" model="ir.actions.act_window">
+        <field name="name">Retours SAV</field>
+        <field name="res_model">sav.return</field>
+        <field name="view_mode">tree,kanban,form,pivot,graph,calendar</field>
+        <field name="search_view_id" ref="sav_return_view_search"/>
+        <field name="context">{'search_default_filter_pending': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créer un nouveau retour SAV
+            </p>
+            <p>
+                Gérez les retours de produits électroménagers de vos clients.
+                Suivez les réparations et maintenez un historique complet.
+            </p>
+        </field>
+    </record>
+
+    <!-- Action pour les retours du jour -->
+    <record id="sav_return_action_today" model="ir.actions.act_window">
+        <field name="name">Retours du Jour</field>
+        <field name="res_model">sav.return</field>
+        <field name="view_mode">tree,kanban,form</field>
+        <field name="search_view_id" ref="sav_return_view_search"/>
+        <field name="context">{'search_default_filter_today': 1}</field>
+    </record>
+
+    <!-- Action pour mes retours -->
+    <record id="sav_return_action_my" model="ir.actions.act_window">
+        <field name="name">Mes Retours</field>
+        <field name="res_model">sav.return</field>
+        <field name="view_mode">tree,kanban,form</field>
+        <field name="search_view_id" ref="sav_return_view_search"/>
+        <field name="context">{'search_default_filter_my_returns': 1}</field>
+    </record>
+
+    <!-- Action pour les en-cours -->
+    <record id="sav_return_action_in_progress" model="ir.actions.act_window">
+        <field name="name">En Réparation</field>
+        <field name="res_model">sav.return</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="domain">[('state', '=', 'in_progress')]</field>
+    </record>
+
+    <!-- Action pour les statistiques -->
+    <record id="sav_return_action_reporting" model="ir.actions.act_window">
+        <field name="name">Statistiques SAV</field>
+        <field name="res_model">sav.return</field>
+        <field name="view_mode">pivot,graph</field>
+        <field name="search_view_id" ref="sav_return_view_search"/>
+    </record>
+
+</odoo>

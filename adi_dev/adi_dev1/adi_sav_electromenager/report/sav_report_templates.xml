@@ -1,0 +1,406 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ======================= -->
+    <!-- BON DE RÉPARATION       -->
+    <!-- ======================= -->
+    <template id="report_sav_repair_order">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <div class="page" style="font-size: 12px;">
+                        <!-- Titre -->
+                        <div class="text-center" style="margin-bottom: 10px;">
+                            <h3 style="color: #875A7B; margin-bottom: 5px;">
+                                <strong>BON DE RÉPARATION</strong>
+                            </h3>
+                            <h4 style="margin-top: 0;"><span t-field="doc.name"/></h4>
+                        </div>
+
+                        <!-- Informations principales -->
+                        <div class="row">
+                            <div class="col-6">
+                                <table class="table table-sm table-borderless" style="margin-bottom: 5px;">
+                                    <tr>
+                                        <td width="35%"><strong>Date :</strong></td>
+                                        <td><span t-field="doc.date"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Responsable :</strong></td>
+                                        <td><span t-field="doc.user_id.name"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Statut :</strong></td>
+                                        <td>
+                                            <span t-if="doc.state == 'draft'">Brouillon</span>
+                                            <span t-if="doc.state == 'received'">Reçu</span>
+                                            <span t-if="doc.state == 'in_progress'">En Réparation</span>
+                                            <span t-if="doc.state == 'repaired'">Réparé</span>
+                                            <span t-if="doc.state == 'not_repaired'">Non Réparé</span>
+                                            <span t-if="doc.state == 'delivered'">Livré</span>
+                                            <span t-if="doc.state == 'cancelled'">Annulé</span>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="col-6">
+                                <div style="border: 1px solid #dee2e6; padding: 8px; border-radius: 4px;">
+                                    <strong>Client :</strong><br/>
+                                    <span t-field="doc.partner_id.name"/><br/>
+                                    <t t-if="doc.partner_id.street">
+                                        <span t-field="doc.partner_id.street"/><br/>
+                                    </t>
+                                    <t t-if="doc.partner_id.city">
+                                        <span t-field="doc.partner_id.zip"/> <span t-field="doc.partner_id.city"/><br/>
+                                    </t>
+                                    <t t-if="doc.partner_id.phone">
+                                        Tél: <span t-field="doc.partner_id.phone"/>
+                                    </t>
+                                    <t t-if="doc.partner_id.mobile">
+                                        / <span t-field="doc.partner_id.mobile"/>
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Article Retourné + Diagnostic côte à côte -->
+                        <div class="row" style="margin-top: 10px;">
+                            <div class="col-6">
+                                <h6 style="background-color: #f8f9fa; padding: 5px; border-left: 3px solid #875A7B; margin-bottom: 5px;">
+                                    Article Retourné
+                                </h6>
+                                <table class="table table-sm table-bordered" style="margin-bottom: 0;">
+                                    <tr>
+                                        <td width="30%"><strong>Article</strong></td>
+                                        <td>
+                                            <span t-field="doc.product_id.name"/>
+                                            <t t-if="doc.product_id.default_code">
+                                                <small> [<span t-field="doc.product_id.default_code"/>]</small>
+                                            </t>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Catégorie</strong></td>
+                                        <td><span t-field="doc.category_id.name"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>N° Série</strong></td>
+                                        <td><strong><span t-field="doc.serial_number"/></strong></td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="col-6">
+                                <h6 style="background-color: #f8f9fa; padding: 5px; border-left: 3px solid #e74c3c; margin-bottom: 5px;">
+                                    Diagnostic
+                                </h6>
+                                <table class="table table-sm table-bordered" style="margin-bottom: 0;">
+                                    <tr>
+                                        <td width="35%"><strong>Motif</strong></td>
+                                        <td><span t-field="doc.fault_type_id.name"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>État</strong></td>
+                                        <td>
+                                            <span t-if="doc.product_condition == 'good'">Bon État</span>
+                                            <span t-if="doc.product_condition == 'damaged'">Endommagé</span>
+                                            <span t-if="doc.product_condition == 'broken'">Cassé</span>
+                                            <span t-if="doc.product_condition == 'incomplete'">Incomplet</span>
+                                        </td>
+                                    </tr>
+                                    <t t-if="doc.action_taken">
+                                        <tr>
+                                            <td><strong>Action</strong></td>
+                                            <td>
+                                                <span t-if="doc.action_taken == 'repaired'" style="color: green;">Réparé</span>
+                                                <span t-if="doc.action_taken == 'replaced'" style="color: orange;">Changé</span>
+                                                <span t-if="doc.action_taken == 'refunded'" style="color: blue;">Remboursé</span>
+                                                <span t-if="doc.action_taken == 'rejected'" style="color: red;">Refusé</span>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Origine (si renseigné) + Suivi côte à côte -->
+                        <div class="row" style="margin-top: 10px;">
+                            <t t-if="doc.sale_order_id or doc.picking_id">
+                                <div class="col-6">
+                                    <h6 style="background-color: #f8f9fa; padding: 5px; border-left: 3px solid #3498db; margin-bottom: 5px;">
+                                        Origine
+                                    </h6>
+                                    <table class="table table-sm table-bordered" style="margin-bottom: 0;">
+                                        <t t-if="doc.sale_order_id">
+                                            <tr>
+                                                <td width="40%"><strong>Bon Vente</strong></td>
+                                                <td><span t-field="doc.sale_order_id.name"/></td>
+                                            </tr>
+                                        </t>
+                                        <t t-if="doc.picking_id">
+                                            <tr>
+                                                <td><strong>Bon Livraison</strong></td>
+                                                <td><span t-field="doc.picking_id.name"/></td>
+                                            </tr>
+                                        </t>
+                                        <t t-if="doc.sale_date">
+                                            <tr>
+                                                <td><strong>Date Vente</strong></td>
+                                                <td><span t-field="doc.sale_date" t-options='{"widget": "date"}'/></td>
+                                            </tr>
+                                        </t>
+                                    </table>
+                                </div>
+                            </t>
+                            <div t-att-class="'col-6' if (doc.sale_order_id or doc.picking_id) else 'col-12'">
+                                <h6 style="background-color: #f8f9fa; padding: 5px; border-left: 3px solid #27ae60; margin-bottom: 5px;">
+                                    Suivi Réparation
+                                </h6>
+                                <table class="table table-sm table-bordered" style="margin-bottom: 0;">
+                                    <tr>
+                                        <td width="40%"><strong>Réception</strong></td>
+                                        <td><span t-field="doc.reception_date" t-options='{"widget": "datetime"}'/></td>
+                                    </tr>
+                                    <t t-if="doc.repair_start_date">
+                                        <tr>
+                                            <td><strong>Début</strong></td>
+                                            <td><span t-field="doc.repair_start_date" t-options='{"widget": "datetime"}'/></td>
+                                        </tr>
+                                    </t>
+                                    <t t-if="doc.repair_end_date">
+                                        <tr>
+                                            <td><strong>Fin</strong></td>
+                                            <td><span t-field="doc.repair_end_date" t-options='{"widget": "datetime"}'/></td>
+                                        </tr>
+                                    </t>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Diagnostic détaillé (si renseigné) -->
+                        <t t-if="doc.diagnostic">
+                            <div style="margin-top: 10px;">
+                                <h6 style="background-color: #f8f9fa; padding: 5px; border-left: 3px solid #9b59b6; margin-bottom: 5px;">
+                                    Diagnostic Détaillé
+                                </h6>
+                                <div style="border: 1px solid #dee2e6; padding: 8px; min-height: 30px;">
+                                    <span t-field="doc.diagnostic"/>
+                                </div>
+                            </div>
+                        </t>
+
+                        <!-- Notes et Observations -->
+                        <t t-if="doc.repair_notes or doc.observations">
+                            <div class="row" style="margin-top: 10px;">
+                                <t t-if="doc.repair_notes">
+                                    <div t-att-class="'col-6' if doc.observations else 'col-12'">
+                                        <h6 style="background-color: #f8f9fa; padding: 5px; border-left: 3px solid #9b59b6; margin-bottom: 5px;">
+                                            Notes de Réparation
+                                        </h6>
+                                        <div style="border: 1px solid #dee2e6; padding: 8px; min-height: 40px;">
+                                            <span t-field="doc.repair_notes"/>
+                                        </div>
+                                    </div>
+                                </t>
+                                <t t-if="doc.observations">
+                                    <div t-att-class="'col-6' if doc.repair_notes else 'col-12'">
+                                        <h6 style="background-color: #f8f9fa; padding: 5px; border-left: 3px solid #95a5a6; margin-bottom: 5px;">
+                                            Observations
+                                        </h6>
+                                        <div style="border: 1px solid #dee2e6; padding: 8px; min-height: 40px;">
+                                            <span t-field="doc.observations"/>
+                                        </div>
+                                    </div>
+                                </t>
+                            </div>
+                        </t>
+
+                        <!-- Signatures -->
+                        <div class="row" style="margin-top: 25px;">
+                            <div class="col-6 text-center">
+                                <p style="margin-bottom: 0;">_______________________________</p>
+                                <p><strong>Signature Technicien</strong></p>
+                            </div>
+                            <div class="col-6 text-center">
+                                <p style="margin-bottom: 0;">_______________________________</p>
+                                <p><strong>Signature Client</strong></p>
+                            </div>
+                        </div>
+
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <!-- ======================= -->
+    <!-- BON DE LIVRAISON SAV    -->
+    <!-- ======================= -->
+    <template id="report_sav_delivery_order">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <div class="page" style="font-size: 12px;">
+                        <!-- Titre -->
+                        <div class="text-center" style="margin-bottom: 10px;">
+                            <h3 style="color: #27ae60; margin-bottom: 5px;">
+                                <strong>BON DE LIVRAISON SAV</strong>
+                            </h3>
+                            <h4 style="margin-top: 0;"><span t-field="doc.name"/></h4>
+                        </div>
+
+                        <!-- Informations principales -->
+                        <div class="row">
+                            <div class="col-6">
+                                <table class="table table-sm table-borderless" style="margin-bottom: 5px;">
+                                    <tr>
+                                        <td width="40%"><strong>Date Livraison :</strong></td>
+                                        <td><span t-field="doc.delivery_date" t-options='{"widget": "date"}'/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Responsable :</strong></td>
+                                        <td><span t-field="doc.user_id.name"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Réf. SAV :</strong></td>
+                                        <td><span t-field="doc.name"/></td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="col-6">
+                                <div style="border: 1px solid #dee2e6; padding: 8px; border-radius: 4px;">
+                                    <strong>Livré à :</strong><br/>
+                                    <span t-field="doc.partner_id.name"/><br/>
+                                    <t t-if="doc.partner_id.street">
+                                        <span t-field="doc.partner_id.street"/><br/>
+                                    </t>
+                                    <t t-if="doc.partner_id.city">
+                                        <span t-field="doc.partner_id.zip"/> <span t-field="doc.partner_id.city"/><br/>
+                                    </t>
+                                    <t t-if="doc.partner_id.phone">
+                                        Tél: <span t-field="doc.partner_id.phone"/>
+                                    </t>
+                                    <t t-if="doc.partner_id.mobile">
+                                        / <span t-field="doc.partner_id.mobile"/>
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Article Livré -->
+                        <div style="margin-top: 10px;">
+                            <h6 style="background-color: #f8f9fa; padding: 5px; border-left: 3px solid #27ae60; margin-bottom: 5px;">
+                                Article Livré
+                            </h6>
+                            <table class="table table-sm table-bordered">
+                                <thead style="background-color: #27ae60; color: white;">
+                                    <tr>
+                                        <th>Article</th>
+                                        <th>Catégorie</th>
+                                        <th>N° de Série</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <span t-field="doc.product_id.name"/>
+                                            <t t-if="doc.product_id.default_code">
+                                                <small> [<span t-field="doc.product_id.default_code"/>]</small>
+                                            </t>
+                                        </td>
+                                        <td><span t-field="doc.category_id.name"/></td>
+                                        <td><strong><span t-field="doc.serial_number"/></strong></td>
+                                        <td>
+                                            <span t-if="doc.action_taken == 'repaired'" style="color: #27ae60; font-weight: bold;">Réparé</span>
+                                            <span t-if="doc.action_taken == 'replaced'" style="color: #f39c12; font-weight: bold;">Changé</span>
+                                            <span t-if="doc.action_taken == 'refunded'" style="color: #3498db; font-weight: bold;">Remboursé</span>
+                                            <span t-if="doc.action_taken == 'rejected'" style="color: #e74c3c; font-weight: bold;">Refusé</span>
+                                            <span t-if="not doc.action_taken" style="color: #95a5a6;">Non Réparé</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Résumé du dossier -->
+                        <div style="margin-top: 5px;">
+                            <h6 style="background-color: #f8f9fa; padding: 5px; border-left: 3px solid #3498db; margin-bottom: 5px;">
+                                Résumé du Dossier
+                            </h6>
+                            <table class="table table-sm table-bordered">
+                                <tr>
+                                    <td width="25%"><strong>Motif de Retour :</strong></td>
+                                    <td><span t-field="doc.fault_type_id.name"/></td>
+                                    <td width="25%"><strong>Réception :</strong></td>
+                                    <td><span t-field="doc.reception_date" t-options='{"widget": "date"}'/></td>
+                                </tr>
+                                <t t-if="doc.repair_start_date or doc.repair_duration">
+                                    <tr>
+                                        <t t-if="doc.repair_start_date">
+                                            <td><strong>Réparation :</strong></td>
+                                            <td>
+                                                Du <span t-field="doc.repair_start_date" t-options='{"widget": "date"}'/>
+                                                <t t-if="doc.repair_end_date">
+                                                    au <span t-field="doc.repair_end_date" t-options='{"widget": "date"}'/>
+                                                </t>
+                                            </td>
+                                        </t>
+                                        <t t-if="doc.repair_duration">
+                                            <td><strong>Durée :</strong></td>
+                                            <td><span t-field="doc.repair_duration" t-options='{"precision": 1}'/> jour(s)</td>
+                                        </t>
+                                    </tr>
+                                </t>
+                            </table>
+                        </div>
+
+                        <!-- Notes (si existantes) -->
+                        <t t-if="doc.repair_notes or doc.observations">
+                            <div style="margin-top: 5px;">
+                                <h6 style="background-color: #f8f9fa; padding: 5px; border-left: 3px solid #9b59b6; margin-bottom: 5px;">
+                                    Remarques
+                                </h6>
+                                <div style="border: 1px solid #dee2e6; padding: 8px; min-height: 30px;">
+                                    <t t-if="doc.repair_notes">
+                                        <span t-field="doc.repair_notes"/>
+                                    </t>
+                                    <t t-if="doc.repair_notes and doc.observations"> - </t>
+                                    <t t-if="doc.observations">
+                                        <span t-field="doc.observations"/>
+                                    </t>
+                                </div>
+                            </div>
+                        </t>
+
+                        <!-- Accusé de réception -->
+                        <div style="border: 2px solid #27ae60; padding: 10px; border-radius: 4px; margin-top: 15px;">
+                            <h6 class="text-center" style="color: #27ae60; margin-bottom: 5px;">ACCUSÉ DE RÉCEPTION</h6>
+                            <p class="text-center" style="margin-bottom: 0; font-size: 11px;">
+                                Je soussigné(e), <strong><span t-field="doc.partner_id.name"/></strong>,
+                                reconnais avoir reçu l'article mentionné ci-dessus en bon état de fonctionnement.
+                            </p>
+                        </div>
+
+                        <!-- Signatures -->
+                        <div class="row" style="margin-top: 20px;">
+                            <div class="col-4 text-center">
+                                <p style="margin-bottom: 0;">___________________</p>
+                                <p><strong>Date</strong></p>
+                            </div>
+                            <div class="col-4 text-center">
+                                <p style="margin-bottom: 0;">___________________</p>
+                                <p><strong>Signature Technicien</strong></p>
+                            </div>
+                            <div class="col-4 text-center">
+                                <p style="margin-bottom: 0;">___________________</p>
+                                <p><strong>Signature Client</strong></p>
+                            </div>
+                        </div>
+
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+</odoo>

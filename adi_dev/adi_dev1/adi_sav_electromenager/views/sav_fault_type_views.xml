@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Tree View -->
+    <record id="sav_fault_type_view_tree" model="ir.ui.view">
+        <field name="name">sav.fault.type.view.tree</field>
+        <field name="model">sav.fault.type</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="sequence" widget="handle"/>
+                <field name="code"/>
+                <field name="name"/>
+                <field name="category_ids" widget="many2many_tags"/>
+                <field name="return_count"/>
+                <field name="active" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="sav_fault_type_view_form" model="ir.ui.view">
+        <field name="name">sav.fault.type.view.form</field>
+        <field name="model">sav.fault.type</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <widget name="web_ribbon" title="Archivé" bg_color="text-bg-danger"
+                            invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" placeholder="Nom du type de panne"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="code"/>
+                            <field name="sequence"/>
+                        </group>
+                        <group>
+                            <field name="active"/>
+                            <field name="color" widget="color_picker"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="category_ids" widget="many2many_tags"
+                               options="{'color_field': 'color'}"
+                               placeholder="Applicable à toutes les catégories si vide"/>
+                    </group>
+                    <group>
+                        <field name="description" placeholder="Description du type de panne..."/>
+                    </group>
+                    <group>
+                        <field name="return_count"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="sav_fault_type_view_search" model="ir.ui.view">
+        <field name="name">sav.fault.type.view.search</field>
+        <field name="model">sav.fault.type</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="category_ids"/>
+                <filter name="filter_active" string="Actif" domain="[('active', '=', True)]"/>
+                <filter name="filter_archived" string="Archivé" domain="[('active', '=', False)]"/>
+                <group expand="0" string="Grouper par">
+                    <filter name="group_category" string="Catégorie" context="{'group_by': 'category_ids'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="sav_fault_type_action" model="ir.actions.act_window">
+        <field name="name">Types de Pannes</field>
+        <field name="res_model">sav.fault.type</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créer un nouveau type de panne
+            </p>
+            <p>
+                Les types de pannes permettent de catégoriser les motifs de retour
+                (Problème de refroidissement, Fuite, Bruit anormal, etc.)
+            </p>
+        </field>
+    </record>
+
+</odoo>

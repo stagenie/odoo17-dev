@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Rapport Bon de Réparation -->
+    <record id="action_report_sav_repair_order" model="ir.actions.report">
+        <field name="name">Bon de Réparation</field>
+        <field name="model">sav.return</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_sav_electromenager.report_sav_repair_order</field>
+        <field name="report_file">adi_sav_electromenager.report_sav_repair_order</field>
+        <field name="print_report_name">'Bon_Reparation_%s' % (object.name).replace('/', '_')</field>
+        <field name="binding_model_id" ref="model_sav_return"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <!-- Rapport Bon de Livraison SAV -->
+    <record id="action_report_sav_delivery_order" model="ir.actions.report">
+        <field name="name">Bon de Livraison SAV</field>
+        <field name="model">sav.return</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_sav_electromenager.report_sav_delivery_order</field>
+        <field name="report_file">adi_sav_electromenager.report_sav_delivery_order</field>
+        <field name="print_report_name">'Bon_Livraison_SAV_%s' % (object.name).replace('/', '_')</field>
+        <field name="binding_model_id" ref="model_sav_return"/>
+        <field name="binding_type">report</field>
+    </record>
+
+</odoo>
