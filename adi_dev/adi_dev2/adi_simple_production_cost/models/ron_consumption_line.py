@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import re
 from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError
 
@@ -49,7 +50,6 @@ class RonConsumptionLine(models.Model):
     # ================== QUANTITÉS ==================
     quantity = fields.Float(
         string='Quantité',
-        required=True,
         digits='Product Unit of Measure',
         help="Quantité consommée dans l'unité de mesure du produit"
     )
@@ -58,6 +58,12 @@ class RonConsumptionLine(models.Model):
         string='Poids/Unité (kg)',
         digits='Product Unit of Measure',
         help="Poids d'une unité en kilogrammes (ex: sac de 25kg = 25)"
+    )
+
+    weight_input = fields.Float(
+        string='Poids Saisi (kg)',
+        digits='Product Unit of Measure',
+        help="Saisissez le poids total en kg. La quantité sera calculée automatiquement."
     )
 
     weight_kg = fields.Float(
@@ -123,6 +129,25 @@ class RonConsumptionLine(models.Model):
             else:
                 rec.stock_available = 0
 
+    def _extract_weight_from_text(self, text):
+        """Extrait le poids en kg depuis un texte.
+
+        Recherche des patterns comme: 20KG, 25 kg, 10K, 50 K, etc.
+        Retourne le poids trouvé ou 0 si non trouvé.
+        """
+        if not text:
+            return 0.0
+
+        text = text.upper()
+        # Pattern: nombre (entier ou décimal) suivi de K, KG, ou KGS
+        # Exemples: 20KG, 25 KG, 10K, 50 K, 1.5KG, 0.5 K
+        pattern = r'(\d+(?:[.,]\d+)?)\s*(?:KG|KGS|K)\b'
+        match = re.search(pattern, text)
+        if match:
+            weight_str = match.group(1).replace(',', '.')
+            return float(weight_str)
+        return 0.0
+
     @api.onchange('product_id')
     def _onchange_product_id(self):
         """Met à jour les informations du produit."""
@@ -134,16 +159,40 @@ class RonConsumptionLine(models.Model):
             if self.product_id.weight > 0:
                 self.weight_per_unit = self.product_id.weight
             else:
-                # Essayer de déduire le poids du nom (ex: "Farine 25kg")
-                name = self.product_id.name.lower()
-                if '25kg' in name or '25 kg' in name:
-                    self.weight_per_unit = 25.0
-                elif '50kg' in name or '50 kg' in name:
-                    self.weight_per_unit = 50.0
-                elif '10kg' in name or '10 kg' in name:
-                    self.weight_per_unit = 10.0
-                else:
-                    self.weight_per_unit = 1.0
+                # Essayer d'extraire le poids depuis le nom du produit
+                weight = self._extract_weight_from_text(self.product_id.name)
+
+                # Si non trouvé, essayer depuis le nom de l'unité de mesure
+                if weight == 0 and self.product_id.uom_id:
+                    weight = self._extract_weight_from_text(self.product_id.uom_id.name)
+
+                # Si toujours non trouvé, valeur par défaut = 1
+                self.weight_per_unit = weight if weight > 0 else 1.0
+
+    @api.onchange('quantity', 'weight_per_unit')
+    def _onchange_quantity_compute_weight_input(self):
+        """Calcule le poids saisi à partir de la quantité.
+
+        Quand l'utilisateur saisit une quantité, le poids saisi est mis à jour.
+        """
+        if self.quantity and self.weight_per_unit:
+            calculated_weight = self.quantity * self.weight_per_unit
+            # Ne mettre à jour que si différent (évite les boucles)
+            if abs(self.weight_input - calculated_weight) > 0.001:
+                self.weight_input = calculated_weight
+
+    @api.onchange('weight_input')
+    def _onchange_weight_input_compute_quantity(self):
+        """Calcule la quantité à partir du poids saisi.
+
+        Quand l'utilisateur saisit un poids en kg, la quantité est calculée.
+        Ex: Sac de 10kg, poids saisi = 400kg → quantité = 40 sacs
+        """
+        if self.weight_input and self.weight_per_unit > 0:
+            calculated_qty = self.weight_input / self.weight_per_unit
+            # Ne mettre à jour que si différent (évite les boucles)
+            if abs(self.quantity - calculated_qty) > 0.001:
+                self.quantity = calculated_qty
 
     @api.constrains('quantity')
     def _check_quantity(self):
@@ -162,3 +211,10 @@ class RonConsumptionLine(models.Model):
         for rec in self:
             if rec.weight_per_unit < 0:
                 raise ValidationError(_("Le poids par unité ne peut pas être négatif."))
+
+    @api.constrains('weight_input')
+    def _check_weight_input(self):
+        """Vérifie que le poids saisi n'est pas négatif."""
+        for rec in self:
+            if rec.weight_input < 0:
+                raise ValidationError(_("Le poids saisi ne peut pas être négatif."))

@@ -37,7 +37,7 @@
     <menuitem id="spc_production_menu_config"
               name="Configuration"
               parent="spc_production_menu_root"
-              groups="base.group_system"
+              groups="adi_simple_production_cost.group_ron_production_user"
               sequence="99"/>
 
     <menuitem id="spc_production_config_menu"

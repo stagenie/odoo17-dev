@@ -19,136 +19,184 @@
             <t t-foreach="docs" t-as="doc">
                 <t t-call="web.external_layout">
                     <div class="page">
-                        <!-- En-tête -->
-                        <div class="row">
-                            <div class="col-12 text-center">
-                                <h2>Fiche de Production Journalière</h2>
-                                <h4><t t-esc="doc.name"/></h4>
-                            </div>
+
+                        <!-- ============ EN-TÊTE ============ -->
+                        <div class="text-center mb-4">
+                            <h2 style="margin-bottom: 5px;">FICHE DE PRODUCTION JOURNALIÈRE</h2>
+                            <h3 style="color: #666;"><t t-esc="doc.name"/></h3>
                         </div>
 
-                        <!-- Informations générales -->
-                        <div class="row mt-4">
-                            <div class="col-4">
-                                <strong>Date de Production:</strong>
-                                <span t-field="doc.production_date"/>
+                        <!-- ============ INFORMATIONS GÉNÉRALES ============ -->
+                        <table class="table table-sm mb-4" style="background-color: #f8f9fa;">
+                            <tr>
+                                <td style="width: 33%;"><strong>Date:</strong> <t t-esc="doc.production_date" t-options="{'widget': 'date'}"/></td>
+                                <td style="width: 34%;" class="text-center">
+                                    <strong>Type:</strong>
+                                    <t t-if="doc.production_type == 'solo_classico'">
+                                        <span style="background-color: #0d6efd; color: white; padding: 2px 8px; border-radius: 4px;">SOLO / CLASSICO</span>
+                                    </t>
+                                    <t t-else="">
+                                        <span style="background-color: #198754; color: white; padding: 2px 8px; border-radius: 4px;">Sandwich GF</span>
+                                    </t>
+                                </td>
+                                <td style="width: 33%;" class="text-end"><strong>État:</strong> <t t-esc="dict(doc._fields['state'].selection).get(doc.state)"/></td>
+                            </tr>
+                        </table>
+
+                        <!-- ============ SECTION 1: CONSOMMATIONS ============ -->
+                        <div class="mb-4">
+                            <h5 style="background-color: #0d6efd; color: white; padding: 8px 12px; margin-bottom: 0;">1. CONSOMMATIONS DU JOUR</h5>
+                            <table class="table table-sm table-bordered mb-0">
+                                <thead style="background-color: #e9ecef;">
+                                    <tr>
+                                        <th style="width: 30%;">Produit</th>
+                                        <th style="width: 14%;" class="text-end">Quantité</th>
+                                        <th style="width: 14%;" class="text-end">Poids (kg)</th>
+                                        <th style="width: 14%;" class="text-end">Coût Unit.</th>
+                                        <th style="width: 14%;" class="text-end">Coût Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="doc.consumption_line_ids" t-as="line">
+                                        <tr>
+                                            <td><t t-esc="line.product_id.name"/></td>
+                                            <td class="text-end"><t t-esc="'%.2f' % line.quantity"/> <t t-esc="line.product_uom_id.name"/></td>
+                                            <td class="text-end"><t t-esc="'%.2f' % line.weight_kg"/></td>
+                                            <td class="text-end"><t t-esc="'%.2f' % line.unit_cost"/></td>
+                                            <td class="text-end"><t t-esc="'%.2f' % line.total_cost"/></td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                                <tfoot style="background-color: #d1e7dd;">
+                                    <tr>
+                                        <td colspan="2"><strong>TOTAUX</strong></td>
+                                        <td class="text-end"><strong><t t-esc="'%.2f' % doc.total_consumption_weight"/> kg</strong></td>
+                                        <td class="text-end"><strong>Coût/kg:</strong></td>
+                                        <td class="text-end"><strong><t t-esc="'%.2f' % doc.cost_per_kg"/> <t t-esc="doc.currency_id.symbol"/></strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="4"><strong>COÛT TOTAL MATIÈRES PREMIÈRES</strong></td>
+                                        <td class="text-end"><strong><t t-esc="'%.2f' % doc.total_consumption_cost"/> <t t-esc="doc.currency_id.symbol"/></strong></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+
+                        <!-- ============ SECTION 2: PERTES (REBUTS + PÂTE) ============ -->
+                        <t t-if="doc.scrap_line_ids or doc.paste_line_ids">
+                            <div class="mb-4">
+                                <h5 style="background-color: #ffc107; color: #212529; padding: 8px 12px; margin-bottom: 0;">2. PERTES DE PRODUCTION</h5>
+
+                                <!-- Rebuts Récupérables -->
+                                <t t-if="doc.scrap_line_ids">
+                                    <table class="table table-sm table-bordered mb-0">
+                                        <thead style="background-color: #fff3cd;">
+                                            <tr>
+                                                <th colspan="5" style="font-weight: normal;"><em>Rebuts Récupérables (vendables)</em></th>
+                                            </tr>
+                                            <tr style="background-color: #e9ecef;">
+                                                <th style="width: 30%;">Produit</th>
+                                                <th style="width: 17%;" class="text-end">Poids (kg)</th>
+                                                <th style="width: 17%;" class="text-end">Coût/kg</th>
+                                                <th style="width: 18%;" class="text-end">Coût Total</th>
+                                                <th style="width: 18%;">Raison</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-foreach="doc.scrap_line_ids" t-as="scrap">
+                                                <tr>
+                                                    <td><t t-esc="scrap.product_id.name or '-'"/></td>
+                                                    <td class="text-end"><t t-esc="'%.2f' % scrap.weight_kg"/></td>
+                                                    <td class="text-end"><t t-esc="'%.2f' % scrap.cost_per_kg"/></td>
+                                                    <td class="text-end"><t t-esc="'%.2f' % scrap.total_cost"/></td>
+                                                    <td>
+                                                        <t t-if="scrap.reason == 'quality'">Défaut Qualité</t>
+                                                        <t t-elif="scrap.reason == 'machine'">Problème Machine</t>
+                                                        <t t-elif="scrap.reason == 'process'">Problème Process</t>
+                                                        <t t-elif="scrap.reason == 'end_day'">Fin de Journée</t>
+                                                        <t t-else=""><t t-esc="scrap.reason or ''"/></t>
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                        <tfoot style="background-color: #fff3cd;">
+                                            <tr>
+                                                <td><strong>Sous-total Rebuts</strong></td>
+                                                <td class="text-end"><strong><t t-esc="'%.2f' % doc.scrap_recoverable_weight"/> kg</strong></td>
+                                                <td></td>
+                                                <td class="text-end"><strong><t t-esc="'%.2f' % doc.scrap_recoverable_cost"/> <t t-esc="doc.currency_id.symbol"/></strong></td>
+                                                <td></td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </t>
+
+                                <!-- Pâte Récupérable -->
+                                <t t-if="doc.paste_line_ids">
+                                    <table class="table table-sm table-bordered mb-0">
+                                        <thead style="background-color: #cff4fc;">
+                                            <tr>
+                                                <th colspan="5" style="font-weight: normal;"><em>Pâte Récupérable (stock AVCO)</em></th>
+                                            </tr>
+                                            <tr style="background-color: #e9ecef;">
+                                                <th style="width: 30%;">Produit</th>
+                                                <th style="width: 17%;" class="text-end">Poids (kg)</th>
+                                                <th style="width: 17%;" class="text-end">Coût/kg</th>
+                                                <th style="width: 18%;" class="text-end">Coût Total</th>
+                                                <th style="width: 18%;">Observation</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-foreach="doc.paste_line_ids" t-as="paste">
+                                                <tr>
+                                                    <td><t t-esc="paste.product_id.name or '-'"/></td>
+                                                    <td class="text-end"><t t-esc="'%.2f' % paste.weight_kg"/></td>
+                                                    <td class="text-end"><t t-esc="'%.2f' % paste.cost_per_kg"/></td>
+                                                    <td class="text-end"><t t-esc="'%.2f' % paste.total_cost"/></td>
+                                                    <td><t t-esc="paste.notes or ''"/></td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                        <tfoot style="background-color: #cff4fc;">
+                                            <tr>
+                                                <td><strong>Sous-total Pâte</strong></td>
+                                                <td class="text-end"><strong><t t-esc="'%.2f' % doc.paste_recoverable_weight"/> kg</strong></td>
+                                                <td></td>
+                                                <td class="text-end"><strong><t t-esc="'%.2f' % doc.paste_recoverable_cost"/> <t t-esc="doc.currency_id.symbol"/></strong></td>
+                                                <td></td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </t>
+
+                                <!-- Total Pertes -->
+                                <table class="table table-sm table-bordered mb-0">
+                                    <tfoot style="background-color: #f8d7da;">
+                                        <tr>
+                                            <td style="width: 30%;"><strong>TOTAL PERTES</strong></td>
+                                            <td style="width: 17%;" class="text-end"><strong><t t-esc="'%.2f' % doc.total_scrap_weight"/> kg</strong></td>
+                                            <td style="width: 17%;"></td>
+                                            <td style="width: 18%;" class="text-end"><strong><t t-esc="'%.2f' % doc.total_scrap_cost"/> <t t-esc="doc.currency_id.symbol"/></strong></td>
+                                            <td style="width: 18%;"></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
                             </div>
-                            <div class="col-4 text-center">
-                                <strong>Type:</strong>
+                        </t>
+
+                        <!-- ============ SECTION 3: EMBALLAGE ============ -->
+                        <t t-if="doc.total_packaging_cost > 0">
+                            <div class="mb-4">
+                                <h5 style="background-color: #6c757d; color: white; padding: 8px 12px; margin-bottom: 0;">3. COÛTS D'EMBALLAGE</h5>
+
+                                <!-- SOLO/CLASSICO -->
                                 <t t-if="doc.production_type == 'solo_classico'">
-                                    <span class="badge bg-primary">SOLO / CLASSICO</span>
-                                </t>
-                                <t t-else="">
-                                    <span class="badge bg-success">Sandwich Grand Format</span>
-                                </t>
-                            </div>
-                            <div class="col-4 text-end">
-                                <strong>État:</strong>
-                                <span t-field="doc.state"/>
-                            </div>
-                        </div>
-
-                        <!-- Section Consommations -->
-                        <div class="row mt-4">
-                            <div class="col-12">
-                                <h5 class="bg-primary text-white p-2">Consommations du Jour</h5>
-                                <table class="table table-sm table-bordered">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>Produit</th>
-                                            <th class="text-end">Quantité</th>
-                                            <th class="text-end">Poids/Unité</th>
-                                            <th class="text-end">Poids Total (kg)</th>
-                                            <th class="text-end">Coût Unitaire</th>
-                                            <th class="text-end">Coût Total</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <t t-foreach="doc.consumption_line_ids" t-as="line">
+                                    <table class="table table-sm table-bordered mb-0">
+                                        <thead style="background-color: #e9ecef;">
                                             <tr>
-                                                <td><t t-esc="line.product_id.name"/></td>
-                                                <td class="text-end"><t t-esc="line.quantity"/> <t t-esc="line.product_uom_id.name"/></td>
-                                                <td class="text-end"><t t-esc="'%.2f' % line.weight_per_unit"/> kg</td>
-                                                <td class="text-end"><t t-esc="'%.2f' % line.weight_kg"/> kg</td>
-                                                <td class="text-end"><t t-esc="'%.2f' % line.unit_cost"/> <t t-esc="doc.currency_id.symbol"/></td>
-                                                <td class="text-end"><t t-esc="'%.2f' % line.total_cost"/> <t t-esc="doc.currency_id.symbol"/></td>
-                                            </tr>
-                                        </t>
-                                    </tbody>
-                                    <tfoot class="table-secondary">
-                                        <tr>
-                                            <td colspan="3"><strong>TOTAUX</strong></td>
-                                            <td class="text-end"><strong><t t-esc="'%.2f' % doc.total_consumption_weight"/> kg</strong></td>
-                                            <td></td>
-                                            <td class="text-end"><strong><t t-esc="'%.2f' % doc.total_consumption_cost"/> <t t-esc="doc.currency_id.symbol"/></strong></td>
-                                        </tr>
-                                        <tr>
-                                            <td colspan="5"><strong>Coût par Kg</strong></td>
-                                            <td class="text-end"><strong><t t-esc="'%.2f' % doc.cost_per_kg"/> <t t-esc="doc.currency_id.symbol"/>/kg</strong></td>
-                                        </tr>
-                                    </tfoot>
-                                </table>
-                            </div>
-                        </div>
-
-                        <!-- Section Rebuts et Pâte Récupérables -->
-                        <div class="row mt-4">
-                            <div class="col-12">
-                                <h5 class="bg-warning text-dark p-2">Rebuts et Pâte Récupérables</h5>
-                                <table class="table table-sm table-bordered">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>Type</th>
-                                            <th>Produit</th>
-                                            <th class="text-end">Poids (kg)</th>
-                                            <th class="text-end">Coût/Kg</th>
-                                            <th class="text-end">Coût Total</th>
-                                            <th>Raison</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <t t-foreach="doc.scrap_line_ids" t-as="scrap">
-                                            <tr>
-                                                <td><t t-esc="scrap.type_display"/></td>
-                                                <td><t t-esc="scrap.product_id.name or '-'"/></td>
-                                                <td class="text-end"><t t-esc="'%.2f' % scrap.weight_kg"/> kg</td>
-                                                <td class="text-end"><t t-esc="'%.2f' % scrap.cost_per_kg"/> <t t-esc="doc.currency_id.symbol"/></td>
-                                                <td class="text-end"><t t-esc="'%.2f' % scrap.total_cost"/> <t t-esc="doc.currency_id.symbol"/></td>
-                                                <td><t t-esc="scrap.reason or ''"/></td>
-                                            </tr>
-                                        </t>
-                                    </tbody>
-                                    <tfoot class="table-secondary">
-                                        <tr>
-                                            <td colspan="2"><strong>Rebuts Récupérables</strong></td>
-                                            <td class="text-end"><strong><t t-esc="'%.2f' % doc.scrap_recoverable_weight"/> kg</strong></td>
-                                            <td></td>
-                                            <td class="text-end"><strong><t t-esc="'%.2f' % doc.scrap_recoverable_cost"/> <t t-esc="doc.currency_id.symbol"/></strong></td>
-                                            <td></td>
-                                        </tr>
-                                        <tr>
-                                            <td colspan="2"><strong>Pâte Récupérable (Stock AVCO)</strong></td>
-                                            <td class="text-end"><strong><t t-esc="'%.2f' % doc.paste_recoverable_weight"/> kg</strong></td>
-                                            <td></td>
-                                            <td class="text-end"><strong><t t-esc="'%.2f' % doc.paste_recoverable_cost"/> <t t-esc="doc.currency_id.symbol"/></strong></td>
-                                            <td></td>
-                                        </tr>
-                                    </tfoot>
-                                </table>
-                            </div>
-                        </div>
-
-                        <!-- Section Emballage - SOLO/CLASSICO -->
-                        <t t-if="doc.production_type == 'solo_classico' and doc.total_packaging_cost > 0">
-                            <div class="row mt-4">
-                                <div class="col-12">
-                                    <h5 class="bg-secondary text-white p-2">Coûts Emballage</h5>
-                                    <table class="table table-sm table-bordered">
-                                        <thead class="table-light">
-                                            <tr>
-                                                <th>Type</th>
-                                                <th class="text-end">SOLO</th>
-                                                <th class="text-end">CLASSICO</th>
+                                                <th style="width: 40%;">Type</th>
+                                                <th style="width: 30%;" class="text-end">SOLO</th>
+                                                <th style="width: 30%;" class="text-end">CLASSICO</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -158,33 +206,32 @@
                                                 <td class="text-end"><t t-esc="'%.2f' % doc.emballage_classico_cost"/> <t t-esc="doc.currency_id.symbol"/></td>
                                             </tr>
                                             <tr>
-                                                <td>Film</td>
+                                                <td>Film plastique</td>
                                                 <td class="text-end"><t t-esc="'%.2f' % doc.film_solo_cost"/> <t t-esc="doc.currency_id.symbol"/></td>
                                                 <td class="text-end"><t t-esc="'%.2f' % doc.film_classico_cost"/> <t t-esc="doc.currency_id.symbol"/></td>
                                             </tr>
                                         </tbody>
-                                        <tfoot class="table-info">
+                                        <tfoot style="background-color: #d1e7dd;">
                                             <tr>
-                                                <td><strong>Total</strong></td>
+                                                <td><strong>Sous-total</strong></td>
                                                 <td class="text-end"><strong><t t-esc="'%.2f' % (doc.emballage_solo_cost + doc.film_solo_cost)"/> <t t-esc="doc.currency_id.symbol"/></strong></td>
                                                 <td class="text-end"><strong><t t-esc="'%.2f' % (doc.emballage_classico_cost + doc.film_classico_cost)"/> <t t-esc="doc.currency_id.symbol"/></strong></td>
                                             </tr>
+                                            <tr style="background-color: #198754; color: white;">
+                                                <td colspan="2"><strong>TOTAL EMBALLAGE</strong></td>
+                                                <td class="text-end"><strong><t t-esc="'%.2f' % doc.total_packaging_cost"/> <t t-esc="doc.currency_id.symbol"/></strong></td>
+                                            </tr>
                                         </tfoot>
                                     </table>
-                                </div>
-                            </div>
-                        </t>
+                                </t>
 
-                        <!-- Section Emballage - SANDWICH GF -->
-                        <t t-if="doc.production_type == 'sandwich_gf' and doc.total_packaging_cost > 0">
-                            <div class="row mt-4">
-                                <div class="col-12">
-                                    <h5 class="bg-secondary text-white p-2">Coûts Emballage</h5>
-                                    <table class="table table-sm table-bordered">
-                                        <thead class="table-light">
+                                <!-- SANDWICH GF -->
+                                <t t-if="doc.production_type == 'sandwich_gf'">
+                                    <table class="table table-sm table-bordered mb-0">
+                                        <thead style="background-color: #e9ecef;">
                                             <tr>
-                                                <th>Type</th>
-                                                <th class="text-end">Sandwich GF</th>
+                                                <th style="width: 50%;">Type</th>
+                                                <th style="width: 50%;" class="text-end">Coût</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -193,199 +240,193 @@
                                                 <td class="text-end"><t t-esc="'%.2f' % doc.emballage_sandwich_cost"/> <t t-esc="doc.currency_id.symbol"/></td>
                                             </tr>
                                             <tr>
-                                                <td>Film</td>
+                                                <td>Film plastique</td>
                                                 <td class="text-end"><t t-esc="'%.2f' % doc.film_sandwich_cost"/> <t t-esc="doc.currency_id.symbol"/></td>
                                             </tr>
                                         </tbody>
-                                        <tfoot class="table-info">
+                                        <tfoot style="background-color: #198754; color: white;">
                                             <tr>
-                                                <td><strong>Total</strong></td>
+                                                <td><strong>TOTAL EMBALLAGE</strong></td>
                                                 <td class="text-end"><strong><t t-esc="'%.2f' % doc.total_packaging_cost"/> <t t-esc="doc.currency_id.symbol"/></strong></td>
                                             </tr>
                                         </tfoot>
                                     </table>
-                                </div>
+                                </t>
                             </div>
                         </t>
 
-                        <!-- Section Produits Finis -->
-                        <div class="row mt-4">
-                            <div class="col-12">
-                                <h5 class="bg-success text-white p-2">Produits Finis</h5>
-                                <table class="table table-sm table-bordered">
-                                    <thead class="table-light">
+                        <!-- ============ SECTION 4: PRODUITS FINIS ============ -->
+                        <div class="mb-4">
+                            <h5 style="background-color: #198754; color: white; padding: 8px 12px; margin-bottom: 0;">4. PRODUITS FINIS</h5>
+                            <table class="table table-sm table-bordered mb-0">
+                                <thead style="background-color: #e9ecef;">
+                                    <tr>
+                                        <th>Produit</th>
+                                        <th class="text-end">Cartons</th>
+                                        <th class="text-end">Unités/Carton</th>
+                                        <th class="text-end">Total Unités</th>
+                                        <th class="text-end">Prix Vente</th>
+                                        <th class="text-end">Marge/Carton</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="doc.finished_product_ids" t-as="fp">
                                         <tr>
-                                            <th>Produit</th>
-                                            <th class="text-end">Quantité (Cartons)</th>
-                                            <th class="text-end">Unités/Carton</th>
-                                            <th class="text-end">Total Unités</th>
-                                            <th class="text-end">Coût/Carton</th>
-                                            <th class="text-end">Coût Total</th>
-                                            <th class="text-end">Prix Vente</th>
-                                            <th class="text-end">Marge</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <t t-foreach="doc.finished_product_ids" t-as="fp">
-                                            <tr>
-                                                <td>
+                                            <td>
+                                                <strong>
                                                     <t t-if="fp.product_type == 'solo'">SOLO</t>
                                                     <t t-elif="fp.product_type == 'classico'">CLASSICO</t>
                                                     <t t-else="">Sandwich GF</t>
-                                                </td>
-                                                <td class="text-end"><t t-esc="'%.0f' % fp.quantity"/></td>
-                                                <td class="text-end"><t t-esc="fp.units_per_carton"/></td>
-                                                <td class="text-end"><t t-esc="'%.0f' % fp.total_units"/></td>
-                                                <td class="text-end"><t t-esc="'%.2f' % fp.unit_cost"/> <t t-esc="doc.currency_id.symbol"/></td>
-                                                <td class="text-end"><t t-esc="'%.2f' % fp.total_cost"/> <t t-esc="doc.currency_id.symbol"/></td>
-                                                <td class="text-end"><t t-esc="'%.2f' % fp.sale_price"/> <t t-esc="doc.currency_id.symbol"/></td>
-                                                <td class="text-end">
-                                                    <t t-esc="'%.2f' % fp.margin"/> <t t-esc="doc.currency_id.symbol"/>
-                                                    (<t t-esc="'%.1f' % fp.margin_percent"/>%)
-                                                </td>
+                                                </strong>
+                                            </td>
+                                            <td class="text-end"><t t-esc="'%.0f' % fp.quantity"/></td>
+                                            <td class="text-end"><t t-esc="fp.units_per_carton"/></td>
+                                            <td class="text-end"><t t-esc="'%.0f' % fp.total_units"/></td>
+                                            <td class="text-end"><t t-esc="'%.2f' % fp.sale_price"/> <t t-esc="doc.currency_id.symbol"/></td>
+                                            <td class="text-end"><t t-esc="'%.2f' % fp.margin"/> <t t-esc="doc.currency_id.symbol"/> (<t t-esc="'%.1f' % fp.margin_percent"/>%)</td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                                <tfoot style="background-color: #d1e7dd;">
+                                    <tr>
+                                        <td><strong>TOTAL</strong></td>
+                                        <td class="text-end"><strong><t t-esc="'%.0f' % doc.total_cartons_produced"/> cartons</strong></td>
+                                        <td colspan="4"></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+
+                        <!-- ============ SECTION 5: RÉSUMÉ ============ -->
+                        <div class="mb-4">
+                            <h5 style="background-color: #0dcaf0; color: #212529; padding: 8px 12px; margin-bottom: 0;">5. RÉSUMÉ DE PRODUCTION</h5>
+                            <table class="table table-sm table-bordered mb-0">
+                                <tr>
+                                    <td style="width: 50%; vertical-align: top;">
+                                        <table class="table table-sm mb-0" style="border: none;">
+                                            <tr><td colspan="2" style="background-color: #e9ecef;"><strong>BILAN POIDS</strong></td></tr>
+                                            <tr>
+                                                <td>Poids consommé</td>
+                                                <td class="text-end"><t t-esc="'%.2f' % doc.total_consumption_weight"/> kg</td>
                                             </tr>
-                                        </t>
-                                    </tbody>
-                                    <tfoot class="table-secondary">
+                                            <tr>
+                                                <td>- Rebuts récupérables</td>
+                                                <td class="text-end" style="color: #dc3545;">- <t t-esc="'%.2f' % doc.scrap_recoverable_weight"/> kg</td>
+                                            </tr>
+                                            <tr>
+                                                <td>- Pâte récupérable</td>
+                                                <td class="text-end" style="color: #fd7e14;">- <t t-esc="'%.2f' % doc.paste_recoverable_weight"/> kg</td>
+                                            </tr>
+                                            <tr style="background-color: #d1e7dd;">
+                                                <td><strong>= POIDS BON</strong></td>
+                                                <td class="text-end"><strong><t t-esc="'%.2f' % doc.good_weight"/> kg</strong></td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td style="width: 50%; vertical-align: top;">
+                                        <table class="table table-sm mb-0" style="border: none;">
+                                            <tr><td colspan="2" style="background-color: #e9ecef;"><strong>BILAN COÛTS</strong></td></tr>
+                                            <tr>
+                                                <td>Coût matières premières</td>
+                                                <td class="text-end"><t t-esc="'%.2f' % doc.total_consumption_cost"/> <t t-esc="doc.currency_id.symbol"/></td>
+                                            </tr>
+                                            <tr>
+                                                <td>+ Coût emballage</td>
+                                                <td class="text-end">+ <t t-esc="'%.2f' % doc.total_packaging_cost"/> <t t-esc="doc.currency_id.symbol"/></td>
+                                            </tr>
+                                            <tr style="background-color: #d1e7dd;">
+                                                <td><strong>= COÛT TOTAL</strong></td>
+                                                <td class="text-end"><strong><t t-esc="'%.2f' % doc.total_good_cost"/> <t t-esc="doc.currency_id.symbol"/></strong></td>
+                                            </tr>
+                                            <tr style="background-color: #0d6efd; color: white;">
+                                                <td><strong>COÛT / KG BON</strong></td>
+                                                <td class="text-end"><strong><t t-esc="'%.2f' % doc.cost_per_kg_good"/> <t t-esc="doc.currency_id.symbol"/>/kg</strong></td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <!-- ============ SECTION 6: COÛTS DE REVIENT PAR PRODUIT ============ -->
+                        <t t-if="doc.production_type == 'solo_classico'">
+                            <div class="mb-4">
+                                <h5 style="background-color: #212529; color: white; padding: 8px 12px; margin-bottom: 0;">6. COÛTS DE REVIENT - SOLO / CLASSICO</h5>
+                                <table class="table table-sm table-bordered mb-0">
+                                    <thead style="background-color: #343a40; color: white;">
                                         <tr>
-                                            <td><strong>Total</strong></td>
+                                            <th style="width: 25%;">Produit</th>
+                                            <th style="width: 25%;" class="text-end">Quantité</th>
+                                            <th style="width: 25%;" class="text-end">Coût / Carton</th>
+                                            <th style="width: 25%;" class="text-end">Coût Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><strong>SOLO</strong></td>
+                                            <td class="text-end"><t t-esc="'%.0f' % doc.qty_solo_cartons"/> cartons</td>
+                                            <td class="text-end"><t t-esc="'%.2f' % doc.cost_solo_per_carton"/> <t t-esc="doc.currency_id.symbol"/></td>
+                                            <td class="text-end"><t t-esc="'%.2f' % doc.total_solo_cost"/> <t t-esc="doc.currency_id.symbol"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>CLASSICO</strong></td>
+                                            <td class="text-end"><t t-esc="'%.0f' % doc.qty_classico_cartons"/> cartons</td>
+                                            <td class="text-end"><t t-esc="'%.2f' % doc.cost_classico_per_carton"/> <t t-esc="doc.currency_id.symbol"/></td>
+                                            <td class="text-end"><t t-esc="'%.2f' % doc.total_classico_cost"/> <t t-esc="doc.currency_id.symbol"/></td>
+                                        </tr>
+                                    </tbody>
+                                    <tfoot style="background-color: #198754; color: white;">
+                                        <tr>
+                                            <td><strong>TOTAL</strong></td>
                                             <td class="text-end"><strong><t t-esc="'%.0f' % doc.total_cartons_produced"/> cartons</strong></td>
-                                            <td colspan="6"></td>
+                                            <td></td>
+                                            <td class="text-end"><strong><t t-esc="'%.2f' % (doc.total_solo_cost + doc.total_classico_cost)"/> <t t-esc="doc.currency_id.symbol"/></strong></td>
                                         </tr>
                                     </tfoot>
                                 </table>
                             </div>
-                        </div>
-
-                        <!-- Résumé Final -->
-                        <div class="row mt-4">
-                            <div class="col-6">
-                                <h5 class="bg-info text-white p-2">Résumé Production</h5>
-                                <table class="table table-sm">
-                                    <tr>
-                                        <td>Poids Total Consommé</td>
-                                        <td class="text-end"><strong><t t-esc="'%.2f' % doc.total_consumption_weight"/> kg</strong></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Rebuts Récupérables</td>
-                                        <td class="text-end text-danger"><strong>- <t t-esc="'%.2f' % doc.scrap_recoverable_weight"/> kg</strong></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Pâte Récupérable</td>
-                                        <td class="text-end text-warning"><strong>- <t t-esc="'%.2f' % doc.paste_recoverable_weight"/> kg</strong></td>
-                                    </tr>
-                                    <tr class="table-success">
-                                        <td><strong>Poids Bon</strong></td>
-                                        <td class="text-end"><strong><t t-esc="'%.2f' % doc.good_weight"/> kg</strong></td>
-                                    </tr>
-                                </table>
-                            </div>
-                            <div class="col-6">
-                                <h5 class="bg-info text-white p-2">Résumé Coûts</h5>
-                                <table class="table table-sm">
-                                    <tr>
-                                        <td>Coût Matières Premières</td>
-                                        <td class="text-end"><strong><t t-esc="'%.2f' % doc.total_consumption_cost"/> <t t-esc="doc.currency_id.symbol"/></strong></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Coût Emballage</td>
-                                        <td class="text-end"><strong><t t-esc="'%.2f' % doc.total_packaging_cost"/> <t t-esc="doc.currency_id.symbol"/></strong></td>
-                                    </tr>
-                                    <tr class="table-success">
-                                        <td><strong>Coût Total Production</strong></td>
-                                        <td class="text-end"><strong><t t-esc="'%.2f' % doc.total_good_cost"/> <t t-esc="doc.currency_id.symbol"/></strong></td>
-                                    </tr>
-                                    <tr>
-                                        <td><strong>Coût/Kg Bon</strong></td>
-                                        <td class="text-end"><strong><t t-esc="'%.2f' % doc.cost_per_kg_good"/> <t t-esc="doc.currency_id.symbol"/>/kg</strong></td>
-                                    </tr>
-                                </table>
-                            </div>
-                        </div>
-
-                        <!-- Tableau des Coûts par Produit - SOLO/CLASSICO -->
-                        <t t-if="doc.production_type == 'solo_classico'">
-                            <div class="row mt-4">
-                                <div class="col-12">
-                                    <h5 class="bg-dark text-white p-2">Coûts de Revient - SOLO / CLASSICO</h5>
-                                    <table class="table table-bordered">
-                                        <thead class="table-dark">
-                                            <tr>
-                                                <th>Produit</th>
-                                                <th class="text-end">Quantité</th>
-                                                <th class="text-end">Coût/Carton</th>
-                                                <th class="text-end">Coût Total</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td><strong>SOLO</strong></td>
-                                                <td class="text-end"><t t-esc="'%.0f' % doc.qty_solo_cartons"/> cartons</td>
-                                                <td class="text-end"><t t-esc="'%.2f' % doc.cost_solo_per_carton"/> <t t-esc="doc.currency_id.symbol"/></td>
-                                                <td class="text-end"><t t-esc="'%.2f' % doc.total_solo_cost"/> <t t-esc="doc.currency_id.symbol"/></td>
-                                            </tr>
-                                            <tr>
-                                                <td><strong>CLASSICO</strong></td>
-                                                <td class="text-end"><t t-esc="'%.0f' % doc.qty_classico_cartons"/> cartons</td>
-                                                <td class="text-end"><t t-esc="'%.2f' % doc.cost_classico_per_carton"/> <t t-esc="doc.currency_id.symbol"/></td>
-                                                <td class="text-end"><t t-esc="'%.2f' % doc.total_classico_cost"/> <t t-esc="doc.currency_id.symbol"/></td>
-                                            </tr>
-                                        </tbody>
-                                        <tfoot class="table-secondary">
-                                            <tr>
-                                                <td colspan="3"><strong>TOTAL</strong></td>
-                                                <td class="text-end"><strong><t t-esc="'%.2f' % (doc.total_solo_cost + doc.total_classico_cost)"/> <t t-esc="doc.currency_id.symbol"/></strong></td>
-                                            </tr>
-                                        </tfoot>
-                                    </table>
-                                </div>
-                            </div>
                         </t>
 
-                        <!-- Tableau des Coûts par Produit - Sandwich GF -->
+                        <!-- Coûts de Revient - Sandwich GF -->
                         <t t-if="doc.production_type == 'sandwich_gf'">
-                            <div class="row mt-4">
-                                <div class="col-12">
-                                    <h5 class="bg-dark text-white p-2">Coûts de Revient - Sandwich Grand Format</h5>
-                                    <table class="table table-bordered">
-                                        <thead class="table-dark">
-                                            <tr>
-                                                <th>Produit</th>
-                                                <th class="text-end">Quantité</th>
-                                                <th class="text-end">Coût/Carton</th>
-                                                <th class="text-end">Coût Total</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td><strong>Sandwich Grand Format</strong></td>
-                                                <td class="text-end"><t t-esc="'%.0f' % doc.qty_sandwich_cartons"/> cartons</td>
-                                                <td class="text-end"><t t-esc="'%.2f' % doc.cost_sandwich_per_carton"/> <t t-esc="doc.currency_id.symbol"/></td>
-                                                <td class="text-end"><t t-esc="'%.2f' % doc.total_sandwich_cost"/> <t t-esc="doc.currency_id.symbol"/></td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
+                            <div class="mb-4">
+                                <h5 style="background-color: #212529; color: white; padding: 8px 12px; margin-bottom: 0;">6. COÛT DE REVIENT - SANDWICH GRAND FORMAT</h5>
+                                <table class="table table-sm table-bordered mb-0">
+                                    <thead style="background-color: #343a40; color: white;">
+                                        <tr>
+                                            <th style="width: 25%;">Produit</th>
+                                            <th style="width: 25%;" class="text-end">Quantité</th>
+                                            <th style="width: 25%;" class="text-end">Coût / Carton</th>
+                                            <th style="width: 25%;" class="text-end">Coût Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><strong>Sandwich GF</strong></td>
+                                            <td class="text-end"><t t-esc="'%.0f' % doc.qty_sandwich_cartons"/> cartons</td>
+                                            <td class="text-end"><t t-esc="'%.2f' % doc.cost_sandwich_per_carton"/> <t t-esc="doc.currency_id.symbol"/></td>
+                                            <td class="text-end"><t t-esc="'%.2f' % doc.total_sandwich_cost"/> <t t-esc="doc.currency_id.symbol"/></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </t>
 
-                        <!-- Notes -->
+                        <!-- ============ NOTES ============ -->
                         <t t-if="doc.notes">
-                            <div class="row mt-4">
-                                <div class="col-12">
-                                    <h5>Notes</h5>
-                                    <p t-field="doc.notes"/>
+                            <div class="mb-4">
+                                <h5 style="background-color: #6c757d; color: white; padding: 8px 12px; margin-bottom: 0;">NOTES</h5>
+                                <div style="padding: 10px; border: 1px solid #dee2e6; border-top: none;">
+                                    <t t-esc="doc.notes"/>
                                 </div>
                             </div>
                         </t>
 
-                        <!-- Pied de page -->
-                        <div class="row mt-5">
-                            <div class="col-12 text-center">
-                                <small class="text-muted">
-                                    Document généré le <t t-esc="context_timestamp(datetime.datetime.now()).strftime('%d/%m/%Y %H:%M')"/>
-                                </small>
-                            </div>
+                        <!-- ============ PIED DE PAGE ============ -->
+                        <div class="text-center mt-4" style="border-top: 1px solid #dee2e6; padding-top: 10px;">
+                            <small style="color: #6c757d;">
+                                Document généré le <t t-esc="context_timestamp(datetime.datetime.now()).strftime('%d/%m/%Y à %H:%M')"/>
+                            </small>
                         </div>
 
                     </div>

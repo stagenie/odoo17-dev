@@ -93,14 +93,15 @@
                                 <tree editable="bottom">
                                     <field name="sequence" widget="handle"/>
                                     <field name="product_id"/>
-                                    <field name="quantity"/>
-                                    <field name="product_uom_id"/>
-                                    <field name="weight_per_unit"/>
+                                    <field name="weight_per_unit" readonly="1" optional="hide"/>
+                                    <field name="weight_input" optional="show" string="Poids Saisi (kg)"/>
+                                    <field name="quantity" optional="show" string="Qté"/>
+                                    <field name="product_uom_id" optional="show"/>
                                     <field name="weight_kg" sum="Total Poids"/>
                                     <field name="unit_cost"/>
                                     <field name="total_cost" sum="Total Coût"/>
-                                    <field name="stock_available"/>
-                                    <field name="notes"/>
+                                    <field name="stock_available" optional="hide"/>
+                                    <field name="notes" optional="hide"/>
                                     <field name="currency_id" column_invisible="1"/>
                                 </tree>
                             </field>

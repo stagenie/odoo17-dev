@@ -2,6 +2,7 @@
 
 from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError, UserError
+from odoo.tools import float_round
 from datetime import date
 import logging
 
@@ -443,7 +444,53 @@ class RonDailyProduction(models.Model):
     def create(self, vals):
         if vals.get('name', 'Nouveau') == 'Nouveau':
             vals['name'] = self.env['ir.sequence'].next_by_code('ron.daily.production') or 'Nouveau'
+
+        # Pré-remplir les coûts unitaires des emballages si non fournis
+        company_id = vals.get('company_id', self.env.company.id)
+        config = self.env['ron.production.config'].get_config(company_id)
+        production_type = vals.get('production_type', 'solo_classico')
+
+        if production_type == 'solo_classico':
+            if 'emballage_solo_unit_cost' not in vals and config.product_emballage_solo_id:
+                vals['emballage_solo_unit_cost'] = config.product_emballage_solo_id.standard_price
+            if 'emballage_classico_unit_cost' not in vals and config.product_emballage_classico_id:
+                vals['emballage_classico_unit_cost'] = config.product_emballage_classico_id.standard_price
+            if 'film_solo_unit_cost' not in vals and config.product_film_solo_id:
+                vals['film_solo_unit_cost'] = config.product_film_solo_id.standard_price
+            if 'film_classico_unit_cost' not in vals and config.product_film_classico_id:
+                vals['film_classico_unit_cost'] = config.product_film_classico_id.standard_price
+        elif production_type == 'sandwich_gf':
+            if 'emballage_sandwich_unit_cost' not in vals and config.product_emballage_sandwich_id:
+                vals['emballage_sandwich_unit_cost'] = config.product_emballage_sandwich_id.standard_price
+            if 'film_sandwich_unit_cost' not in vals and config.product_film_sandwich_id:
+                vals['film_sandwich_unit_cost'] = config.product_film_sandwich_id.standard_price
+
         return super().create(vals)
+
+    @api.onchange('production_type', 'company_id')
+    def _onchange_production_type_load_packaging_costs(self):
+        """Charge automatiquement les coûts unitaires des emballages depuis la configuration."""
+        if not self.company_id:
+            return
+
+        config = self.env['ron.production.config'].get_config(self.company_id.id)
+
+        if self.production_type == 'solo_classico':
+            # Charger les prix des emballages SOLO/CLASSICO
+            if config.product_emballage_solo_id:
+                self.emballage_solo_unit_cost = config.product_emballage_solo_id.standard_price
+            if config.product_emballage_classico_id:
+                self.emballage_classico_unit_cost = config.product_emballage_classico_id.standard_price
+            if config.product_film_solo_id:
+                self.film_solo_unit_cost = config.product_film_solo_id.standard_price
+            if config.product_film_classico_id:
+                self.film_classico_unit_cost = config.product_film_classico_id.standard_price
+        elif self.production_type == 'sandwich_gf':
+            # Charger les prix des emballages Sandwich
+            if config.product_emballage_sandwich_id:
+                self.emballage_sandwich_unit_cost = config.product_emballage_sandwich_id.standard_price
+            if config.product_film_sandwich_id:
+                self.film_sandwich_unit_cost = config.product_film_sandwich_id.standard_price
 
     @api.depends('consumption_line_ids', 'consumption_line_ids.total_cost',
                  'consumption_line_ids.weight_kg')
@@ -907,7 +954,10 @@ class RonDailyProduction(models.Model):
                     self.picking_consumption_id.action_assign()
                 if self.picking_consumption_id.state == 'assigned':
                     for move in self.picking_consumption_id.move_ids:
-                        move.quantity = move.product_uom_qty
+                        # Arrondir la quantité selon les règles de l'UoM
+                        uom = move.product_uom
+                        qty_rounded = float_round(move.product_uom_qty, precision_rounding=uom.rounding)
+                        move.quantity = qty_rounded
                     self.picking_consumption_id.button_validate()
                 _logger.info(f"BL Consommation MP validé: {self.picking_consumption_id.name}")
             except Exception as e:
@@ -923,7 +973,10 @@ class RonDailyProduction(models.Model):
                     self.picking_packaging_id.action_assign()
                 if self.picking_packaging_id.state == 'assigned':
                     for move in self.picking_packaging_id.move_ids:
-                        move.quantity = move.product_uom_qty
+                        # Arrondir la quantité selon les règles de l'UoM
+                        uom = move.product_uom
+                        qty_rounded = float_round(move.product_uom_qty, precision_rounding=uom.rounding)
+                        move.quantity = qty_rounded
                     self.picking_packaging_id.button_validate()
                 _logger.info(f"BL Consommation Emballage validé: {self.picking_packaging_id.name}")
             except Exception as e:
@@ -952,7 +1005,10 @@ class RonDailyProduction(models.Model):
                                 picking.action_assign()
                             if picking.state == 'assigned':
                                 for move in picking.move_ids:
-                                    move.quantity = move.product_uom_qty
+                                    # Arrondir la quantité selon les règles de l'UoM
+                                    uom = move.product_uom
+                                    qty_rounded = float_round(move.product_uom_qty, precision_rounding=uom.rounding)
+                                    move.quantity = qty_rounded
                                 picking.button_validate()
 
                     _logger.info(f"Achat validé: {purchase.name}")
@@ -1067,12 +1123,16 @@ class RonDailyProduction(models.Model):
 
         # Créer les lignes de mouvement
         for line in self.consumption_line_ids:
+            # Arrondir la quantité selon les règles de l'UoM du produit
+            uom = line.product_id.uom_id
+            qty_rounded = float_round(line.quantity, precision_rounding=uom.rounding)
+
             self.env['stock.move'].create({
                 'name': line.product_id.name,
                 'picking_id': picking.id,
                 'product_id': line.product_id.id,
-                'product_uom_qty': line.quantity,
-                'product_uom': line.product_id.uom_id.id,
+                'product_uom_qty': qty_rounded,
+                'product_uom': uom.id,
                 'location_id': picking.location_id.id,
                 'location_dest_id': picking.location_dest_id.id,
             })
@@ -1151,12 +1211,16 @@ class RonDailyProduction(models.Model):
 
         # Créer les lignes de mouvement pour chaque emballage
         for product, qty in emballages_to_consume:
+            # Arrondir la quantité selon les règles de l'UoM du produit
+            uom = product.uom_id
+            qty_rounded = float_round(qty, precision_rounding=uom.rounding)
+
             self.env['stock.move'].create({
                 'name': f"[Emballage] {product.name}",
                 'picking_id': picking.id,
                 'product_id': product.id,
-                'product_uom_qty': qty,
-                'product_uom': product.uom_id.id,
+                'product_uom_qty': qty_rounded,
+                'product_uom': uom.id,
                 'location_id': picking.location_id.id,
                 'location_dest_id': picking.location_dest_id.id,
             })
