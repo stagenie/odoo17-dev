@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Extend Partner Ledger wizard to add user_ids field -->
+    <record id="account_report_partner_ledger_user_view" model="ir.ui.view">
+        <field name="name">Partner Ledger - User Filter</field>
+        <field name="model">account.report.partner.ledger</field>
+        <field name="inherit_id" ref="accounting_pdf_reports.account_report_partner_ledger_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_ids']" position="after">
+                <field name="user_ids" widget="many2many_tags"
+                       options="{'no_open': True, 'no_create': True}"
+                       placeholder="Tous les vendeurs"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Action for Situation Partenaire PDF menu -->
+    <record id="action_partner_ledger_user" model="ir.actions.act_window">
+        <field name="name">Situation Partenaire PDF</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">account.report.partner.ledger</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="accounting_pdf_reports.account_report_partner_ledger_view"/>
+        <field name="target">new</field>
+        <field name="context">{
+            'default_target_move': 'posted',
+            'default_result_selection': 'customer_supplier',
+            'default_reconciled': True,
+        }</field>
+    </record>
+
+</odoo>

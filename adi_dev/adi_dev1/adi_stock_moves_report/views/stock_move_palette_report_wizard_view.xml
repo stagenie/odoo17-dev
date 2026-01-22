@@ -1,0 +1,38 @@
+<odoo>
+    <record id="view_stock_move_palette_report_wizard_form" model="ir.ui.view">
+        <field name="name">stock.move.palette.report.wizard.form</field>
+        <field name="model">stock.move.palette.report.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Générer le rapport des mouvements des palettes">
+                <group>
+                    <field name="start_date" />
+                    <field name="end_date" />
+                </group>
+                <footer>
+                    <button string="Générer Rapport" type="object" name="generate_report" class="btn-primary"/>
+                    <button string="Annuler" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action pour ouvrir le wizard -->
+    <record id="action_stock_move_palette_report_wizard" model="ir.actions.act_window">
+        <field name="name">Générer Rapport Mouvements Palettes</field>
+        <field name="res_model">stock.move.palette.report.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_stock_move_palette_report_wizard_form"/>
+        <field name="target">new</field>
+    </record>
+
+    <!-- Menu principal -->
+    <menuitem id="menu_stock_move_palette_report_root"
+              name="Rapports Stock"
+              parent="stock.menu_stock_root"/>
+
+    <!-- Sous-menu pour le rapport de mouvements des palettes -->
+    <menuitem id="menu_stock_move_palette_report"
+              name="Mouvements des Palettes"
+              parent="menu_stock_move_palette_report_root"
+              action="action_stock_move_palette_report_wizard"/>
+</odoo>

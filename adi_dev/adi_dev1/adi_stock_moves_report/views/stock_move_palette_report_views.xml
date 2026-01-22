@@ -1,0 +1,19 @@
+<odoo>
+    <record id="view_stock_move_palette_report_tree" model="ir.ui.view">
+        <field name="name">stock.move.palette.report.tree</field>
+        <field name="model">stock.move.palette.report</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="product_id"/>
+                <field name="date"/>
+                <field name="mouve_name"/>
+                <field name="incoming_qty"/>
+                <field name="outgoing_qty"/>
+                <field name="balance"/>
+                <field name="client_id"/>
+                <field name="supplier_id"/>
+
+            </tree>
+        </field>
+    </record>
+</odoo>

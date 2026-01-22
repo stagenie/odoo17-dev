@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_product_movement_wizard_form" model="ir.ui.view">
+        <field name="name">product.movement.wizard.form</field>
+        <field name="model">product.movement.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Rapport Mouvements Produits">
+                <group>
+                    <group>
+                        <field name="date_start"/>
+                        <field name="date_end"/>
+                    </group>
+                    <group>
+                        <field name="show_all"/>
+                        <field name="category_ids" invisible="show_all"
+                               widget="many2many_tags"/>
+                        <field name="product_ids" invisible="show_all"
+                               widget="many2many_tags"/>
+                    </group>
+
+                </group>
+
+                <footer>
+                    <button string="Générer le rapport" type="object" name="action_generate_report"
+                            class="btn-primary"/>
+                    <button string="Annuler" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+
+    <!-- Action du menu -->
+
+    <record id="action_product_movement_wizard" model="ir.actions.act_window">
+        <field name="name">Mouvements Produits</field>
+        <field name="res_model">product.movement.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <!-- Menu item -->
+    <menuitem id="menu_product_movement_report"
+              name="ADI- Rapport Mouvements Produits"
+              action="action_product_movement_wizard"
+              parent="stock.menu_warehouse_report"
+              sequence="-101"/>
+</odoo>

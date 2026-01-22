@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_pallet_movements">
+        <t t-call="web.html_container">
+            <t t-foreach="products_data.values()" t-as="product_data">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2>Mouvements Stock du produit</h2>
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <strong>Période de mouvement:</strong>
+                                <br/>
+                                <t t-if="date_start">
+                                    Du
+                                    <span t-esc="date_start"/>
+                                </t>
+                                <t t-if="date_end">
+                                    au
+                                    <span t-esc="date_end"/>
+                                </t>
+
+                                <strong>Référence:</strong>
+                                <span t-field="product_data['product'].default_code"/>
+                                <br/>
+                                <strong>Nom du produit:</strong>
+                                <span t-esc="product_data['variant_name']"/>
+                                <br/>
+
+                                <strong>Quantité initiale:</strong>
+                                <span t-esc="product_data['movements']['initial_qty']"/>
+
+                            </div>
+
+
+                        </div>
+
+                        <table class="table table-bordered table-striped">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th>Date de mouvement</th>
+                                    <th>Nom de mouvement</th>
+                                    <th>Type</th>
+                                    <th>Partenaire</th>
+                                    <th>Quantité entrante</th>
+                                    <th>Quantité sortante</th>
+                                    <th>Solde</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="product_data['movements']['movements']" t-as="move">
+                                    <td>
+                                        <span t-esc="move['date']"/>
+                                    </td>
+                                    <td>
+                                        <span t-esc="move['reference']"/>
+                                    </td>
+                                    <td>
+                                        <span t-esc="move['partner_type']"/>
+                                    </td>
+                                    <td>
+                                        <span t-esc="move['partner_name']"/>
+                                    </td>
+                                    <td>
+                                        <span t-esc="move['in_qty']"/>
+                                    </td>
+                                    <td>
+                                        <span t-esc="move['out_qty']"/>
+                                    </td>
+                                    <td>
+                                        <span t-esc="move['balance']"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="3">
+                                        <strong>Récapitulatif</strong>
+                                    </td>
+                                     <td>
+                                        <strong t-esc="product_data['movements']['initial_qty']"/>
+                                     </td>
+                                    <td>
+                                        <strong t-esc="product_data['movements']['total_in']"/>
+                                    </td>
+                                    <td>
+                                        <strong t-esc="product_data['movements']['total_out']"/>
+                                    </td>
+                                    <td>
+                                        <strong t-esc="product_data['movements']['final_qty']"/>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <record id="action_report_pallet_movements" model="ir.actions.report">
+        <field name="name">DSI- Mouvements des Palettes</field>
+        <field name="model">pallet.movement.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">dsi_stock_moves_report.report_pallet_movements</field>
+        <field name="report_file">dsi_stock_moves_report.report_pallet_movements</field>
+        <field name="binding_model_id" ref="model_pallet_movement_wizard"/>
+        <field name="binding_type">report</field>
+    </record>
+</odoo>

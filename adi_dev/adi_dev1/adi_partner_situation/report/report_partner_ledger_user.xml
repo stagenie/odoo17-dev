@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Inherit Partner Ledger template to add Salesperson info -->
+    <template id="report_partnerledger_user" inherit_id="accounting_pdf_reports.report_partnerledger">
+
+        <!-- Add Salesperson info in header after Target Moves -->
+        <xpath expr="//div[hasclass('row')]/div[3]" position="after">
+            <div class="col-3" t-if="user_names">
+                <strong>Vendeurs:</strong>
+                <p t-esc="user_names"/>
+            </div>
+        </xpath>
+
+    </template>
+
+</odoo>

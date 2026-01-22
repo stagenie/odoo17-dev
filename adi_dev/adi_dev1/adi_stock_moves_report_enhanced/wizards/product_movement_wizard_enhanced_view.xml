@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- Vue héritée - Extension du wizard existant -->
+    <record id="view_product_movement_wizard_form_enhanced" model="ir.ui.view">
+        <field name="name">product.movement.wizard.form.enhanced</field>
+        <field name="model">product.movement.wizard</field>
+        <field name="inherit_id" ref="adi_stock_moves_report.view_product_movement_wizard_form"/>
+        <field name="arch" type="xml">
+            <!-- Ajouter les filtres entrepôts/emplacements après les filtres produits -->
+            <xpath expr="//group/group[last()]" position="after">
+                <!-- Filtres Entrepôts -->
+                <group string="Filtres Entrepôts">
+                    <field name="show_all_warehouses" widget="boolean_toggle"/>
+                    <field name="warehouse_ids"
+                           invisible="show_all_warehouses"
+                           widget="many2many_tags"
+                           options="{'no_create': True}"/>
+                </group>
+                <!-- Filtres Emplacements -->
+                <group string="Filtres Emplacements">
+                    <field name="show_all_locations" widget="boolean_toggle"/>
+                    <field name="available_location_ids" invisible="1"/>
+                    <field name="location_ids"
+                           invisible="show_all_locations"
+                           widget="many2many_tags"
+                           options="{'no_create': True}"
+                           domain="[('id', 'in', available_location_ids)]"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

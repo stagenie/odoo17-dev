@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- Template du rapport PDF - Format original -->
+    <template id="report_movements">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <t t-foreach="products_data.values()" t-as="product_data">
+                    <div class="page">
+                        <h2>Produit: <t t-esc="product_data['product'].name"/></h2>
+                        <strong>Référence: <t t-esc="product_data['product'].default_code"/></strong>
+                        <p>Catégorie: <t t-esc="product_data['product'].categ_id.name"/></p>
+                        <t t-if="date_start or date_end">
+                            <p>Période:
+                                <t t-if="date_start">du <t t-esc="date_start"/></t>
+                                <t t-if="date_end"> au <t t-esc="date_end"/></t>
+                            </p>
+                        </t>
+                        <p>Quantité Initiale: <t t-esc="product_data['movements']['initial_qty']"/></p>
+                        <table class="table table-bordered table-striped">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Référence</th>
+                                    <th>Nom du Partenaire</th>
+                                    <th>Entrée</th>
+                                    <th>Sortie</th>
+                                    <th>Solde</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="product_data['movements']['movements']" t-as="move">
+                                    <tr>
+                                        <td><t t-esc="move['date']"/></td>
+                                        <td><t t-esc="move['reference']"/></td>
+                                        <td><t t-esc="move['partner_name']"/></td>
+                                        <td class="text-right"><t t-esc="move['in_qty']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        <td class="text-right"><t t-esc="move['out_qty']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        <td class="text-right"><t t-esc="move['balance']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="2">
+                                        <strong>Récapitulatif</strong>
+                                    </td>
+                                    <td>
+                                        <strong t-esc="product_data['movements']['initial_qty']"/>
+                                    </td>
+                                    <td>
+                                        <strong t-esc="product_data['movements']['total_in']"
+                                                t-options='{"widget": "float", "precision": 2}'
+                                        />
+                                    </td>
+                                    <td>
+                                        <strong t-esc="product_data['movements']['total_out']"
+                                                t-options='{"widget": "float", "precision": 2}'
+                                        />
+                                    </td>
+                                    <td>
+                                        <strong t-esc="product_data['movements']['final_qty']"
+                                                t-options='{"widget": "float", "precision": 2}'
+                                        />
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <!-- Définition de l'action du rapport -->
+    <record id="action_report_product_movements_enhanced" model="ir.actions.report">
+        <field name="name">ADI - Mouvements Produits (Amélioré)</field>
+        <field name="model">product.movement.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_stock_moves_report_enhanced.report_movements</field>
+        <field name="report_file">adi_stock_moves_report_enhanced.report_movements</field>
+    </record>
+
+</odoo>

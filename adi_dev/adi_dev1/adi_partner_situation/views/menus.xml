@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Main menu: Situation Partenaires under Invoicing -->
+    <menuitem id="menu_partner_situation"
+              name="Situation Partenaires"
+              parent="account.menu_finance"
+              sequence="40"
+              groups="account.group_account_invoice"/>
+
+    <!-- Submenu: Situation Partenaire PDF -->
+    <menuitem id="menu_partner_situation_pdf"
+              name="Situation Partenaire PDF"
+              parent="menu_partner_situation"
+              action="action_partner_ledger_user"
+              sequence="10"
+              groups="account.group_account_invoice"/>
+
+    <!-- Submenu: Consulter les Soldes Partenaires -->
+    <menuitem id="menu_partner_balance"
+              name="Consulter les Soldes Partenaires"
+              parent="menu_partner_situation"
+              action="action_partner_balance_wizard"
+              sequence="20"
+              groups="account.group_account_invoice"/>
+
+</odoo>
