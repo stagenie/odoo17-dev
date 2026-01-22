@@ -85,6 +85,11 @@
                                         class="btn-secondary"
                                         icon="fa-list"
                                         confirm="Charger les matières premières depuis le template ? Les lignes existantes seront remplacées."/>
+                                <button name="action_recalculate_weights" type="object"
+                                        string="Recalculer Poids"
+                                        class="btn-info ms-2"
+                                        icon="fa-refresh"
+                                        title="Recalcule les poids manquants depuis les noms de produits (ex: FARINE 25 KG)"/>
                                 <span class="text-muted ms-2">
                                     Charge la liste des matières premières. Les quantités sont à saisir manuellement.
                                 </span>

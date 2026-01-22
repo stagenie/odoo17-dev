@@ -148,6 +148,32 @@ class RonConsumptionLine(models.Model):
             return float(weight_str)
         return 0.0
 
+    def _get_weight_per_unit_for_product(self, product):
+        """Détermine le poids par unité pour un produit.
+
+        Ordre de priorité :
+        1. Poids défini sur le produit (product.weight)
+        2. Extraction depuis le nom du produit (ex: "FARINE 25 KG" → 25)
+        3. Extraction depuis l'unité de mesure
+        4. Valeur par défaut = 1.0
+        """
+        if not product:
+            return 1.0
+
+        # Priorité 1: Poids défini sur le produit
+        if product.weight > 0:
+            return product.weight
+
+        # Priorité 2: Extraire depuis le nom du produit
+        weight = self._extract_weight_from_text(product.name)
+
+        # Priorité 3: Extraire depuis l'unité de mesure
+        if weight == 0 and product.uom_id:
+            weight = self._extract_weight_from_text(product.uom_id.name)
+
+        # Priorité 4: Valeur par défaut
+        return weight if weight > 0 else 1.0
+
     @api.onchange('product_id')
     def _onchange_product_id(self):
         """Met à jour les informations du produit."""
@@ -155,19 +181,8 @@ class RonConsumptionLine(models.Model):
             # Récupérer le prix AVCO (standard_price)
             self.unit_cost = self.product_id.standard_price
 
-            # Récupérer le poids depuis le produit si défini
-            if self.product_id.weight > 0:
-                self.weight_per_unit = self.product_id.weight
-            else:
-                # Essayer d'extraire le poids depuis le nom du produit
-                weight = self._extract_weight_from_text(self.product_id.name)
-
-                # Si non trouvé, essayer depuis le nom de l'unité de mesure
-                if weight == 0 and self.product_id.uom_id:
-                    weight = self._extract_weight_from_text(self.product_id.uom_id.name)
-
-                # Si toujours non trouvé, valeur par défaut = 1
-                self.weight_per_unit = weight if weight > 0 else 1.0
+            # Récupérer le poids par unité
+            self.weight_per_unit = self._get_weight_per_unit_for_product(self.product_id)
 
     @api.onchange('quantity', 'weight_per_unit')
     def _onchange_quantity_compute_weight_input(self):
@@ -218,3 +233,60 @@ class RonConsumptionLine(models.Model):
         for rec in self:
             if rec.weight_input < 0:
                 raise ValidationError(_("Le poids saisi ne peut pas être négatif."))
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        """Crée les lignes de consommation en initialisant weight_per_unit si nécessaire.
+
+        Cette méthode garantit que weight_per_unit est toujours défini lors de la création,
+        même si l'onchange n'a pas été déclenché ou si la valeur n'a pas été transmise.
+        """
+        for vals in vals_list:
+            if vals.get('product_id') and not vals.get('weight_per_unit'):
+                product = self.env['product.product'].browse(vals['product_id'])
+                vals['weight_per_unit'] = self._get_weight_per_unit_for_product(product)
+            # Initialiser unit_cost si non fourni
+            if vals.get('product_id') and not vals.get('unit_cost'):
+                product = self.env['product.product'].browse(vals['product_id'])
+                vals['unit_cost'] = product.standard_price
+        return super().create(vals_list)
+
+    def write(self, vals):
+        """Met à jour les lignes de consommation en réinitialisant weight_per_unit si le produit change.
+
+        Cette méthode garantit que weight_per_unit est mis à jour si le produit change
+        et que la nouvelle valeur n'a pas été fournie.
+        """
+        if vals.get('product_id') and 'weight_per_unit' not in vals:
+            product = self.env['product.product'].browse(vals['product_id'])
+            vals['weight_per_unit'] = self._get_weight_per_unit_for_product(product)
+        if vals.get('product_id') and 'unit_cost' not in vals:
+            product = self.env['product.product'].browse(vals['product_id'])
+            vals['unit_cost'] = product.standard_price
+        return super().write(vals)
+
+    def action_recalculate_weight(self):
+        """Recalcule le poids par unité pour les lignes où il est manquant.
+
+        Cette action peut être appelée manuellement ou automatiquement
+        pour corriger les lignes qui ont un weight_per_unit à 0 ou NULL.
+        """
+        for rec in self:
+            if not rec.weight_per_unit or rec.weight_per_unit == 0:
+                rec.weight_per_unit = rec._get_weight_per_unit_for_product(rec.product_id)
+
+    @api.model
+    def _fix_missing_weights(self):
+        """Méthode utilitaire pour corriger toutes les lignes avec poids manquant.
+
+        Peut être appelée depuis un script ou la console Odoo :
+        self.env['ron.consumption.line']._fix_missing_weights()
+        """
+        lines_to_fix = self.search([
+            '|',
+            ('weight_per_unit', '=', False),
+            ('weight_per_unit', '=', 0)
+        ])
+        for line in lines_to_fix:
+            line.weight_per_unit = line._get_weight_per_unit_for_product(line.product_id)
+        return len(lines_to_fix)

@@ -495,14 +495,22 @@ class RonDailyProduction(models.Model):
     @api.depends('consumption_line_ids', 'consumption_line_ids.total_cost',
                  'consumption_line_ids.weight_kg')
     def _compute_consumption_totals(self):
-        """Calcule les totaux de consommation."""
+        """Calcule les totaux de consommation et propage le coût/kg aux rebuts et pâte."""
         for rec in self:
             total_cost = sum(rec.consumption_line_ids.mapped('total_cost'))
             total_weight = sum(rec.consumption_line_ids.mapped('weight_kg'))
 
             rec.total_consumption_cost = total_cost
             rec.total_consumption_weight = total_weight
-            rec.cost_per_kg = total_cost / total_weight if total_weight > 0 else 0
+            new_cost_per_kg = total_cost / total_weight if total_weight > 0 else 0
+            rec.cost_per_kg = new_cost_per_kg
+
+            # Propager le coût/kg aux lignes de rebuts et pâte
+            if new_cost_per_kg > 0:
+                for scrap_line in rec.scrap_line_ids:
+                    scrap_line.cost_per_kg = new_cost_per_kg
+                for paste_line in rec.paste_line_ids:
+                    paste_line.cost_per_kg = new_cost_per_kg
 
     @api.depends('scrap_line_ids', 'scrap_line_ids.weight_kg', 'scrap_line_ids.total_cost',
                  'paste_line_ids', 'paste_line_ids.weight_kg', 'paste_line_ids.total_cost')
@@ -590,6 +598,8 @@ class RonDailyProduction(models.Model):
 
         Deux modes de calcul:
         - SOLO/CLASSICO: Matières réparties au ratio + Emballages affectés directement
+          FORMULE: Coût CLASSICO = Coût SOLO × ratio (1.65 par défaut)
+          Le CLASSICO est plus cher car il contient plus de produit.
         - Sandwich GF: Calcul direct (coût total / quantité)
 
         Les emballages sont affectés DIRECTEMENT par type (pas de ratio sur les emballages).
@@ -633,17 +643,20 @@ class RonDailyProduction(models.Model):
                 pkg_classico = rec.emballage_classico_cost + rec.film_classico_cost
 
                 # Répartition des MATIÈRES PREMIÈRES au ratio uniquement
-                # S = ratio × C (Coût SOLO = ratio × Coût CLASSICO)
-                # Total MP = C × (qty_solo × ratio + qty_classico)
-                # C_base = Total MP / (qty_solo × ratio + qty_classico)
+                # NOUVELLE FORMULE: C = ratio × S (Coût CLASSICO = ratio × Coût SOLO)
+                # Le CLASSICO est plus cher car il a plus de produit
+                # Total MP = S × qty_solo + C × qty_classico
+                # Total MP = S × qty_solo + (ratio × S) × qty_classico
+                # Total MP = S × (qty_solo + ratio × qty_classico)
+                # S = Total MP / (qty_solo + ratio × qty_classico)
 
                 cost_matieres = rec.total_consumption_cost
-                denominator = (qty_solo * ratio + qty_classico)
+                denominator = (qty_solo + qty_classico * ratio)
 
                 if denominator > 0:
                     # Coût matières par carton (avec ratio)
-                    mp_classico_per_carton = cost_matieres / denominator
-                    mp_solo_per_carton = mp_classico_per_carton * ratio
+                    mp_solo_per_carton = cost_matieres / denominator
+                    mp_classico_per_carton = mp_solo_per_carton * ratio
 
                     # Coût emballage par carton (affectation DIRECTE - pas de ratio)
                     pkg_solo_per_carton = pkg_solo / qty_solo if qty_solo > 0 else 0
@@ -1057,6 +1070,44 @@ class RonDailyProduction(models.Model):
             # (nécessaire pour pouvoir la supprimer)
             rec.write({'state': 'draft'})
             rec.message_post(body=_("Production remise en brouillon."))
+
+    def action_recalculate_weights(self):
+        """Recalcule les poids manquants dans les lignes de consommation.
+
+        Cette action corrige les lignes où le weight_per_unit est à 0 ou NULL
+        en extrayant le poids depuis le nom du produit (ex: "FARINE 25 KG" → 25).
+        Met également à jour le coût/kg des rebuts et pâte.
+        """
+        for rec in self:
+            lines_fixed = 0
+            for line in rec.consumption_line_ids:
+                if not line.weight_per_unit or line.weight_per_unit == 0:
+                    new_weight = line._get_weight_per_unit_for_product(line.product_id)
+                    if new_weight > 0:
+                        line.weight_per_unit = new_weight
+                        lines_fixed += 1
+
+            # Propager le coût/kg aux rebuts et pâte
+            if rec.cost_per_kg > 0:
+                rec.scrap_line_ids.write({'cost_per_kg': rec.cost_per_kg})
+                rec.paste_line_ids.write({'cost_per_kg': rec.cost_per_kg})
+
+            if lines_fixed > 0:
+                rec.message_post(
+                    body=_("Poids recalculés pour %d ligne(s) de consommation.\n"
+                           "Nouveau poids total: %.2f kg\n"
+                           "Nouveau coût/kg: %.2f\n"
+                           "Coût/kg propagé aux rebuts et pâte.") % (
+                        lines_fixed,
+                        rec.total_consumption_weight,
+                        rec.cost_per_kg
+                    )
+                )
+            else:
+                rec.message_post(body=_("Aucune ligne à corriger - tous les poids sont déjà définis.\n"
+                                        "Coût/kg propagé aux rebuts et pâte."))
+
+        return True
 
     def unlink(self):
         """Empêche la suppression des productions terminées."""

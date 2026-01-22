@@ -63,9 +63,9 @@ class RonProductionConfig(models.Model):
 
     # Ratio de coût
     cost_ratio_solo_classico = fields.Float(
-        string='Ratio Coût SOLO/CLASSICO',
-        default=1.65,
-        help="SOLO = Ratio × CLASSICO (par défaut 1.65)"
+        string='Ratio Coût CLASSICO/SOLO',
+        default=1.625,
+        help="CLASSICO = SOLO × Ratio (par défaut 1.625 = 312/192 unités)"
     )
 
     # ================== PRODUITS FINIS - SANDWICH GRAND FORMAT ==================

@@ -165,12 +165,43 @@ class RonScrapLine(models.Model):
         if self.daily_production_id:
             self.cost_per_kg = self.daily_production_id.cost_per_kg
 
+    @api.model
+    def _update_cost_per_kg_from_production(self, production_id):
+        """Met à jour le coût/kg de toutes les lignes liées à une production.
+
+        Cette méthode est appelée automatiquement quand le cost_per_kg
+        de la production est recalculé.
+        """
+        production = self.env['ron.daily.production'].browse(production_id)
+        if production.exists():
+            lines = self.search([('daily_production_id', '=', production_id)])
+            lines.write({'cost_per_kg': production.cost_per_kg})
+
     @api.constrains('weight_kg')
     def _check_weight(self):
         """Vérifie que le poids est positif."""
         for rec in self:
             if rec.weight_kg <= 0:
                 raise ValidationError(_("Le poids doit être supérieur à 0."))
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        """Crée les lignes de rebut/pâte en initialisant cost_per_kg si nécessaire.
+
+        Cette méthode garantit que cost_per_kg est toujours défini lors de la création,
+        en le récupérant depuis la production journalière parent.
+        """
+        for vals in vals_list:
+            if vals.get('daily_production_id') and not vals.get('cost_per_kg'):
+                production = self.env['ron.daily.production'].browse(vals['daily_production_id'])
+                if production.exists():
+                    vals['cost_per_kg'] = production.cost_per_kg
+            # Définir le produit pâte par défaut pour le type paste_recoverable
+            if vals.get('scrap_type') == 'paste_recoverable' and not vals.get('product_id'):
+                config = self.env['ron.production.config'].get_config()
+                if config.product_paste_id:
+                    vals['product_id'] = config.product_paste_id.id
+        return super().create(vals_list)
 
     def action_update_cost_per_kg(self):
         """Met à jour le coût/kg depuis la production journalière."""
