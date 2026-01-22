@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Extension du formulaire partenaire pour le SAV -->
+    <record id="view_partner_form_sav" model="ir.ui.view">
+        <field name="name">res.partner.form.sav</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Ajout Smart Button Retours SAV -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_sav_returns"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-wrench"
+                        invisible="not is_sales_point and not is_return_center">
+                    <field name="sav_return_count" widget="statinfo" string="Retours SAV"/>
+                </button>
+            </xpath>
+
+            <!-- Ajout page SAV dans le notebook -->
+            <xpath expr="//notebook" position="inside">
+                <page string="SAV Électroménager" name="sav_electromenager"
+                      invisible="not is_sales_point and not is_return_center and not is_repairer and not is_factory">
+                    <group>
+                        <group string="Type de Partenaire SAV">
+                            <field name="is_sales_point"/>
+                            <field name="is_return_center"/>
+                            <field name="is_default_return_center" invisible="not is_return_center"
+                                   widget="boolean_toggle"/>
+                            <field name="is_repairer"/>
+                            <field name="is_default_repairer" invisible="not is_repairer"
+                                   widget="boolean_toggle"/>
+                            <field name="is_factory"/>
+                            <field name="is_default_factory" invisible="not is_factory"
+                                   widget="boolean_toggle"/>
+                        </group>
+                        <group string="Informations SAV" invisible="not is_sales_point and not is_return_center and not is_repairer">
+                            <field name="sales_point_code"
+                                   invisible="not is_sales_point"
+                                   required="is_sales_point"
+                                   placeholder="Ex: ADRAR, BECHAR, MECHRIA"/>
+                            <field name="parent_return_center_id"
+                                   invisible="not is_sales_point"
+                                   domain="[('is_return_center', '=', True)]"
+                                   context="{'default_is_return_center': True}"/>
+                        </group>
+                    </group>
+
+                    <group string="Utilisateurs Rattachés" invisible="not is_sales_point and not is_return_center">
+                        <p class="text-muted">
+                            Les utilisateurs ajoutés à ce partenaire auront automatiquement accès aux retours SAV associés.
+                            <br/>
+                            Allez dans l'onglet "Contacts &amp; Adresses" pour ajouter des utilisateurs.
+                        </p>
+                    </group>
+                </page>
+            </xpath>
+
+        </field>
+    </record>
+
+    <!-- Vue liste des partenaires avec colonne SAV -->
+    <record id="view_partner_tree_sav" model="ir.ui.view">
+        <field name="name">res.partner.tree.sav</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_tree"/>
+        <field name="arch" type="xml">
+            <field name="display_name" position="after">
+                <field name="is_sales_point" optional="hide"/>
+                <field name="is_return_center" optional="hide"/>
+                <field name="is_default_return_center" optional="hide"/>
+                <field name="is_repairer" optional="hide"/>
+                <field name="is_default_repairer" optional="hide"/>
+                <field name="is_factory" optional="hide"/>
+                <field name="is_default_factory" optional="hide"/>
+                <field name="sales_point_code" optional="hide"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- Filtres de recherche SAV -->
+    <record id="view_partner_search_sav" model="ir.ui.view">
+        <field name="name">res.partner.search.sav</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_res_partner_filter"/>
+        <field name="arch" type="xml">
+            <filter name="supplier" position="after">
+                <separator/>
+                <filter name="filter_sales_point" string="Points de Vente SAV"
+                        domain="[('is_sales_point', '=', True)]"/>
+                <filter name="filter_return_center" string="Centres de Retour SAV"
+                        domain="[('is_return_center', '=', True)]"/>
+                <filter name="filter_repairer" string="Réparateurs SAV"
+                        domain="[('is_repairer', '=', True)]"/>
+                <filter name="filter_factory" string="Usines SAV"
+                        domain="[('is_factory', '=', True)]"/>
+            </filter>
+        </field>
+    </record>
+
+    <!-- Actions pour accéder rapidement aux types de partenaires SAV -->
+    <record id="action_partner_sales_point" model="ir.actions.act_window">
+        <field name="name">Points de Vente</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('is_sales_point', '=', True)]</field>
+        <field name="context">{'default_is_sales_point': True, 'default_company_type': 'company'}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créer un nouveau Point de Vente
+            </p>
+            <p>
+                Les points de vente sont les partenaires qui déclarent les retours SAV.
+            </p>
+        </field>
+    </record>
+
+    <record id="action_partner_return_center" model="ir.actions.act_window">
+        <field name="name">Centres de Retour</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('is_return_center', '=', True)]</field>
+        <field name="context">{'default_is_return_center': True, 'default_company_type': 'company'}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créer un nouveau Centre de Retour
+            </p>
+            <p>
+                Les centres de retour centralisent les retours des points de vente
+                et coordonnent avec les réparateurs.
+            </p>
+        </field>
+    </record>
+
+    <record id="action_partner_repairer" model="ir.actions.act_window">
+        <field name="name">Réparateurs</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('is_repairer', '=', True)]</field>
+        <field name="context">{'default_is_repairer': True, 'default_company_type': 'company'}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créer un nouveau Réparateur
+            </p>
+            <p>
+                Les réparateurs prennent en charge la réparation des articles
+                envoyés par les centres de retour.
+            </p>
+        </field>
+    </record>
+
+    <record id="action_partner_factory" model="ir.actions.act_window">
+        <field name="name">Usine</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('is_factory', '=', True)]</field>
+        <field name="context">{'default_is_factory': True, 'default_company_type': 'company'}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Définir l'Usine/Fabricant
+            </p>
+            <p>
+                L'usine reçoit les articles non réparables pour
+                traitement (réparation, remplacement, ou avoir).
+            </p>
+        </field>
+    </record>
+
+</odoo>

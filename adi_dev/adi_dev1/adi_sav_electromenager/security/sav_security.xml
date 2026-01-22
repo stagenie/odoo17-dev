@@ -4,54 +4,120 @@
     <!-- Catégorie du module -->
     <record id="module_category_sav" model="ir.module.category">
         <field name="name">SAV Electroménager</field>
-        <field name="description">Gestion du Service Après-Vente</field>
+        <field name="description">Gestion du Service Après-Vente Électroménager</field>
         <field name="sequence">50</field>
     </record>
 
-    <!-- Groupe Utilisateur SAV -->
-    <record id="group_sav_user" model="res.groups">
-        <field name="name">Utilisateur SAV</field>
+    <!-- ==================== GROUPES D'UTILISATEURS ==================== -->
+
+    <!-- Groupe 1: Utilisateur Point de Vente -->
+    <record id="group_sav_sales_point" model="res.groups">
+        <field name="name">Utilisateur Point de Vente</field>
         <field name="category_id" ref="module_category_sav"/>
         <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
-        <field name="comment">Peut créer et modifier les retours SAV</field>
+        <field name="comment">Peut créer et modifier ses propres retours SAV depuis son point de vente</field>
     </record>
 
-    <!-- Groupe Responsable SAV -->
-    <record id="group_sav_manager" model="res.groups">
-        <field name="name">Responsable SAV</field>
+    <!-- Groupe 2: Gérant Centre de Retour -->
+    <record id="group_sav_center_manager" model="res.groups">
+        <field name="name">Gérant Centre de Retour</field>
         <field name="category_id" ref="module_category_sav"/>
-        <field name="implied_ids" eval="[(4, ref('group_sav_user'))]"/>
-        <field name="comment">Accès complet à la gestion SAV, configuration incluse</field>
+        <field name="implied_ids" eval="[(4, ref('group_sav_sales_point'))]"/>
+        <field name="comment">Accès complet aux retours de son centre, gestion du workflow avec réparateur</field>
     </record>
 
-    <!-- Règles d'accès par enregistrement -->
-    <record id="sav_return_rule_user" model="ir.rule">
-        <field name="name">SAV Return: Voir ses propres retours</field>
+    <!-- Groupe 3: Administrateur SAV Global -->
+    <record id="group_sav_administrator" model="res.groups">
+        <field name="name">Administrateur SAV</field>
+        <field name="category_id" ref="module_category_sav"/>
+        <field name="implied_ids" eval="[(4, ref('group_sav_center_manager'))]"/>
+        <field name="comment">Accès complet à tous les retours SAV et à la configuration</field>
+    </record>
+
+    <!-- ==================== RÈGLES D'ACCÈS PAR ENREGISTREMENT ==================== -->
+
+    <!-- Règle Point de Vente: Voir uniquement les retours de son point de vente -->
+    <record id="sav_return_rule_sales_point" model="ir.rule">
+        <field name="name">SAV Return: Utilisateur Point de Vente - Ses retours uniquement</field>
         <field name="model_id" ref="model_sav_return"/>
-        <field name="domain_force">[('user_id', '=', user.id)]</field>
-        <field name="groups" eval="[(4, ref('group_sav_user'))]"/>
+        <field name="domain_force">[('sales_point_id', '=', user.sav_sales_point_id.id if user.sav_sales_point_id else 0)]</field>
+        <field name="groups" eval="[(4, ref('group_sav_sales_point'))]"/>
         <field name="perm_read" eval="True"/>
         <field name="perm_write" eval="True"/>
         <field name="perm_create" eval="True"/>
         <field name="perm_unlink" eval="False"/>
     </record>
 
-    <record id="sav_return_rule_manager" model="ir.rule">
-        <field name="name">SAV Return: Responsable voit tout</field>
+    <!-- Règle Gérant Centre: Voir les retours de son centre de retour -->
+    <record id="sav_return_rule_center_manager" model="ir.rule">
+        <field name="name">SAV Return: Gérant Centre - Retours de son centre</field>
         <field name="model_id" ref="model_sav_return"/>
-        <field name="domain_force">[(1, '=', 1)]</field>
-        <field name="groups" eval="[(4, ref('group_sav_manager'))]"/>
+        <field name="domain_force">[('return_center_id.user_ids', 'in', [user.id])]</field>
+        <field name="groups" eval="[(4, ref('group_sav_center_manager'))]"/>
         <field name="perm_read" eval="True"/>
         <field name="perm_write" eval="True"/>
         <field name="perm_create" eval="True"/>
         <field name="perm_unlink" eval="True"/>
     </record>
 
-    <!-- Multi-company rule -->
+    <!-- Règle Administrateur: Voir tous les retours -->
+    <record id="sav_return_rule_administrator" model="ir.rule">
+        <field name="name">SAV Return: Administrateur - Tous les retours</field>
+        <field name="model_id" ref="model_sav_return"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('group_sav_administrator'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <!-- Règle lignes SAV: Hériter des droits du header -->
+    <record id="sav_return_line_rule_sales_point" model="ir.rule">
+        <field name="name">SAV Return Line: Utilisateur Point de Vente</field>
+        <field name="model_id" ref="model_sav_return_line"/>
+        <field name="domain_force">[('sales_point_id', '=', user.sav_sales_point_id.id if user.sav_sales_point_id else 0)]</field>
+        <field name="groups" eval="[(4, ref('group_sav_sales_point'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <record id="sav_return_line_rule_center_manager" model="ir.rule">
+        <field name="name">SAV Return Line: Gérant Centre</field>
+        <field name="model_id" ref="model_sav_return_line"/>
+        <field name="domain_force">[('return_id.return_center_id.user_ids', 'in', [user.id])]</field>
+        <field name="groups" eval="[(4, ref('group_sav_center_manager'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <record id="sav_return_line_rule_administrator" model="ir.rule">
+        <field name="name">SAV Return Line: Administrateur</field>
+        <field name="model_id" ref="model_sav_return_line"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('group_sav_administrator'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <!-- ==================== RÈGLE MULTI-COMPANY ==================== -->
     <record id="sav_return_rule_company" model="ir.rule">
         <field name="name">SAV Return: Multi-Company</field>
         <field name="model_id" ref="model_sav_return"/>
         <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="global" eval="True"/>
+    </record>
+
+    <record id="sav_return_line_rule_company" model="ir.rule">
+        <field name="name">SAV Return Line: Multi-Company</field>
+        <field name="model_id" ref="model_sav_return_line"/>
+        <field name="domain_force">[('return_id.company_id', 'in', company_ids)]</field>
         <field name="global" eval="True"/>
     </record>
 

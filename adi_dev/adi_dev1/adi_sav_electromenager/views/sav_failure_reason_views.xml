@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ========== FORM VIEW ========== -->
+    <record id="sav_failure_reason_view_form" model="ir.ui.view">
+        <field name="name">sav.failure.reason.view.form</field>
+        <field name="model">sav.failure.reason</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_returns"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-exchange"
+                                invisible="usage_count == 0">
+                            <field name="usage_count" widget="statinfo" string="Utilisations"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archivé" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Nom du motif..."/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Informations">
+                            <field name="code"/>
+                            <field name="sequence"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                        <group string="Affichage">
+                            <field name="color" widget="color_picker"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="description" placeholder="Description détaillée du motif d'échec..."/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ========== TREE VIEW ========== -->
+    <record id="sav_failure_reason_view_tree" model="ir.ui.view">
+        <field name="name">sav.failure.reason.view.tree</field>
+        <field name="model">sav.failure.reason</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="sequence" widget="handle"/>
+                <field name="code"/>
+                <field name="name"/>
+                <field name="description"/>
+                <field name="usage_count"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ========== SEARCH VIEW ========== -->
+    <record id="sav_failure_reason_view_search" model="ir.ui.view">
+        <field name="name">sav.failure.reason.view.search</field>
+        <field name="model">sav.failure.reason</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="code"/>
+                <filter name="filter_archived" string="Archivés" domain="[('active', '=', False)]"/>
+                <separator/>
+                <filter name="group_by_active" string="Actif" context="{'group_by': 'active'}"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- ========== ACTION ========== -->
+    <record id="sav_failure_reason_action" model="ir.actions.act_window">
+        <field name="name">Motifs d'Échec</field>
+        <field name="res_model">sav.failure.reason</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créer un nouveau motif d'échec
+            </p>
+            <p>
+                Les motifs d'échec sont utilisés pour expliquer pourquoi
+                un réparateur n'a pas pu réparer un article.
+                Ces motifs sont sélectionnés lors du retour d'articles
+                non réparables au centre.
+            </p>
+        </field>
+    </record>
+
+</odoo>

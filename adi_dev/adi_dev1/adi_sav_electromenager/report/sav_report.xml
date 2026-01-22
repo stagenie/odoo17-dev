@@ -1,26 +1,86 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <!-- Rapport Bon de Réparation -->
-    <record id="action_report_sav_repair_order" model="ir.actions.report">
-        <field name="name">Bon de Réparation</field>
+    <!-- Rapport 1: Bon de Livraison Centre → Réparateur -->
+    <record id="action_report_delivery_to_repairer" model="ir.actions.report">
+        <field name="name">Bon de Livraison au Réparateur</field>
         <field name="model">sav.return</field>
         <field name="report_type">qweb-pdf</field>
-        <field name="report_name">adi_sav_electromenager.report_sav_repair_order</field>
-        <field name="report_file">adi_sav_electromenager.report_sav_repair_order</field>
-        <field name="print_report_name">'Bon_Reparation_%s' % (object.name).replace('/', '_')</field>
+        <field name="report_name">adi_sav_electromenager.report_delivery_to_repairer</field>
+        <field name="report_file">adi_sav_electromenager.report_delivery_to_repairer</field>
+        <field name="print_report_name">'BL_Reparateur_%s' % (object.name).replace('/', '_')</field>
         <field name="binding_model_id" ref="model_sav_return"/>
         <field name="binding_type">report</field>
     </record>
 
-    <!-- Rapport Bon de Livraison SAV -->
-    <record id="action_report_sav_delivery_order" model="ir.actions.report">
-        <field name="name">Bon de Livraison SAV</field>
+    <!-- Rapport 2: Bon de Retour Réparateur → Centre -->
+    <record id="action_report_return_from_repairer" model="ir.actions.report">
+        <field name="name">Bon de Retour du Réparateur</field>
         <field name="model">sav.return</field>
         <field name="report_type">qweb-pdf</field>
-        <field name="report_name">adi_sav_electromenager.report_sav_delivery_order</field>
-        <field name="report_file">adi_sav_electromenager.report_sav_delivery_order</field>
-        <field name="print_report_name">'Bon_Livraison_SAV_%s' % (object.name).replace('/', '_')</field>
+        <field name="report_name">adi_sav_electromenager.report_return_from_repairer</field>
+        <field name="report_file">adi_sav_electromenager.report_return_from_repairer</field>
+        <field name="print_report_name">'Retour_Reparateur_%s' % (object.name).replace('/', '_')</field>
+        <field name="binding_model_id" ref="model_sav_return"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <!-- Rapport 3: Bon de Livraison Centre → Point de Vente -->
+    <record id="action_report_delivery_to_sales_point" model="ir.actions.report">
+        <field name="name">Bon de Livraison au Point de Vente</field>
+        <field name="model">sav.return</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_sav_electromenager.report_delivery_to_sales_point</field>
+        <field name="report_file">adi_sav_electromenager.report_delivery_to_sales_point</field>
+        <field name="print_report_name">'BL_PointVente_%s' % (object.name).replace('/', '_')</field>
+        <field name="binding_model_id" ref="model_sav_return"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <!-- Rapport 4: Bon de Livraison Centre → Usine -->
+    <record id="action_report_delivery_to_factory" model="ir.actions.report">
+        <field name="name">Bon de Livraison à l'Usine</field>
+        <field name="model">sav.return</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_sav_electromenager.report_delivery_to_factory</field>
+        <field name="report_file">adi_sav_electromenager.report_delivery_to_factory</field>
+        <field name="print_report_name">'BL_Usine_%s' % (object.name).replace('/', '_')</field>
+        <field name="binding_model_id" ref="model_sav_return"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <!-- Rapport 5: Bon de Retour Usine → Centre -->
+    <record id="action_report_return_from_factory" model="ir.actions.report">
+        <field name="name">Bon de Retour de l'Usine</field>
+        <field name="model">sav.return</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_sav_electromenager.report_return_from_factory</field>
+        <field name="report_file">adi_sav_electromenager.report_return_from_factory</field>
+        <field name="print_report_name">'Retour_Usine_%s' % (object.name).replace('/', '_')</field>
+        <field name="binding_model_id" ref="model_sav_return"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <!-- Rapport 6: Bon de Livraison Point de Vente → Centre -->
+    <record id="action_report_delivery_from_sales_point" model="ir.actions.report">
+        <field name="name">Bon de Livraison au Centre (Point de Vente)</field>
+        <field name="model">sav.return</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_sav_electromenager.report_delivery_from_sales_point</field>
+        <field name="report_file">adi_sav_electromenager.report_delivery_from_sales_point</field>
+        <field name="print_report_name">'BL_PV_Centre_%s' % (object.name).replace('/', '_')</field>
+        <field name="binding_model_id" ref="model_sav_return"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <!-- Rapport 7: Bon de Réception Point de Vente -->
+    <record id="action_report_reception_sales_point" model="ir.actions.report">
+        <field name="name">Bon de Réception Point de Vente</field>
+        <field name="model">sav.return</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_sav_electromenager.report_reception_sales_point</field>
+        <field name="report_file">adi_sav_electromenager.report_reception_sales_point</field>
+        <field name="print_report_name">'BR_PointVente_%s' % (object.name).replace('/', '_')</field>
         <field name="binding_model_id" ref="model_sav_return"/>
         <field name="binding_type">report</field>
     </record>

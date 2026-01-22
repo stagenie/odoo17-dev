@@ -1,156 +1,429 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <!-- Tree View -->
-    <record id="sav_return_view_tree" model="ir.ui.view">
-        <field name="name">sav.return.view.tree</field>
-        <field name="model">sav.return</field>
-        <field name="arch" type="xml">
-            <tree decoration-danger="state == 'not_repaired'"
-                  decoration-success="state in ['repaired', 'delivered']"
-                  decoration-warning="state == 'in_progress'"
-                  decoration-info="state == 'received'"
-                  decoration-muted="state == 'cancelled'"
-                  multi_edit="1">
-                <field name="name"/>
-                <field name="date"/>
-                <field name="partner_id"/>
-                <field name="product_id"/>
-                <field name="category_id" optional="show"/>
-                <field name="serial_number"/>
-                <field name="fault_type_id"/>
-                <field name="product_condition" optional="show"/>
-                <field name="action_taken" optional="show"/>
-                <field name="state" widget="badge"
-                       decoration-danger="state == 'not_repaired'"
-                       decoration-success="state in ['repaired', 'delivered']"
-                       decoration-warning="state == 'in_progress'"
-                       decoration-info="state == 'received'"/>
-                <field name="user_id" widget="many2one_avatar_user" optional="hide"/>
-                <field name="priority" widget="priority" optional="hide"/>
-                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
-            </tree>
-        </field>
-    </record>
-
-    <!-- Form View -->
+    <!-- ========== VUE FORMULAIRE ========== -->
     <record id="sav_return_view_form" model="ir.ui.view">
         <field name="name">sav.return.view.form</field>
         <field name="model">sav.return</field>
         <field name="arch" type="xml">
             <form>
                 <header>
-                    <!-- Boutons d'action selon l'état -->
-                    <button name="action_confirm" string="Confirmer Réception"
+                    <!-- Boutons Point de Vente -->
+                    <button name="action_submit_to_center" string="Soumettre au Centre"
                             type="object" class="btn-primary"
-                            invisible="state != 'draft'"/>
-                    <button name="action_start_repair" string="Démarrer Réparation"
-                            type="object" class="btn-primary"
-                            invisible="state != 'received'"/>
-                    <button name="action_mark_repaired" string="Marquer Réparé"
+                            invisible="state != 'draft'"
+                            groups="adi_sav_electromenager.group_sav_sales_point"/>
+
+                    <button name="action_close" string="Clôturer"
                             type="object" class="btn-success"
-                            invisible="state != 'in_progress'"/>
-                    <button name="action_mark_replaced" string="Marquer Changé"
+                            invisible="state != 'sent_to_sales_point'"
+                            groups="adi_sav_electromenager.group_sav_sales_point"/>
+
+                    <!-- Boutons Gérant Centre -->
+                    <button name="action_confirm_reception_center" string="Confirmer Réception"
+                            type="object" class="btn-primary"
+                            invisible="state != 'submitted'"
+                            groups="adi_sav_electromenager.group_sav_center_manager"/>
+
+                    <button name="action_send_to_repairer" string="Envoyer au Réparateur"
+                            type="object" class="btn-primary"
+                            invisible="state != 'received_center'"
+                            groups="adi_sav_electromenager.group_sav_center_manager"/>
+
+                    <button name="action_mark_in_repair" string="En Réparation"
                             type="object" class="btn-warning"
-                            invisible="state != 'in_progress'"/>
-                    <button name="action_mark_not_repaired" string="Non Réparable"
-                            type="object" class="btn-danger"
-                            invisible="state != 'in_progress'"/>
-                    <button name="action_deliver" string="Marquer Livré"
+                            invisible="state != 'sent_to_repairer'"
+                            groups="adi_sav_electromenager.group_sav_center_manager"/>
+
+                    <button name="action_mark_repaired" string="Réparation Terminée"
                             type="object" class="btn-success"
-                            invisible="state not in ['repaired', 'not_repaired']"/>
+                            invisible="state != 'in_repair'"
+                            groups="adi_sav_electromenager.group_sav_center_manager"/>
+
+                    <!-- Bouton alternatif: Retour non réparé vers usine -->
+                    <button name="action_return_to_center_not_repaired" string="Retourner au Centre (Non Réparé)"
+                            type="object" class="btn-warning"
+                            invisible="state != 'in_repair'"
+                            groups="adi_sav_electromenager.group_sav_center_manager"/>
+
+                    <button name="action_return_to_center" string="Confirmer Retour au Centre"
+                            type="object" class="btn-primary"
+                            invisible="state != 'repaired'"
+                            groups="adi_sav_electromenager.group_sav_center_manager"/>
+
+                    <!-- Boutons Workflow Usine -->
+                    <button name="action_send_to_factory" string="Envoyer à l'Usine"
+                            type="object" class="btn-primary"
+                            invisible="state != 'returned_to_center_not_repaired'"
+                            groups="adi_sav_electromenager.group_sav_center_manager"/>
+
+                    <button name="action_mark_in_factory" string="En Traitement Usine"
+                            type="object" class="btn-warning"
+                            invisible="state != 'sent_to_factory'"
+                            groups="adi_sav_electromenager.group_sav_center_manager"/>
+
+                    <button name="action_mark_factory_processed" string="Traitement Usine Terminé"
+                            type="object" class="btn-success"
+                            invisible="state != 'in_factory'"
+                            groups="adi_sav_electromenager.group_sav_center_manager"/>
+
+                    <button name="action_confirm_return_from_factory" string="Confirmer Retour de l'Usine"
+                            type="object" class="btn-primary"
+                            invisible="state != 'factory_processed'"
+                            groups="adi_sav_electromenager.group_sav_center_manager"/>
+
+                    <button name="action_send_to_sales_point" string="Renvoyer au Point de Vente"
+                            type="object" class="btn-primary"
+                            invisible="state not in ['returned_to_center', 'returned_from_factory']"
+                            groups="adi_sav_electromenager.group_sav_center_manager"/>
+
+                    <!-- Boutons Communs -->
                     <button name="action_cancel" string="Annuler"
                             type="object"
-                            invisible="state in ['delivered', 'cancelled']"/>
+                            confirm="Êtes-vous sûr de vouloir annuler ce retour?"
+                            invisible="state in ['closed', 'cancelled']"/>
+
                     <button name="action_reset_draft" string="Remettre en Brouillon"
                             type="object"
-                            invisible="state != 'cancelled'"/>
+                            invisible="state != 'cancelled'"
+                            groups="adi_sav_electromenager.group_sav_administrator"/>
+
+                    <!-- Barre de statut -->
                     <field name="state" widget="statusbar"
-                           statusbar_visible="draft,received,in_progress,repaired,delivered"/>
+                           statusbar_visible="draft,submitted,received_center,sent_to_repairer,in_repair,repaired,returned_to_center,sent_to_sales_point,closed"/>
                 </header>
+
                 <sheet>
+                    <!-- Smart Buttons -->
                     <div class="oe_button_box" name="button_box">
-                        <button name="action_print_repair_order" type="object"
-                                class="oe_stat_button" icon="fa-wrench"
+                        <!-- Boutons Point de Vente -->
+                        <button name="action_print_delivery_from_sales_point"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-sign-out"
                                 invisible="state == 'draft'">
-                            <span>Bon de Réparation</span>
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_text">BL PV→Centre</span>
+                            </div>
                         </button>
-                        <button name="action_print_delivery_order" type="object"
-                                class="oe_stat_button" icon="fa-truck"
-                                invisible="state not in ['repaired', 'not_repaired', 'delivered']">
-                            <span>Bon de Livraison</span>
+                        <button name="action_print_reception_sales_point"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-sign-in"
+                                invisible="state != 'closed'">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_text">Bon Réception PV</span>
+                            </div>
+                        </button>
+                        <!-- Boutons Centre-Réparateur -->
+                        <button name="action_print_delivery_to_repairer"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-truck"
+                                invisible="state in ['draft', 'submitted', 'received_center']">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_text">BL Réparateur</span>
+                            </div>
+                        </button>
+                        <button name="action_print_return_from_repairer"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-check-square"
+                                invisible="state in ['draft', 'submitted', 'received_center', 'sent_to_repairer', 'in_repair']">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_text">Bon Retour Rép.</span>
+                            </div>
+                        </button>
+                        <button name="action_print_delivery_to_sales_point"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-home"
+                                invisible="state not in ['sent_to_sales_point', 'closed']">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_text">BL Centre→PV</span>
+                            </div>
+                        </button>
+                        <!-- Smart buttons Usine (conditionnels: uniquement si articles envoyés à l'usine) -->
+                        <button name="action_print_delivery_to_factory"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-industry"
+                                invisible="total_sent_to_factory == 0 or state not in ['sent_to_factory', 'in_factory', 'factory_processed', 'returned_from_factory', 'sent_to_sales_point', 'closed']">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_text">BL Usine</span>
+                            </div>
+                        </button>
+                        <button name="action_print_return_from_factory"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-undo"
+                                invisible="total_sent_to_factory == 0 or state not in ['returned_from_factory', 'sent_to_sales_point', 'closed']">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_text">Retour Usine</span>
+                            </div>
                         </button>
                     </div>
+
+                    <!-- Ruban Annulé -->
                     <widget name="web_ribbon" title="Annulé" bg_color="text-bg-danger"
                             invisible="state != 'cancelled'"/>
+
+                    <!-- Titre -->
                     <div class="oe_title">
                         <h1>
                             <field name="name" readonly="1"/>
                         </h1>
                     </div>
+
+                    <!-- Groupes de champs principaux -->
                     <group>
                         <group string="Informations Générales">
                             <field name="date"/>
-                            <field name="partner_id"/>
-                            <field name="user_id" widget="many2one_avatar_user" readonly="1"/>
+                            <field name="sales_point_id"
+                                   readonly="state != 'draft'"
+                                   options="{'no_create': True}"/>
+                            <field name="return_center_id"
+                                   options="{'no_create': True}"/>
+                            <field name="repairer_id"
+                                   options="{'no_create': True}"
+                                   readonly="state not in ['received_center', 'sent_to_repairer']"/>
+                            <field name="factory_id"
+                                   options="{'no_create': True}"
+                                   readonly="state not in ['received_center', 'returned_to_center_not_repaired']"
+                                   invisible="state in ['draft', 'submitted']"/>
                             <field name="priority" widget="priority"/>
-                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="user_id" widget="many2one_avatar_user" readonly="1"/>
+                            <field name="company_id" groups="base.group_multi_company" readonly="1"/>
                         </group>
-                        <group string="Origine">
-                            <field name="sale_order_id"
-                                   context="{'default_partner_id': partner_id}"/>
-                            <field name="picking_id"
-                                   context="{'default_partner_id': partner_id}"/>
-                            <field name="sale_date" readonly="1"/>
-                        </group>
-                    </group>
-                    <group>
-                        <group string="Article Retourné">
-                            <field name="filter_from_picking" widget="boolean_toggle"
-                                   invisible="not picking_id"/>
-                            <field name="available_product_ids" invisible="1"/>
-                            <field name="product_id"
-                                   domain="filter_from_picking and picking_id and [('id', 'in', available_product_ids)] or []"/>
-                            <field name="category_id"/>
-                            <field name="serial_number"/>
-                        </group>
-                        <group string="Diagnostic">
-                            <field name="fault_type_id"/>
-                            <field name="product_condition"/>
-                            <field name="action_taken"/>
+                        <group string="Origine (Optionnel)">
+                            <field name="partner_id"
+                                   readonly="state != 'draft'"
+                                   options="{'no_create': True}"/>
+                            <field name="sale_order_ids" widget="many2many_tags"
+                                   readonly="state != 'draft'"
+                                   options="{'no_create': True}"/>
+                            <field name="picking_ids" widget="many2many_tags"
+                                   readonly="state != 'draft'"
+                                   options="{'no_create': True}"/>
                         </group>
                     </group>
+
+                    <!-- Résumé -->
+                    <group name="summary" invisible="not line_ids">
+                        <group string="Résumé des Articles">
+                            <field name="total_articles"/>
+                            <field name="total_repaired" invisible="state in ['draft', 'submitted', 'received_center']"/>
+                            <field name="total_not_repaired" invisible="state in ['draft', 'submitted', 'received_center']"/>
+                            <field name="total_pending" invisible="state in ['draft', 'submitted', 'received_center', 'closed']"/>
+                        </group>
+                        <group string="Traitement Usine" invisible="state not in ['returned_to_center_not_repaired', 'sent_to_factory', 'in_factory', 'factory_processed', 'returned_from_factory', 'sent_to_sales_point', 'closed'] or total_sent_to_factory == 0">
+                            <field name="total_sent_to_factory"/>
+                            <field name="total_factory_repaired" invisible="state in ['returned_to_center_not_repaired', 'sent_to_factory']"/>
+                            <field name="total_factory_replaced" invisible="state in ['returned_to_center_not_repaired', 'sent_to_factory']"/>
+                            <field name="total_factory_credited" invisible="state in ['returned_to_center_not_repaired', 'sent_to_factory']"/>
+                            <field name="has_factory_items" invisible="1"/>
+                        </group>
+                    </group>
+
+                    <!-- Notebook -->
                     <notebook>
+                        <!-- Onglet Articles Retournés -->
+                        <page string="Articles Retournés" name="lines">
+                            <field name="line_ids"
+                                   readonly="state not in ['draft', 'submitted', 'in_repair', 'repaired', 'in_factory']">
+                                <tree editable="bottom"
+                                      decoration-success="repair_status in ['repaired', 'replaced']"
+                                      decoration-danger="repair_status in ['not_repairable', 'rejected']"
+                                      decoration-warning="repair_status == 'pending'"
+                                      create="true" delete="true">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="product_id"
+                                           options="{'no_create_edit': True}"
+                                           required="1"/>
+                                    <field name="category_id" required="1"/>
+                                    <field name="serial_number" required="1"/>
+                                    <field name="fault_type_id" required="1"/>
+                                    <field name="product_condition" required="1"/>
+                                    <field name="repair_status"
+                                           readonly="parent.state in ['draft', 'submitted', 'received_center', 'sent_to_repairer']"/>
+                                    <field name="diagnostic" optional="hide"/>
+                                    <field name="repair_notes" optional="hide"/>
+                                    <field name="state" column_invisible="1"/>
+                                </tree>
+                                <form>
+                                    <sheet>
+                                        <group>
+                                            <group string="Article">
+                                                <field name="product_id"/>
+                                                <field name="category_id"/>
+                                                <field name="serial_number"/>
+                                            </group>
+                                            <group string="Diagnostic">
+                                                <field name="fault_type_id"/>
+                                                <field name="product_condition"/>
+                                                <field name="repair_status"/>
+                                            </group>
+                                        </group>
+                                        <group>
+                                            <group string="Origine">
+                                                <field name="sale_order_line_id"/>
+                                            </group>
+                                            <group string="Dates">
+                                                <field name="date_repaired" readonly="1"/>
+                                                <field name="date_factory_decision" readonly="1" invisible="not factory_decision"/>
+                                            </group>
+                                        </group>
+                                        <group>
+                                            <field name="diagnostic"
+                                                   placeholder="Diagnostic technique détaillé..."
+                                                   nolabel="1"/>
+                                        </group>
+                                        <group string="Notes de Réparation">
+                                            <field name="repair_notes"
+                                                   placeholder="Notes de réparation effectuée..."
+                                                   nolabel="1"/>
+                                        </group>
+                                        <group string="Échec de Réparation" invisible="repair_status != 'not_repairable'">
+                                            <group>
+                                                <field name="failure_reason_id"/>
+                                            </group>
+                                            <group>
+                                                <field name="failure_notes" placeholder="Détails supplémentaires..."/>
+                                            </group>
+                                        </group>
+                                        <group string="Décision Usine" invisible="not failure_reason_id">
+                                            <group>
+                                                <field name="factory_decision"/>
+                                                <field name="replacement_serial_number" invisible="factory_decision != 'factory_replaced'"/>
+                                                <field name="replacement_product_id" invisible="factory_decision != 'factory_replaced'"/>
+                                            </group>
+                                            <group>
+                                                <field name="factory_notes" placeholder="Notes de l'usine..."/>
+                                            </group>
+                                        </group>
+                                    </sheet>
+                                </form>
+                            </field>
+                        </page>
+
+                        <!-- Onglet Articles à Envoyer à l'Usine -->
+                        <page string="Articles Usine" name="factory_items"
+                              invisible="not show_factory_tab">
+                            <field name="show_factory_tab" invisible="1"/>
+                            <div class="alert alert-info" role="alert" style="margin-bottom: 16px;">
+                                <strong>Articles non réparables</strong> - Ces articles seront envoyés à l'usine pour traitement.
+                            </div>
+                            <field name="factory_line_ids" nolabel="1">
+                                <tree editable="bottom"
+                                      decoration-danger="not failure_reason_id"
+                                      decoration-success="factory_decision">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="product_id" readonly="1"/>
+                                    <field name="serial_number" readonly="1"/>
+                                    <field name="fault_type_id" readonly="1"/>
+                                    <field name="failure_reason_id"
+                                           required="1"
+                                           options="{'no_create_edit': True}"/>
+                                    <field name="failure_notes"
+                                           optional="show"
+                                           placeholder="Notes..."/>
+                                    <field name="factory_decision"
+                                           optional="show"/>
+                                    <field name="replacement_serial_number"
+                                           optional="show"
+                                           invisible="factory_decision != 'factory_replaced'"/>
+                                    <field name="replacement_product_id"
+                                           optional="hide"
+                                           invisible="factory_decision != 'factory_replaced'"/>
+                                    <field name="factory_notes"
+                                           optional="show"
+                                           placeholder="Notes usine..."/>
+                                    <field name="date_factory_decision"
+                                           optional="hide"
+                                           readonly="1"/>
+                                </tree>
+                            </field>
+                            <group>
+                                <group string="Résumé">
+                                    <field name="total_sent_to_factory" readonly="1"/>
+                                    <field name="total_factory_repaired" readonly="1"/>
+                                    <field name="total_factory_replaced" readonly="1"/>
+                                    <field name="total_factory_credited" readonly="1"/>
+                                </group>
+                                <group string="Usine">
+                                    <field name="factory_id"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- Onglet Suivi des Dates -->
+                        <page string="Suivi des Dates" name="tracking">
+                            <group>
+                                <group string="Point de Vente → Centre">
+                                    <field name="date_submission" readonly="1"/>
+                                    <field name="date_received_center" readonly="1"/>
+                                </group>
+                                <group string="Centre → Réparateur">
+                                    <field name="date_sent_to_repairer" readonly="1"/>
+                                    <field name="date_repair_start" readonly="1"/>
+                                    <field name="date_repair_end" readonly="1"/>
+                                    <field name="date_returned_to_center" readonly="1"/>
+                                </group>
+                            </group>
+                            <group>
+                                <group string="Centre → Point de Vente">
+                                    <field name="date_sent_to_sales_point" readonly="1"/>
+                                    <field name="date_closed" readonly="1"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- Onglet Suivi Usine -->
+                        <page string="Suivi Usine" name="factory_tracking"
+                              invisible="state in ['draft', 'submitted', 'received_center', 'sent_to_repairer', 'in_repair', 'repaired', 'returned_to_center']">
+                            <group>
+                                <group string="Envoi à l'Usine">
+                                    <field name="factory_id" readonly="1"/>
+                                    <field name="date_returned_not_repaired" readonly="1"/>
+                                    <field name="date_sent_to_factory" readonly="1"/>
+                                </group>
+                                <group string="Traitement Usine">
+                                    <field name="date_factory_start" readonly="1"/>
+                                    <field name="date_factory_end" readonly="1"/>
+                                    <field name="date_returned_from_factory" readonly="1"/>
+                                </group>
+                            </group>
+
+                            <!-- Détail des articles envoyés à l'usine -->
+                            <group string="Articles Traités par l'Usine" invisible="total_sent_to_factory == 0">
+                                <field name="line_ids" nolabel="1" readonly="1"
+                                       context="{'tree_view_ref': 'adi_sav_electromenager.sav_return_line_factory_tree'}">
+                                    <tree decoration-success="factory_decision in ['factory_repaired', 'factory_replaced']"
+                                          decoration-info="factory_decision == 'factory_credited'"
+                                          decoration-muted="repair_status != 'not_repairable'">
+                                        <field name="product_id"/>
+                                        <field name="serial_number"/>
+                                        <field name="failure_reason_id"/>
+                                        <field name="failure_notes"/>
+                                        <field name="factory_decision"/>
+                                        <field name="factory_notes"/>
+                                        <field name="replacement_serial_number"/>
+                                        <field name="repair_status" column_invisible="1"/>
+                                    </tree>
+                                </field>
+                            </group>
+                        </page>
+
+                        <!-- Onglet Observations -->
                         <page string="Observations" name="observations">
-                            <field name="observations" placeholder="Observations générales..."
-                                   nolabel="1" class="oe_inline"/>
-                        </page>
-                        <page string="Diagnostic &amp; Réparation" name="repair">
-                            <group>
-                                <group>
-                                    <field name="diagnostic" placeholder="Diagnostic technique..."/>
-                                </group>
-                                <group>
-                                    <field name="repair_notes" placeholder="Notes de réparation..."/>
-                                </group>
-                            </group>
-                        </page>
-                        <page string="Suivi" name="tracking">
-                            <group>
-                                <group string="Dates">
-                                    <field name="reception_date"/>
-                                    <field name="repair_start_date"/>
-                                    <field name="repair_end_date"/>
-                                    <field name="delivery_date"/>
-                                </group>
-                                <group string="Durées">
-                                    <field name="repair_duration"/>
-                                    <field name="total_duration"/>
-                                </group>
-                            </group>
+                            <field name="observations"
+                                   placeholder="Observations et remarques générales..."
+                                   nolabel="1"/>
                         </page>
                     </notebook>
                 </sheet>
+
+                <!-- Chatter -->
                 <div class="oe_chatter">
                     <field name="message_follower_ids"/>
                     <field name="activity_ids"/>
@@ -160,7 +433,36 @@
         </field>
     </record>
 
-    <!-- Kanban View -->
+    <!-- ========== VUE LISTE ========== -->
+    <record id="sav_return_view_tree" model="ir.ui.view">
+        <field name="name">sav.return.view.tree</field>
+        <field name="model">sav.return</field>
+        <field name="arch" type="xml">
+            <tree decoration-info="state in ['draft', 'submitted']"
+                  decoration-warning="state in ['received_center', 'sent_to_repairer', 'in_repair']"
+                  decoration-success="state in ['closed']"
+                  decoration-muted="state == 'cancelled'"
+                  multi_edit="1">
+                <field name="name" decoration-bf="1"/>
+                <field name="date"/>
+                <field name="sales_point_id"/>
+                <field name="return_center_id" optional="hide"/>
+                <field name="repairer_id" optional="hide"/>
+                <field name="total_articles"/>
+                <field name="total_repaired" optional="hide"/>
+                <field name="total_not_repaired" optional="hide"/>
+                <field name="state" widget="badge"
+                       decoration-info="state in ['draft', 'submitted']"
+                       decoration-warning="state in ['received_center', 'sent_to_repairer', 'in_repair']"
+                       decoration-success="state == 'closed'"/>
+                <field name="priority" widget="priority" optional="hide"/>
+                <field name="user_id" widget="many2one_avatar_user" optional="hide"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ========== VUE KANBAN ========== -->
     <record id="sav_return_view_kanban" model="ir.ui.view">
         <field name="name">sav.return.view.kanban</field>
         <field name="model">sav.return</field>
@@ -170,8 +472,7 @@
                     group_edit="false" archivable="false" sample="1">
                 <field name="color"/>
                 <field name="priority"/>
-                <progressbar field="state"
-                    colors='{"draft": "muted", "received": "info", "in_progress": "warning", "repaired": "success", "not_repaired": "danger", "delivered": "success", "cancelled": "danger"}'/>
+                <field name="state"/>
                 <templates>
                     <t t-name="kanban-box">
                         <div t-attf-class="#{!selection_mode ? kanban_color(record.color.raw_value) : ''} oe_kanban_global_click oe_kanban_card">
@@ -182,37 +483,26 @@
                                             <field name="name"/>
                                         </strong>
                                     </div>
-                                    <div class="o_dropdown_kanban dropdown">
-                                        <a role="button" class="dropdown-toggle o-no-caret btn"
-                                           data-bs-toggle="dropdown" href="#" aria-label="Dropdown menu">
-                                            <span class="fa fa-ellipsis-v"/>
-                                        </a>
-                                        <div class="dropdown-menu" role="menu">
-                                            <t t-if="widget.editable">
-                                                <a role="menuitem" type="edit" class="dropdown-item">Modifier</a>
-                                            </t>
-                                            <t t-if="widget.deletable">
-                                                <a role="menuitem" type="delete" class="dropdown-item">Supprimer</a>
-                                            </t>
-                                        </div>
-                                    </div>
+                                    <field name="priority" widget="priority"/>
                                 </div>
                                 <div class="o_kanban_record_body">
-                                    <field name="partner_id"/>
+                                    <field name="sales_point_id"/>
                                     <div class="mt-1">
-                                        <strong><field name="product_id"/></strong>
+                                        <i class="fa fa-wrench"/> <field name="total_articles"/> article(s)
                                     </div>
-                                    <div class="text-muted">
-                                        <field name="serial_number"/>
+                                    <div class="mt-1" t-if="record.total_repaired.raw_value &gt; 0">
+                                        <span class="badge text-bg-success">
+                                            <i class="fa fa-check"/> <field name="total_repaired"/> réparé(s)
+                                        </span>
                                     </div>
-                                    <div class="mt-1">
-                                        <field name="category_id" widget="badge"/>
-                                        <field name="fault_type_id" widget="badge"/>
+                                    <div class="mt-1" t-if="record.total_not_repaired.raw_value &gt; 0">
+                                        <span class="badge text-bg-danger">
+                                            <i class="fa fa-times"/> <field name="total_not_repaired"/> non réparable(s)
+                                        </span>
                                     </div>
                                 </div>
                                 <div class="o_kanban_record_bottom">
                                     <div class="oe_kanban_bottom_left">
-                                        <field name="priority" widget="priority"/>
                                         <field name="date"/>
                                     </div>
                                     <div class="oe_kanban_bottom_right">
@@ -227,33 +517,7 @@
         </field>
     </record>
 
-    <!-- Pivot View -->
-    <record id="sav_return_view_pivot" model="ir.ui.view">
-        <field name="name">sav.return.view.pivot</field>
-        <field name="model">sav.return</field>
-        <field name="arch" type="xml">
-            <pivot string="Analyse des Retours" sample="1">
-                <field name="category_id" type="row"/>
-                <field name="fault_type_id" type="row"/>
-                <field name="state" type="col"/>
-                <field name="date" interval="month" type="col"/>
-            </pivot>
-        </field>
-    </record>
-
-    <!-- Graph View -->
-    <record id="sav_return_view_graph" model="ir.ui.view">
-        <field name="name">sav.return.view.graph</field>
-        <field name="model">sav.return</field>
-        <field name="arch" type="xml">
-            <graph string="Statistiques des Retours" type="bar" sample="1">
-                <field name="category_id"/>
-                <field name="fault_type_id" type="row"/>
-            </graph>
-        </field>
-    </record>
-
-    <!-- Calendar View -->
+    <!-- ========== VUE CALENDRIER ========== -->
     <record id="sav_return_view_calendar" model="ir.ui.view">
         <field name="name">sav.return.view.calendar</field>
         <field name="model">sav.return</field>
@@ -261,61 +525,74 @@
             <calendar string="Retours SAV" date_start="date" color="state" mode="month"
                       event_limit="5" quick_create="0">
                 <field name="name"/>
-                <field name="partner_id"/>
-                <field name="product_id"/>
+                <field name="sales_point_id"/>
+                <field name="total_articles"/>
                 <field name="state"/>
             </calendar>
         </field>
     </record>
 
-    <!-- Search View -->
+    <!-- ========== VUE PIVOT ========== -->
+    <record id="sav_return_view_pivot" model="ir.ui.view">
+        <field name="name">sav.return.view.pivot</field>
+        <field name="model">sav.return</field>
+        <field name="arch" type="xml">
+            <pivot string="Analyse des Retours" sample="1">
+                <field name="sales_point_id" type="row"/>
+                <field name="return_center_id" type="row"/>
+                <field name="state" type="col"/>
+                <field name="date" interval="month" type="col"/>
+                <field name="total_articles" type="measure"/>
+                <field name="total_repaired" type="measure"/>
+                <field name="total_not_repaired" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- ========== VUE GRAPHIQUE ========== -->
+    <record id="sav_return_view_graph" model="ir.ui.view">
+        <field name="name">sav.return.view.graph</field>
+        <field name="model">sav.return</field>
+        <field name="arch" type="xml">
+            <graph string="Statistiques des Retours" type="bar" sample="1">
+                <field name="sales_point_id"/>
+                <field name="total_articles" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- ========== VUE RECHERCHE ========== -->
     <record id="sav_return_view_search" model="ir.ui.view">
         <field name="name">sav.return.view.search</field>
         <field name="model">sav.return</field>
         <field name="arch" type="xml">
             <search>
                 <!-- Champs de recherche -->
-                <field name="name"/>
-                <field name="partner_id"/>
-                <field name="product_id"/>
-                <field name="serial_number"/>
-                <field name="category_id"/>
-                <field name="fault_type_id"/>
-                <field name="user_id"/>
-                <field name="sale_order_id"/>
+                <field name="name" string="Référence"/>
+                <field name="sales_point_id" string="Point de Vente"/>
+                <field name="return_center_id" string="Centre"/>
+                <field name="repairer_id" string="Réparateur"/>
+                <field name="partner_id" string="Client"/>
+                <field name="user_id" string="Créé par"/>
 
                 <!-- Filtres par état -->
                 <separator/>
                 <filter name="filter_draft" string="Brouillon"
                         domain="[('state', '=', 'draft')]"/>
-                <filter name="filter_received" string="Reçu"
-                        domain="[('state', '=', 'received')]"/>
-                <filter name="filter_in_progress" string="En Réparation"
-                        domain="[('state', '=', 'in_progress')]"/>
-                <filter name="filter_repaired" string="Réparé"
-                        domain="[('state', '=', 'repaired')]"/>
-                <filter name="filter_not_repaired" string="Non Réparé"
-                        domain="[('state', '=', 'not_repaired')]"/>
-                <filter name="filter_delivered" string="Livré"
-                        domain="[('state', '=', 'delivered')]"/>
+                <filter name="filter_submitted" string="Soumis"
+                        domain="[('state', '=', 'submitted')]"/>
+                <filter name="filter_in_center" string="Au Centre"
+                        domain="[('state', 'in', ['received_center', 'returned_to_center'])]"/>
+                <filter name="filter_with_repairer" string="Chez Réparateur"
+                        domain="[('state', 'in', ['sent_to_repairer', 'in_repair', 'repaired'])]"/>
+                <filter name="filter_at_factory" string="Chez Usine"
+                        domain="[('state', 'in', ['returned_to_center_not_repaired', 'sent_to_factory', 'in_factory', 'factory_processed'])]"/>
+                <filter name="filter_returned_from_factory" string="Retourné de l'Usine"
+                        domain="[('state', '=', 'returned_from_factory')]"/>
+                <filter name="filter_closed" string="Clôturé"
+                        domain="[('state', '=', 'closed')]"/>
                 <filter name="filter_cancelled" string="Annulé"
                         domain="[('state', '=', 'cancelled')]"/>
-
-                <!-- Filtres par condition -->
-                <separator/>
-                <filter name="filter_good" string="Bon État"
-                        domain="[('product_condition', '=', 'good')]"/>
-                <filter name="filter_damaged" string="Endommagé"
-                        domain="[('product_condition', '=', 'damaged')]"/>
-                <filter name="filter_broken" string="Cassé"
-                        domain="[('product_condition', '=', 'broken')]"/>
-
-                <!-- Filtres par action -->
-                <separator/>
-                <filter name="filter_action_repaired" string="Action: Réparé"
-                        domain="[('action_taken', '=', 'repaired')]"/>
-                <filter name="filter_action_replaced" string="Action: Changé"
-                        domain="[('action_taken', '=', 'replaced')]"/>
 
                 <!-- Filtres temporels -->
                 <separator/>
@@ -333,29 +610,25 @@
                 <filter name="filter_urgent" string="Urgent"
                         domain="[('priority', '=', '3')]"/>
 
-                <!-- En attente de traitement -->
+                <!-- À traiter -->
                 <separator/>
-                <filter name="filter_pending" string="À Traiter"
-                        domain="[('state', 'in', ['received', 'in_progress'])]"/>
+                <filter name="filter_to_process" string="À Traiter"
+                        domain="[('state', 'in', ['submitted', 'received_center', 'sent_to_repairer', 'in_repair', 'repaired', 'returned_to_center', 'sent_to_sales_point'])]"/>
 
                 <!-- Groupements -->
                 <group expand="1" string="Grouper par">
                     <filter name="group_state" string="État"
                             context="{'group_by': 'state'}"/>
-                    <filter name="group_category" string="Catégorie"
-                            context="{'group_by': 'category_id'}"/>
-                    <filter name="group_fault" string="Type de Panne"
-                            context="{'group_by': 'fault_type_id'}"/>
-                    <filter name="group_partner" string="Client"
-                            context="{'group_by': 'partner_id'}"/>
-                    <filter name="group_product" string="Article"
-                            context="{'group_by': 'product_id'}"/>
-                    <filter name="group_user" string="Responsable"
+                    <filter name="group_sales_point" string="Point de Vente"
+                            context="{'group_by': 'sales_point_id'}"/>
+                    <filter name="group_return_center" string="Centre de Retour"
+                            context="{'group_by': 'return_center_id'}"/>
+                    <filter name="group_repairer" string="Réparateur"
+                            context="{'group_by': 'repairer_id'}"/>
+                    <filter name="group_factory" string="Usine"
+                            context="{'group_by': 'factory_id'}"/>
+                    <filter name="group_user" string="Créé par"
                             context="{'group_by': 'user_id'}"/>
-                    <filter name="group_condition" string="État du Produit"
-                            context="{'group_by': 'product_condition'}"/>
-                    <filter name="group_action" string="Action"
-                            context="{'group_by': 'action_taken'}"/>
                     <separator/>
                     <filter name="group_date_day" string="Date (Jour)"
                             context="{'group_by': 'date:day'}"/>
@@ -363,12 +636,12 @@
                             context="{'group_by': 'date:week'}"/>
                     <filter name="group_date_month" string="Date (Mois)"
                             context="{'group_by': 'date:month'}"/>
-                    <filter name="group_date_year" string="Date (Année)"
-                            context="{'group_by': 'date:year'}"/>
                 </group>
             </search>
         </field>
     </record>
+
+    <!-- ========== ACTIONS ========== -->
 
     <!-- Action principale -->
     <record id="sav_return_action" model="ir.actions.act_window">
@@ -376,28 +649,19 @@
         <field name="res_model">sav.return</field>
         <field name="view_mode">tree,kanban,form,pivot,graph,calendar</field>
         <field name="search_view_id" ref="sav_return_view_search"/>
-        <field name="context">{'search_default_filter_pending': 1}</field>
+        <field name="context">{'search_default_filter_to_process': 1}</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
                 Créer un nouveau retour SAV
             </p>
             <p>
-                Gérez les retours de produits électroménagers de vos clients.
-                Suivez les réparations et maintenez un historique complet.
+                Gérez les retours de produits électroménagers.<br/>
+                Suivez le circuit: Point de Vente → Centre → Réparateur → Centre → Point de Vente.
             </p>
         </field>
     </record>
 
-    <!-- Action pour les retours du jour -->
-    <record id="sav_return_action_today" model="ir.actions.act_window">
-        <field name="name">Retours du Jour</field>
-        <field name="res_model">sav.return</field>
-        <field name="view_mode">tree,kanban,form</field>
-        <field name="search_view_id" ref="sav_return_view_search"/>
-        <field name="context">{'search_default_filter_today': 1}</field>
-    </record>
-
-    <!-- Action pour mes retours -->
+    <!-- Mes Retours -->
     <record id="sav_return_action_my" model="ir.actions.act_window">
         <field name="name">Mes Retours</field>
         <field name="res_model">sav.return</field>
@@ -406,20 +670,369 @@
         <field name="context">{'search_default_filter_my_returns': 1}</field>
     </record>
 
-    <!-- Action pour les en-cours -->
-    <record id="sav_return_action_in_progress" model="ir.actions.act_window">
+    <!-- Retours du Jour -->
+    <record id="sav_return_action_today" model="ir.actions.act_window">
+        <field name="name">Retours du Jour</field>
+        <field name="res_model">sav.return</field>
+        <field name="view_mode">tree,kanban,form</field>
+        <field name="search_view_id" ref="sav_return_view_search"/>
+        <field name="context">{'search_default_filter_today': 1}</field>
+    </record>
+
+    <!-- En cours de réparation -->
+    <record id="sav_return_action_in_repair" model="ir.actions.act_window">
         <field name="name">En Réparation</field>
         <field name="res_model">sav.return</field>
         <field name="view_mode">kanban,tree,form</field>
-        <field name="domain">[('state', '=', 'in_progress')]</field>
+        <field name="domain">[('state', 'in', ['sent_to_repairer', 'in_repair', 'repaired'])]</field>
     </record>
 
-    <!-- Action pour les statistiques -->
+    <!-- Statistiques -->
     <record id="sav_return_action_reporting" model="ir.actions.act_window">
         <field name="name">Statistiques SAV</field>
         <field name="res_model">sav.return</field>
         <field name="view_mode">pivot,graph</field>
         <field name="search_view_id" ref="sav_return_view_search"/>
+    </record>
+
+    <!-- Chez l'Usine -->
+    <record id="sav_return_action_at_factory" model="ir.actions.act_window">
+        <field name="name">Chez l'Usine</field>
+        <field name="res_model">sav.return</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="domain">[('state', 'in', ['returned_to_center_not_repaired', 'sent_to_factory', 'in_factory', 'factory_processed'])]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Aucun retour en traitement usine
+            </p>
+            <p>
+                Les retours envoyés à l'usine pour traitement apparaîtront ici.
+            </p>
+        </field>
+    </record>
+
+
+    <!-- ================================================================== -->
+    <!-- ========== VUES POUR SAV.RETURN.LINE (Analyse par Articles) ========== -->
+    <!-- ================================================================== -->
+
+    <!-- ========== VUE RECHERCHE ARTICLES ========== -->
+    <record id="sav_return_line_view_search" model="ir.ui.view">
+        <field name="name">sav.return.line.view.search</field>
+        <field name="model">sav.return.line</field>
+        <field name="arch" type="xml">
+            <search string="Recherche Articles SAV">
+                <field name="product_id"/>
+                <field name="serial_number"/>
+                <field name="return_id"/>
+                <field name="category_id"/>
+                <field name="fault_type_id"/>
+                <field name="failure_reason_id"/>
+                <field name="sales_point_id"/>
+                <field name="return_center_id"/>
+                <separator/>
+                <!-- Filtres par Statut de Réparation -->
+                <filter name="filter_pending" string="En Attente"
+                        domain="[('repair_status', '=', 'pending')]"/>
+                <filter name="filter_repaired" string="Réparés"
+                        domain="[('repair_status', '=', 'repaired')]"/>
+                <filter name="filter_replaced" string="Remplacés"
+                        domain="[('repair_status', '=', 'replaced')]"/>
+                <filter name="filter_not_repairable" string="Non Réparables"
+                        domain="[('repair_status', '=', 'not_repairable')]"/>
+                <filter name="filter_rejected" string="Refusés"
+                        domain="[('repair_status', '=', 'rejected')]"/>
+                <separator/>
+                <!-- Filtres par État du Produit -->
+                <filter name="filter_good" string="Bon État"
+                        domain="[('product_condition', '=', 'good')]"/>
+                <filter name="filter_damaged" string="Endommagé"
+                        domain="[('product_condition', '=', 'damaged')]"/>
+                <filter name="filter_broken" string="Cassé"
+                        domain="[('product_condition', '=', 'broken')]"/>
+                <filter name="filter_incomplete" string="Incomplet"
+                        domain="[('product_condition', '=', 'incomplete')]"/>
+                <separator/>
+                <!-- Filtres par Décision Usine -->
+                <filter name="filter_factory_pending" string="En Attente Usine"
+                        domain="[('repair_status', '=', 'not_repairable'), ('factory_decision', '=', False)]"/>
+                <filter name="filter_factory_repaired" string="Réparé par Usine"
+                        domain="[('factory_decision', '=', 'factory_repaired')]"/>
+                <filter name="filter_factory_replaced" string="Remplacé par Usine"
+                        domain="[('factory_decision', '=', 'factory_replaced')]"/>
+                <filter name="filter_factory_credited" string="Avoir Usine"
+                        domain="[('factory_decision', '=', 'factory_credited')]"/>
+                <separator/>
+                <!-- Filtres par État du Retour -->
+                <filter name="filter_state_draft" string="Brouillon"
+                        domain="[('state', '=', 'draft')]"/>
+                <filter name="filter_state_in_repair" string="En Réparation"
+                        domain="[('state', '=', 'in_repair')]"/>
+                <filter name="filter_state_in_factory" string="Chez l'Usine"
+                        domain="[('state', 'in', ['sent_to_factory', 'in_factory'])]"/>
+                <filter name="filter_state_closed" string="Clôturés"
+                        domain="[('state', '=', 'closed')]"/>
+                <separator/>
+                <!-- Groupements -->
+                <group expand="0" string="Grouper par">
+                    <filter name="group_product" string="Article" context="{'group_by': 'product_id'}"/>
+                    <filter name="group_category" string="Catégorie" context="{'group_by': 'category_id'}"/>
+                    <filter name="group_fault_type" string="Motif de Retour" context="{'group_by': 'fault_type_id'}"/>
+                    <filter name="group_repair_status" string="Statut Réparation" context="{'group_by': 'repair_status'}"/>
+                    <filter name="group_product_condition" string="État Produit" context="{'group_by': 'product_condition'}"/>
+                    <filter name="group_failure_reason" string="Motif d'Échec" context="{'group_by': 'failure_reason_id'}"/>
+                    <filter name="group_factory_decision" string="Décision Usine" context="{'group_by': 'factory_decision'}"/>
+                    <separator/>
+                    <filter name="group_sales_point" string="Point de Vente" context="{'group_by': 'sales_point_id'}"/>
+                    <filter name="group_return_center" string="Centre de Retour" context="{'group_by': 'return_center_id'}"/>
+                    <filter name="group_state" string="État du Retour" context="{'group_by': 'state'}"/>
+                    <filter name="group_return" string="Retour SAV" context="{'group_by': 'return_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ========== VUE LISTE ARTICLES ========== -->
+    <record id="sav_return_line_view_tree" model="ir.ui.view">
+        <field name="name">sav.return.line.view.tree</field>
+        <field name="model">sav.return.line</field>
+        <field name="arch" type="xml">
+            <tree string="Articles SAV"
+                  decoration-success="repair_status in ['repaired', 'replaced']"
+                  decoration-danger="repair_status in ['not_repairable', 'rejected']"
+                  decoration-warning="repair_status == 'pending'"
+                  decoration-info="factory_decision != False">
+                <field name="return_id"/>
+                <field name="product_id"/>
+                <field name="serial_number"/>
+                <field name="category_id" optional="show"/>
+                <field name="fault_type_id"/>
+                <field name="product_condition"/>
+                <field name="repair_status"/>
+                <field name="failure_reason_id" optional="show"/>
+                <field name="factory_decision" optional="show"/>
+                <field name="sales_point_id" optional="hide"/>
+                <field name="return_center_id" optional="hide"/>
+                <field name="state" optional="show"/>
+                <field name="date_repaired" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ========== VUE FORMULAIRE ARTICLES ========== -->
+    <record id="sav_return_line_view_form" model="ir.ui.view">
+        <field name="name">sav.return.line.view.form</field>
+        <field name="model">sav.return.line</field>
+        <field name="arch" type="xml">
+            <form string="Article SAV">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="display_name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Article">
+                            <field name="return_id" readonly="1"/>
+                            <field name="product_id"/>
+                            <field name="category_id"/>
+                            <field name="serial_number"/>
+                        </group>
+                        <group string="Provenance">
+                            <field name="sales_point_id" readonly="1"/>
+                            <field name="return_center_id" readonly="1"/>
+                            <field name="state" readonly="1"/>
+                            <field name="sale_order_line_id"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Diagnostic">
+                            <field name="fault_type_id"/>
+                            <field name="product_condition"/>
+                        </group>
+                        <group string="Réparation">
+                            <field name="repair_status"/>
+                            <field name="date_repaired" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Diagnostic Détaillé" name="diagnostic">
+                            <field name="diagnostic" placeholder="Diagnostic technique détaillé..."/>
+                        </page>
+                        <page string="Notes de Réparation" name="repair_notes">
+                            <field name="repair_notes" placeholder="Notes de réparation..."/>
+                        </page>
+                        <page string="Échec de Réparation" name="failure"
+                              invisible="repair_status != 'not_repairable'">
+                            <group>
+                                <group>
+                                    <field name="failure_reason_id"/>
+                                </group>
+                                <group>
+                                    <field name="failure_notes" placeholder="Notes sur l'échec..."/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Traitement Usine" name="factory"
+                              invisible="not failure_reason_id">
+                            <group>
+                                <group>
+                                    <field name="factory_decision"/>
+                                    <field name="date_factory_decision" readonly="1"/>
+                                </group>
+                                <group>
+                                    <field name="replacement_serial_number"
+                                           invisible="factory_decision != 'factory_replaced'"/>
+                                    <field name="replacement_product_id"
+                                           invisible="factory_decision != 'factory_replaced'"/>
+                                </group>
+                            </group>
+                            <group>
+                                <field name="factory_notes" placeholder="Notes de l'usine..."/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ========== VUE PIVOT ARTICLES ========== -->
+    <record id="sav_return_line_view_pivot" model="ir.ui.view">
+        <field name="name">sav.return.line.view.pivot</field>
+        <field name="model">sav.return.line</field>
+        <field name="arch" type="xml">
+            <pivot string="Analyse des Articles SAV" sample="1">
+                <field name="category_id" type="row"/>
+                <field name="repair_status" type="col"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- ========== VUE GRAPHIQUE ARTICLES ========== -->
+    <record id="sav_return_line_view_graph" model="ir.ui.view">
+        <field name="name">sav.return.line.view.graph</field>
+        <field name="model">sav.return.line</field>
+        <field name="arch" type="xml">
+            <graph string="Analyse des Articles SAV" type="bar" sample="1">
+                <field name="repair_status"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- ========== VUE PIVOT PRODUITS ========== -->
+    <record id="sav_return_line_view_pivot_product" model="ir.ui.view">
+        <field name="name">sav.return.line.view.pivot.product</field>
+        <field name="model">sav.return.line</field>
+        <field name="arch" type="xml">
+            <pivot string="Analyse par Produit" sample="1">
+                <field name="product_id" type="row"/>
+                <field name="repair_status" type="col"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- ========== VUE PIVOT MOTIFS ÉCHEC ========== -->
+    <record id="sav_return_line_view_pivot_failure" model="ir.ui.view">
+        <field name="name">sav.return.line.view.pivot.failure</field>
+        <field name="model">sav.return.line</field>
+        <field name="arch" type="xml">
+            <pivot string="Analyse Motifs d'Échec" sample="1">
+                <field name="failure_reason_id" type="row"/>
+                <field name="factory_decision" type="col"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- ========== VUE GRAPHIQUE MOTIFS RETOUR ========== -->
+    <record id="sav_return_line_view_graph_fault" model="ir.ui.view">
+        <field name="name">sav.return.line.view.graph.fault</field>
+        <field name="model">sav.return.line</field>
+        <field name="arch" type="xml">
+            <graph string="Motifs de Retour" type="pie" sample="1">
+                <field name="fault_type_id"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- ========== ACTIONS ARTICLES ========== -->
+
+    <!-- Action principale - Tous les articles -->
+    <record id="sav_return_line_action" model="ir.actions.act_window">
+        <field name="name">Articles SAV</field>
+        <field name="res_model">sav.return.line</field>
+        <field name="view_mode">tree,form,pivot,graph</field>
+        <field name="search_view_id" ref="sav_return_line_view_search"/>
+        <field name="context">{'search_default_group_repair_status': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Aucun article retourné
+            </p>
+            <p>
+                Les articles des retours SAV apparaîtront ici pour analyse.
+            </p>
+        </field>
+    </record>
+
+    <!-- Articles en attente de réparation -->
+    <record id="sav_return_line_action_pending" model="ir.actions.act_window">
+        <field name="name">Articles en Attente</field>
+        <field name="res_model">sav.return.line</field>
+        <field name="view_mode">tree,form,pivot,graph</field>
+        <field name="domain">[('repair_status', '=', 'pending')]</field>
+        <field name="search_view_id" ref="sav_return_line_view_search"/>
+    </record>
+
+    <!-- Articles non réparables -->
+    <record id="sav_return_line_action_not_repairable" model="ir.actions.act_window">
+        <field name="name">Articles Non Réparables</field>
+        <field name="res_model">sav.return.line</field>
+        <field name="view_mode">tree,form,pivot,graph</field>
+        <field name="domain">[('repair_status', '=', 'not_repairable')]</field>
+        <field name="search_view_id" ref="sav_return_line_view_search"/>
+        <field name="context">{'search_default_group_failure_reason': 1}</field>
+    </record>
+
+    <!-- Articles traités par l'usine -->
+    <record id="sav_return_line_action_factory" model="ir.actions.act_window">
+        <field name="name">Articles Traités par Usine</field>
+        <field name="res_model">sav.return.line</field>
+        <field name="view_mode">tree,form,pivot,graph</field>
+        <field name="domain">[('factory_decision', '!=', False)]</field>
+        <field name="search_view_id" ref="sav_return_line_view_search"/>
+        <field name="context">{'search_default_group_factory_decision': 1}</field>
+    </record>
+
+    <!-- Statistiques par article -->
+    <record id="sav_return_line_action_stats" model="ir.actions.act_window">
+        <field name="name">Statistiques Articles</field>
+        <field name="res_model">sav.return.line</field>
+        <field name="view_mode">pivot,graph</field>
+        <field name="search_view_id" ref="sav_return_line_view_search"/>
+        <field name="context">{'search_default_group_product': 1}</field>
+    </record>
+
+    <!-- Analyse des motifs de retour -->
+    <record id="sav_return_line_action_fault_analysis" model="ir.actions.act_window">
+        <field name="name">Analyse Motifs de Retour</field>
+        <field name="res_model">sav.return.line</field>
+        <field name="view_mode">pivot,graph</field>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'pivot', 'view_id': ref('sav_return_line_view_pivot')}),
+            (0, 0, {'view_mode': 'graph', 'view_id': ref('sav_return_line_view_graph_fault')})]"/>
+        <field name="search_view_id" ref="sav_return_line_view_search"/>
+    </record>
+
+    <!-- Analyse des échecs et décisions usine -->
+    <record id="sav_return_line_action_failure_analysis" model="ir.actions.act_window">
+        <field name="name">Analyse Échecs / Usine</field>
+        <field name="res_model">sav.return.line</field>
+        <field name="view_mode">pivot,graph</field>
+        <field name="domain">[('repair_status', '=', 'not_repairable')]</field>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'pivot', 'view_id': ref('sav_return_line_view_pivot_failure')}),
+            (0, 0, {'view_mode': 'graph', 'view_id': ref('sav_return_line_view_graph')})]"/>
+        <field name="search_view_id" ref="sav_return_line_view_search"/>
     </record>
 
 </odoo>

@@ -50,6 +50,8 @@ class SavFaultType(models.Model):
 
     def _compute_return_count(self):
         for rec in self:
-            rec.return_count = self.env['sav.return'].search_count([
+            # Compter les retours uniques qui ont des lignes avec ce type de panne
+            lines = self.env['sav.return.line'].search([
                 ('fault_type_id', '=', rec.id)
             ])
+            rec.return_count = len(lines.mapped('return_id'))

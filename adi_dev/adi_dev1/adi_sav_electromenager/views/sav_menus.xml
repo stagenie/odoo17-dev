@@ -34,8 +34,14 @@
     <menuitem id="sav_menu_returns_in_progress"
               name="En Réparation"
               parent="sav_menu_returns"
-              action="sav_return_action_in_progress"
+              action="sav_return_action_in_repair"
               sequence="40"/>
+
+    <menuitem id="sav_menu_returns_at_factory"
+              name="Chez l'Usine"
+              parent="sav_menu_returns"
+              action="sav_return_action_at_factory"
+              sequence="45"/>
 
     <!-- Menu Rapports -->
     <menuitem id="sav_menu_reporting"
@@ -49,13 +55,92 @@
               action="sav_return_action_reporting"
               sequence="10"/>
 
+    <!-- Sous-menu Analyse par Articles -->
+    <menuitem id="sav_menu_articles"
+              name="Analyse par Articles"
+              parent="sav_menu_reporting"
+              sequence="20"/>
+
+    <menuitem id="sav_menu_articles_all"
+              name="Tous les Articles"
+              parent="sav_menu_articles"
+              action="sav_return_line_action"
+              sequence="10"/>
+
+    <menuitem id="sav_menu_articles_pending"
+              name="En Attente"
+              parent="sav_menu_articles"
+              action="sav_return_line_action_pending"
+              sequence="20"/>
+
+    <menuitem id="sav_menu_articles_not_repairable"
+              name="Non Réparables"
+              parent="sav_menu_articles"
+              action="sav_return_line_action_not_repairable"
+              sequence="30"/>
+
+    <menuitem id="sav_menu_articles_factory"
+              name="Traités par Usine"
+              parent="sav_menu_articles"
+              action="sav_return_line_action_factory"
+              sequence="40"/>
+
+    <menuitem id="sav_menu_articles_stats"
+              name="Statistiques Articles"
+              parent="sav_menu_articles"
+              action="sav_return_line_action_stats"
+              sequence="50"/>
+
+    <menuitem id="sav_menu_articles_fault_analysis"
+              name="Analyse Motifs de Retour"
+              parent="sav_menu_articles"
+              action="sav_return_line_action_fault_analysis"
+              sequence="60"/>
+
+    <menuitem id="sav_menu_articles_failure_analysis"
+              name="Analyse Échecs / Usine"
+              parent="sav_menu_articles"
+              action="sav_return_line_action_failure_analysis"
+              sequence="70"/>
+
     <!-- Menu Configuration -->
     <menuitem id="sav_menu_config"
               name="Configuration"
               parent="sav_menu_root"
-              groups="base.group_system"
+              groups="adi_sav_electromenager.group_sav_administrator"
               sequence="100"/>
 
+    <!-- Sous-menu Partenaires SAV -->
+    <menuitem id="sav_menu_config_partners"
+              name="Partenaires SAV"
+              parent="sav_menu_config"
+              sequence="5"/>
+
+    <menuitem id="sav_menu_config_sales_points"
+              name="Points de Vente"
+              parent="sav_menu_config_partners"
+              action="action_partner_sales_point"
+              sequence="10"/>
+
+    <menuitem id="sav_menu_config_return_centers"
+              name="Centres de Retour"
+              parent="sav_menu_config_partners"
+              action="action_partner_return_center"
+              sequence="20"/>
+
+    <menuitem id="sav_menu_config_repairers"
+              name="Réparateurs"
+              parent="sav_menu_config_partners"
+              action="action_partner_repairer"
+              sequence="30"/>
+
+    <menuitem id="sav_menu_config_factory"
+              name="Usine"
+              parent="sav_menu_config_partners"
+              action="action_partner_factory"
+              sequence="40"/>
+
+    <!-- Catégories et Types de Panne -->
     <menuitem id="sav_menu_config_categories"
               name="Catégories"
               parent="sav_menu_config"
@@ -67,5 +152,11 @@
               parent="sav_menu_config"
               action="sav_fault_type_action"
               sequence="20"/>
+
+    <menuitem id="sav_menu_config_failure_reasons"
+              name="Motifs d'Échec"
+              parent="sav_menu_config"
+              action="sav_failure_reason_action"
+              sequence="25"/>
 
 </odoo>
