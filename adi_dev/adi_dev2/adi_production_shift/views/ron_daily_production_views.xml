@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ==================== HÉRITAGE VUES PRODUCTION JOURNALIÈRE ==================== -->
+
+    <!-- Héritage Vue Formulaire : Ajout des champs shift -->
+    <record id="ron_daily_production_view_form_shift" model="ir.ui.view">
+        <field name="name">ron.daily.production.form.shift</field>
+        <field name="model">ron.daily.production</field>
+        <field name="inherit_id" ref="adi_simple_production_cost.ron_daily_production_view_form"/>
+        <field name="arch" type="xml">
+            <!-- Ajouter le champ shift_system (invisible) et les champs shift après production_type -->
+            <xpath expr="//field[@name='production_type']" position="after">
+                <field name="shift_system" invisible="1"/>
+                <field name="shift_two"
+                       invisible="shift_system != 'two_shifts'"
+                       required="shift_system == 'two_shifts'"
+                       widget="radio"
+                       options="{'horizontal': true}"/>
+                <field name="shift_three"
+                       invisible="shift_system != 'three_shifts'"
+                       required="shift_system == 'three_shifts'"
+                       widget="radio"
+                       options="{'horizontal': true}"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Héritage Vue Liste : Ajout de la colonne shift -->
+    <record id="ron_daily_production_view_tree_shift" model="ir.ui.view">
+        <field name="name">ron.daily.production.tree.shift</field>
+        <field name="model">ron.daily.production</field>
+        <field name="inherit_id" ref="adi_simple_production_cost.ron_daily_production_view_tree"/>
+        <field name="arch" type="xml">
+            <!-- Ajouter la colonne shift_display après production_type -->
+            <xpath expr="//field[@name='production_type']" position="after">
+                <field name="shift_display" string="Shift" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Héritage Vue Recherche : Ajout des filtres et groupes par shift -->
+    <record id="ron_daily_production_view_search_shift" model="ir.ui.view">
+        <field name="name">ron.daily.production.search.shift</field>
+        <field name="model">ron.daily.production</field>
+        <field name="inherit_id" ref="adi_simple_production_cost.ron_daily_production_view_search"/>
+        <field name="arch" type="xml">
+            <!-- Ajouter le champ shift_display dans les champs de recherche -->
+            <xpath expr="//field[@name='production_type']" position="after">
+                <field name="shift_display" string="Shift"/>
+            </xpath>
+
+            <!-- Ajouter les filtres par shift après les filtres de type -->
+            <xpath expr="//filter[@name='sandwich_gf']" position="after">
+                <separator/>
+                <filter string="Shift Jour" name="shift_day"
+                        domain="[('shift_two', '=', 'day')]"/>
+                <filter string="Shift Nuit" name="shift_night"
+                        domain="['|', ('shift_two', '=', 'night'), ('shift_three', '=', 'night')]"/>
+                <filter string="Shift Matin" name="shift_morning"
+                        domain="[('shift_three', '=', 'morning')]"/>
+                <filter string="Shift Après-midi" name="shift_afternoon"
+                        domain="[('shift_three', '=', 'afternoon')]"/>
+            </xpath>
+
+            <!-- Ajouter le groupement par shift -->
+            <xpath expr="//filter[@name='group_type']" position="after">
+                <filter string="Shift" name="group_shift"
+                        context="{'group_by': 'shift_display'}"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Héritage Vue Pivot : Ajout du shift dans l'analyse -->
+    <record id="ron_daily_production_view_pivot_shift" model="ir.ui.view">
+        <field name="name">ron.daily.production.pivot.shift</field>
+        <field name="model">ron.daily.production</field>
+        <field name="inherit_id" ref="adi_simple_production_cost.ron_daily_production_view_pivot"/>
+        <field name="arch" type="xml">
+            <!-- Ajouter le shift comme dimension de ligne -->
+            <xpath expr="//field[@name='production_type' and @type='row']" position="after">
+                <field name="shift_display" type="row"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

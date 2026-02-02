@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ==================== HÉRITAGE VUE CONFIGURATION ==================== -->
+
+    <!-- Ajout de la section "Configuration des Shifts" dans le formulaire config -->
+    <record id="ron_production_config_view_form_shift" model="ir.ui.view">
+        <field name="name">ron.production.config.form.shift</field>
+        <field name="model">ron.production.config</field>
+        <field name="inherit_id" ref="adi_simple_production_cost.ron_production_config_view_form"/>
+        <field name="arch" type="xml">
+            <!-- Ajouter une nouvelle page "Configuration des Shifts" au début du notebook -->
+            <xpath expr="//notebook" position="inside">
+                <page string="Configuration des Shifts" name="shift_config" sequence="0">
+                    <group string="Système de Shift">
+                        <group>
+                            <field name="shift_system" widget="radio" options="{'horizontal': true}"/>
+                        </group>
+                        <group>
+                            <div class="text-muted">
+                                <p><b>8 heures (pas de shift):</b> Une seule production autorisée par jour.</p>
+                                <p><b>2 Shifts:</b> Deux productions par jour (Jour et Nuit).</p>
+                                <p><b>3 Shifts:</b> Trois productions par jour (Matin, Après-midi et Nuit).</p>
+                            </div>
+                        </group>
+                    </group>
+                    <div class="alert alert-info mt-3" role="alert">
+                        <strong>Configuration des Shifts:</strong><br/>
+                        - Le système de shift détermine combien de productions peuvent être créées pour une même date.<br/>
+                        - En mode 2 ou 3 shifts, l'utilisateur devra sélectionner le shift lors de la création d'une production.<br/>
+                        - La contrainte d'unicité s'applique par date ET par shift.
+                    </div>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
