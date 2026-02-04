@@ -24,6 +24,10 @@
                     <button name="action_reset_draft" string="Remettre en Brouillon"
                             type="object"
                             invisible="state in ('draft', 'done')"/>
+                    <button name="action_recalculate_costs" string="Recalculer Coûts"
+                            type="object" class="btn-info" icon="fa-calculator"
+                            title="Force le recalcul de tous les coûts (utile après mise à jour du module)"
+                            invisible="state == 'draft'"/>
                     <field name="state" widget="statusbar"
                            statusbar_visible="draft,confirmed,validated,done"/>
                 </header>
@@ -317,6 +321,7 @@
                                 </group>
                                 <group string="Production Bonne">
                                     <field name="good_weight"/>
+                                    <field name="good_material_cost" string="Coût Matières (Poids Bon)"/>
                                     <field name="total_good_cost"/>
                                     <field name="cost_per_kg_good"/>
                                 </group>

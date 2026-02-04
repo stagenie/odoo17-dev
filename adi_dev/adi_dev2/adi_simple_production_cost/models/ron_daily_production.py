@@ -311,12 +311,20 @@ class RonDailyProduction(models.Model):
         help="Poids Consommé - Rebuts Récupérables - Pâte Récupérable"
     )
 
+    good_material_cost = fields.Monetary(
+        string='Coût Matières (Poids Bon)',
+        compute='_compute_final_costs',
+        store=True,
+        currency_field='currency_id',
+        help="Coût des matières premières basé uniquement sur le poids bon (excluant rebuts et pâte)"
+    )
+
     total_good_cost = fields.Monetary(
         string='Coût Total Production Bonne',
         compute='_compute_final_costs',
         store=True,
         currency_field='currency_id',
-        help="Coût matières + Coût emballage"
+        help="Coût matières (poids bon) + Coût emballage"
     )
 
     cost_per_kg_good = fields.Monetary(
@@ -564,13 +572,16 @@ class RonDailyProduction(models.Model):
 
     @api.depends('total_consumption_cost', 'total_consumption_weight',
                  'scrap_recoverable_weight', 'paste_recoverable_weight',
-                 'total_packaging_cost')
+                 'total_packaging_cost', 'cost_per_kg')
     def _compute_final_costs(self):
         """Calcule les coûts finaux.
 
-        NOUVELLE FORMULE SIMPLIFIÉE:
+        FORMULE (basée sur le poids bon uniquement):
         - Poids Bon = Poids Consommé - Rebuts Récupérables - Pâte Récupérable
-        - Coût = Matières + Emballage (rebuts et pâte comptabilisés séparément)
+        - Coût Matières (Poids Bon) = Coût/kg × Poids Bon
+        - Coût Total = Coût Matières (Poids Bon) + Emballage
+
+        Les rebuts et pâte récupérable sont exclus du coût de production.
         """
         for rec in self:
             # Poids bon = Consommé - Rebuts récupérables - Pâte récupérable
@@ -578,9 +589,12 @@ class RonDailyProduction(models.Model):
                                rec.scrap_recoverable_weight -
                                rec.paste_recoverable_weight)
 
-            # Coût total production bonne = Coût matières + Coût emballage
-            # (Les rebuts et pâte sont comptabilisés séparément, pas déduits)
-            rec.total_good_cost = (rec.total_consumption_cost +
+            # Coût matières basé uniquement sur le poids bon
+            # (exclut les rebuts et pâte récupérable du coût)
+            rec.good_material_cost = rec.cost_per_kg * rec.good_weight
+
+            # Coût total production bonne = Coût matières (poids bon) + Coût emballage
+            rec.total_good_cost = (rec.good_material_cost +
                                    rec.total_packaging_cost)
 
             # Coût par kg de produit bon
@@ -588,7 +602,7 @@ class RonDailyProduction(models.Model):
                                      if rec.good_weight > 0 else 0)
 
     @api.depends('finished_product_ids', 'finished_product_ids.quantity',
-                 'finished_product_ids.product_type', 'total_consumption_cost',
+                 'finished_product_ids.product_type', 'good_material_cost',
                  'good_weight', 'production_type',
                  'emballage_solo_cost', 'film_solo_cost',
                  'emballage_classico_cost', 'film_classico_cost',
@@ -597,12 +611,13 @@ class RonDailyProduction(models.Model):
         """Calcule les coûts par produit fini.
 
         Deux modes de calcul:
-        - SOLO/CLASSICO: Matières réparties au ratio + Emballages affectés directement
+        - SOLO/CLASSICO: Matières (poids bon) réparties au ratio + Emballages affectés directement
           FORMULE: Coût CLASSICO = Coût SOLO × ratio (1.65 par défaut)
           Le CLASSICO est plus cher car il contient plus de produit.
         - Sandwich GF: Calcul direct (coût total / quantité)
 
         Les emballages sont affectés DIRECTEMENT par type (pas de ratio sur les emballages).
+        NOTE: Le coût matières utilisé est basé sur le poids bon uniquement (sans rebuts ni pâte).
         """
         for rec in self:
             config = self.env['ron.production.config'].get_config(rec.company_id.id)
@@ -631,7 +646,7 @@ class RonDailyProduction(models.Model):
             rec.total_classico_cost = 0
             rec.total_sandwich_cost = 0
 
-            if rec.total_consumption_cost <= 0:
+            if rec.good_material_cost <= 0:
                 continue
 
             # MODE SOLO/CLASSICO
@@ -642,15 +657,15 @@ class RonDailyProduction(models.Model):
                 pkg_solo = rec.emballage_solo_cost + rec.film_solo_cost
                 pkg_classico = rec.emballage_classico_cost + rec.film_classico_cost
 
-                # Répartition des MATIÈRES PREMIÈRES au ratio uniquement
-                # NOUVELLE FORMULE: C = ratio × S (Coût CLASSICO = ratio × Coût SOLO)
+                # Répartition des MATIÈRES PREMIÈRES (poids bon) au ratio uniquement
+                # FORMULE: C = ratio × S (Coût CLASSICO = ratio × Coût SOLO)
                 # Le CLASSICO est plus cher car il a plus de produit
-                # Total MP = S × qty_solo + C × qty_classico
-                # Total MP = S × qty_solo + (ratio × S) × qty_classico
-                # Total MP = S × (qty_solo + ratio × qty_classico)
-                # S = Total MP / (qty_solo + ratio × qty_classico)
+                # Total MP (poids bon) = S × qty_solo + C × qty_classico
+                # Total MP (poids bon) = S × qty_solo + (ratio × S) × qty_classico
+                # Total MP (poids bon) = S × (qty_solo + ratio × qty_classico)
+                # S = Total MP (poids bon) / (qty_solo + ratio × qty_classico)
 
-                cost_matieres = rec.total_consumption_cost
+                cost_matieres = rec.good_material_cost
                 denominator = (qty_solo + qty_classico * ratio)
 
                 if denominator > 0:
@@ -677,8 +692,8 @@ class RonDailyProduction(models.Model):
                     # Coût emballage Sandwich
                     pkg_sandwich = rec.emballage_sandwich_cost + rec.film_sandwich_cost
 
-                    # Coût total = Matières + Emballages
-                    total_cost = rec.total_consumption_cost + pkg_sandwich
+                    # Coût total = Matières (poids bon) + Emballages
+                    total_cost = rec.good_material_cost + pkg_sandwich
                     cost_sandwich = total_cost / qty_sandwich
 
                     rec.cost_sandwich_per_carton = cost_sandwich
@@ -1106,6 +1121,74 @@ class RonDailyProduction(models.Model):
             else:
                 rec.message_post(body=_("Aucune ligne à corriger - tous les poids sont déjà définis.\n"
                                         "Coût/kg propagé aux rebuts et pâte."))
+
+        return True
+
+    def action_recalculate_costs(self):
+        """Recalcule tous les coûts de production.
+
+        Force le recalcul de tous les champs computed dans le bon ordre:
+        1. Totaux de consommation (coût/kg)
+        2. Totaux des rebuts et pâte
+        3. Coûts d'emballage
+        4. Coûts finaux (poids bon, coût matières poids bon)
+        5. Coûts par produit fini (SOLO/CLASSICO/Sandwich)
+
+        Utile après une mise à jour du module ou en cas de désynchronisation.
+        """
+        for rec in self:
+            # Sauvegarder les anciennes valeurs pour le message
+            old_total = rec.total_good_cost
+            old_solo = rec.cost_solo_per_carton
+            old_classico = rec.cost_classico_per_carton
+            old_sandwich = rec.cost_sandwich_per_carton
+
+            # Invalider le cache pour forcer le recalcul
+            rec.invalidate_recordset()
+
+            # Forcer le recalcul dans l'ordre des dépendances
+            rec._compute_consumption_totals()
+            rec._compute_scrap_totals()
+            rec._compute_packaging_costs()
+            rec._compute_final_costs()
+            rec._compute_finished_totals()
+
+            # Message avec les changements
+            if rec.production_type == 'solo_classico':
+                rec.message_post(
+                    body=_("""
+                    <b>Coûts recalculés</b><br/>
+                    <table>
+                        <tr><th>Champ</th><th>Avant</th><th>Après</th></tr>
+                        <tr><td>Coût Total</td><td>%(old_total).2f</td><td>%(new_total).2f</td></tr>
+                        <tr><td>Coût SOLO/Carton</td><td>%(old_solo).2f</td><td>%(new_solo).2f</td></tr>
+                        <tr><td>Coût CLASSICO/Carton</td><td>%(old_classico).2f</td><td>%(new_classico).2f</td></tr>
+                    </table>
+                    """) % {
+                        'old_total': old_total,
+                        'new_total': rec.total_good_cost,
+                        'old_solo': old_solo,
+                        'new_solo': rec.cost_solo_per_carton,
+                        'old_classico': old_classico,
+                        'new_classico': rec.cost_classico_per_carton,
+                    }
+                )
+            else:  # sandwich_gf
+                rec.message_post(
+                    body=_("""
+                    <b>Coûts recalculés</b><br/>
+                    <table>
+                        <tr><th>Champ</th><th>Avant</th><th>Après</th></tr>
+                        <tr><td>Coût Total</td><td>%(old_total).2f</td><td>%(new_total).2f</td></tr>
+                        <tr><td>Coût Sandwich/Carton</td><td>%(old_sandwich).2f</td><td>%(new_sandwich).2f</td></tr>
+                    </table>
+                    """) % {
+                        'old_total': old_total,
+                        'new_total': rec.total_good_cost,
+                        'old_sandwich': old_sandwich,
+                        'new_sandwich': rec.cost_sandwich_per_carton,
+                    }
+                )
 
         return True
 
