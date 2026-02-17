@@ -1059,24 +1059,16 @@ class RonDailyProduction(models.Model):
                 _logger.warning(f"Impossible de créer la facture pour {purchase.name}: {e}")
 
     def action_done(self):
-        """Termine la production."""
+        """Termine la production.
+
+        Note: Le standard_price (PMP/AVCO) des produits finis est géré
+        automatiquement par Odoo lors de la réception des achats (stock.move).
+        Il ne faut PAS l'écraser manuellement ici car cela court-circuiterait
+        le calcul du prix moyen pondéré.
+        """
         for rec in self:
-            # Mettre à jour les prix de revient des produits selon le type de production
-            config = self.env['ron.production.config'].get_config(rec.company_id.id)
-
-            if rec.production_type == 'solo_classico':
-                if config.product_solo_id and rec.cost_solo_per_carton > 0:
-                    config.product_solo_id.sudo().standard_price = rec.cost_solo_per_carton
-
-                if config.product_classico_id and rec.cost_classico_per_carton > 0:
-                    config.product_classico_id.sudo().standard_price = rec.cost_classico_per_carton
-
-            elif rec.production_type == 'sandwich_gf':
-                if config.product_sandwich_id and rec.cost_sandwich_per_carton > 0:
-                    config.product_sandwich_id.sudo().standard_price = rec.cost_sandwich_per_carton
-
             rec.write({'state': 'done'})
-            rec.message_post(body=_("Production terminée. Prix de revient mis à jour."))
+            rec.message_post(body=_("Production terminée."))
 
     def action_reset_draft(self):
         """Remet en brouillon."""
