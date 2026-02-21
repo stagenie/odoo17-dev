@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <menuitem id="menu_partner_balance_customer"
+                  name="Créance Clients"
+                  sequence="10"
+                  parent="accounting_pdf_reports.menu_finance_partner_reports"
+                  action="action_partner_balance_customer"
+                  groups="account.group_account_invoice"/>
+
+        <menuitem id="menu_partner_balance_supplier"
+                  name="Dette Fournisseurs"
+                  sequence="11"
+                  parent="accounting_pdf_reports.menu_finance_partner_reports"
+                  action="action_partner_balance_supplier"
+                  groups="account.group_account_invoice"/>
+
+        <menuitem id="menu_partner_balance_customer_supplier"
+                  name="Créances et Dettes"
+                  sequence="12"
+                  parent="accounting_pdf_reports.menu_finance_partner_reports"
+                  action="action_partner_balance_customer_supplier"
+                  groups="account.group_account_invoice"/>
+
+        <menuitem id="menu_partner_ledger_detailed"
+                  name="Grand Livre Détaillé"
+                  sequence="15"
+                  parent="accounting_pdf_reports.menu_finance_partner_reports"
+                  action="action_partner_ledger_detailed_menu"
+                  groups="account.group_account_invoice"/>
+
+    </data>
+</odoo>

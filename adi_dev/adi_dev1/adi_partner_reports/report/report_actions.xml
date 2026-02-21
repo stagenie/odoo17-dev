@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="action_report_partner_balance" model="ir.actions.report">
+            <field name="name">Rapport Solde Partenaire</field>
+            <field name="model">partner.balance.summary.report</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">adi_partner_reports.report_partner_balance</field>
+            <field name="report_file">adi_partner_reports.report_partner_balance</field>
+        </record>
+
+        <record id="action_report_partner_ledger_detailed" model="ir.actions.report">
+            <field name="name">Grand Livre Détaillé Partenaire</field>
+            <field name="model">account.report.partner.ledger.detailed</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">adi_partner_reports.report_partner_ledger_detailed</field>
+            <field name="report_file">adi_partner_reports.report_partner_ledger_detailed</field>
+        </record>
+
+    </data>
+</odoo>

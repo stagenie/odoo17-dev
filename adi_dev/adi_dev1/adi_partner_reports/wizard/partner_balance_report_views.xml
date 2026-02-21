@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="partner_balance_summary_report_view" model="ir.ui.view">
+        <field name="name">Rapport Récapitulatif Solde Partenaire</field>
+        <field name="model">partner.balance.summary.report</field>
+        <field name="inherit_id" ref="accounting_pdf_reports.account_common_report_view"/>
+        <field name="arch" type="xml">
+            <data>
+                <xpath expr="//field[@name='journal_ids']" position="before">
+                    <field name="partner_ids" widget="many2many_tags"
+                           options="{'no_open': True, 'no_create': True}"/>
+                </xpath>
+                <xpath expr="//field[@name='target_move']" position="after">
+                    <field name="result_selection"/>
+                    <newline/>
+                    <field name="reconciled"/>
+                    <newline/>
+                </xpath>
+            </data>
+        </field>
+    </record>
+
+    <!-- Action for Customer Receivable Report -->
+    <record id="action_partner_balance_customer" model="ir.actions.act_window">
+        <field name="name">Créance Clients</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">partner.balance.summary.report</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="partner_balance_summary_report_view"/>
+        <field name="target">new</field>
+        <field name="context">{'default_result_selection': 'customer'}</field>
+    </record>
+
+    <!-- Action for Supplier Payable Report -->
+    <record id="action_partner_balance_supplier" model="ir.actions.act_window">
+        <field name="name">Dette Fournisseurs</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">partner.balance.summary.report</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="partner_balance_summary_report_view"/>
+        <field name="target">new</field>
+        <field name="context">{'default_result_selection': 'supplier'}</field>
+    </record>
+
+    <!-- Action for Combined Receivable + Payable Report -->
+    <record id="action_partner_balance_customer_supplier" model="ir.actions.act_window">
+        <field name="name">Créances et Dettes</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">partner.balance.summary.report</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="partner_balance_summary_report_view"/>
+        <field name="target">new</field>
+        <field name="context">{'default_result_selection': 'customer_supplier'}</field>
+    </record>
+
+</odoo>

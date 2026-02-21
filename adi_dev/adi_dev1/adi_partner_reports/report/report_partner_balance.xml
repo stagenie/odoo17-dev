@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="report_partner_balance">
+        <t t-call="web.html_container">
+            <t t-call="web.internal_layout">
+                <t t-set="data_report_margin_top" t-value="12"/>
+                <t t-set="data_report_header_spacing" t-value="9"/>
+                <t t-set="data_report_dpi" t-value="110"/>
+                <div class="page">
+                    <h2 t-esc="report_title"/>
+                    <div class="row mb-3">
+                        <div class="col-3">
+                            <strong>Société :</strong>
+                            <p t-esc="res_company.name"/>
+                        </div>
+                        <div class="col-3">
+                            <t t-if="data['form']['date_from']">
+                                <strong>Du :</strong>
+                                <span t-esc="data['form']['date_from']"/>
+                                <br/>
+                            </t>
+                            <t t-if="data['form']['date_to']">
+                                <strong>Au :</strong>
+                                <span t-esc="data['form']['date_to']"/>
+                            </t>
+                        </div>
+                        <div class="col-3">
+                            <strong>Écritures :</strong>
+                            <p t-if="data['form']['target_move'] == 'all'">Toutes les écritures</p>
+                            <p t-if="data['form']['target_move'] == 'posted'">Comptabilisées uniquement</p>
+                        </div>
+                    </div>
+
+                    <!-- ============ MODE COMBINÉ : Créances + Dettes ============ -->
+                    <t t-if="is_combined">
+
+                        <!-- Section Créances Clients -->
+                        <h4 class="mt-4" style="background-color: #e9ecef; padding: 6px 10px;">CRÉANCES CLIENTS</h4>
+                        <table class="table table-sm table-reports">
+                            <thead>
+                                <tr>
+                                    <th>Réf</th>
+                                    <th>Partenaire</th>
+                                    <th class="text-end">Débit</th>
+                                    <th class="text-end">Crédit</th>
+                                    <th class="text-end">Solde</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="customer_data" t-as="partner">
+                                    <tr>
+                                        <td><span t-esc="partner['ref'] or ''"/></td>
+                                        <td><span t-esc="partner['name'] or ''"/></td>
+                                        <td class="text-end">
+                                            <span t-esc="partner['total_debit']"
+                                                  t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                        </td>
+                                        <td class="text-end">
+                                            <span t-esc="partner['total_credit']"
+                                                  t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                        </td>
+                                        <td class="text-end">
+                                            <span t-esc="partner['balance']"
+                                                  t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                            <tfoot>
+                                <tr style="font-weight: bold; border-top: 2px solid #000;">
+                                    <td colspan="2" class="text-end">SOUS-TOTAL CRÉANCES</td>
+                                    <td class="text-end">
+                                        <span t-esc="customer_totals['debit']"
+                                              t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                    </td>
+                                    <td class="text-end">
+                                        <span t-esc="customer_totals['credit']"
+                                              t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                    </td>
+                                    <td class="text-end">
+                                        <span t-esc="customer_totals['balance']"
+                                              t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+
+                        <!-- Section Dettes Fournisseurs -->
+                        <h4 class="mt-4" style="background-color: #e9ecef; padding: 6px 10px;">DETTES FOURNISSEURS</h4>
+                        <table class="table table-sm table-reports">
+                            <thead>
+                                <tr>
+                                    <th>Réf</th>
+                                    <th>Partenaire</th>
+                                    <th class="text-end">Débit</th>
+                                    <th class="text-end">Crédit</th>
+                                    <th class="text-end">Solde</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="supplier_data" t-as="partner">
+                                    <tr>
+                                        <td><span t-esc="partner['ref'] or ''"/></td>
+                                        <td><span t-esc="partner['name'] or ''"/></td>
+                                        <td class="text-end">
+                                            <span t-esc="partner['total_debit']"
+                                                  t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                        </td>
+                                        <td class="text-end">
+                                            <span t-esc="partner['total_credit']"
+                                                  t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                        </td>
+                                        <td class="text-end">
+                                            <span t-esc="partner['balance']"
+                                                  t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                            <tfoot>
+                                <tr style="font-weight: bold; border-top: 2px solid #000;">
+                                    <td colspan="2" class="text-end">SOUS-TOTAL DETTES</td>
+                                    <td class="text-end">
+                                        <span t-esc="supplier_totals['debit']"
+                                              t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                    </td>
+                                    <td class="text-end">
+                                        <span t-esc="supplier_totals['credit']"
+                                              t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                    </td>
+                                    <td class="text-end">
+                                        <span t-esc="supplier_totals['balance']"
+                                              t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+
+                        <!-- Total Général -->
+                        <table class="table table-sm table-reports mt-3">
+                            <tfoot>
+                                <tr style="font-weight: bold; font-size: 1.1em; border-top: 3px double #000;">
+                                    <td colspan="2" class="text-end">TOTAL GÉNÉRAL</td>
+                                    <td class="text-end">
+                                        <span t-esc="grand_totals['debit']"
+                                              t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                    </td>
+                                    <td class="text-end">
+                                        <span t-esc="grand_totals['credit']"
+                                              t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                    </td>
+                                    <td class="text-end">
+                                        <span t-esc="grand_totals['balance']"
+                                              t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+
+                    </t>
+
+                    <!-- ============ MODE SIMPLE : Clients OU Fournisseurs ============ -->
+                    <t t-if="not is_combined">
+                        <table class="table table-sm table-reports">
+                            <thead>
+                                <tr>
+                                    <th>Réf</th>
+                                    <th>Partenaire</th>
+                                    <th class="text-end">Débit</th>
+                                    <th class="text-end">Crédit</th>
+                                    <th class="text-end">Solde</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="partners_data" t-as="partner">
+                                    <tr>
+                                        <td><span t-esc="partner['ref'] or ''"/></td>
+                                        <td><span t-esc="partner['name'] or ''"/></td>
+                                        <td class="text-end">
+                                            <span t-esc="partner['total_debit']"
+                                                  t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                        </td>
+                                        <td class="text-end">
+                                            <span t-esc="partner['total_credit']"
+                                                  t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                        </td>
+                                        <td class="text-end">
+                                            <span t-esc="partner['balance']"
+                                                  t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                            <tfoot>
+                                <tr style="font-weight: bold; border-top: 2px solid #000;">
+                                    <td colspan="2" class="text-end">TOTAL</td>
+                                    <td class="text-end">
+                                        <span t-esc="total_debit"
+                                              t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                    </td>
+                                    <td class="text-end">
+                                        <span t-esc="total_credit"
+                                              t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                    </td>
+                                    <td class="text-end">
+                                        <span t-esc="total_balance"
+                                              t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </t>
+
+                </div>
+            </t>
+        </t>
+    </template>
+
+</odoo>
