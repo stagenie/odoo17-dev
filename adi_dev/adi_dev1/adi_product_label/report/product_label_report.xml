@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Paperformat 40mm x 20mm (width x height) -->
+    <record id="paperformat_label_40x20" model="report.paperformat">
+        <field name="name">Étiquette Produit 40x20mm</field>
+        <field name="default" eval="False"/>
+        <field name="format">custom</field>
+        <field name="page_width">40</field>
+        <field name="page_height">20</field>
+        <field name="margin_top">0</field>
+        <field name="margin_bottom">0</field>
+        <field name="margin_left">0</field>
+        <field name="margin_right">0</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">0</field>
+        <field name="disable_shrinking" eval="True"/>
+        <field name="dpi">200</field>
+    </record>
+
+    <record id="action_report_product_label" model="ir.actions.report">
+        <field name="name">Imprimer Étiquette</field>
+        <field name="model">product.product</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_product_label.report_product_label</field>
+        <field name="report_file">adi_product_label.report_product_label</field>
+        <field name="paperformat_id" ref="paperformat_label_40x20"/>
+        <field name="binding_model_id" ref="product.model_product_product"/>
+        <field name="binding_type">report</field>
+    </record>
+
+</odoo>

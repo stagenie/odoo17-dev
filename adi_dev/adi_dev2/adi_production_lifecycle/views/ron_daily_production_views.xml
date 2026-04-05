@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ==================== FORM VIEW INHERITANCE ==================== -->
+
+    <record id="ron_daily_production_view_form_lifecycle" model="ir.ui.view">
+        <field name="name">ron.daily.production.form.lifecycle</field>
+        <field name="model">ron.daily.production</field>
+        <field name="inherit_id" ref="adi_simple_production_cost.ron_daily_production_view_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Bouton "Remettre en Brouillon" : visible sur tous les états sauf draft, avec confirmation -->
+            <button name="action_reset_draft" position="attributes">
+                <attribute name="invisible">state == 'draft'</attribute>
+                <attribute name="class">btn-warning</attribute>
+                <attribute name="icon">fa-undo</attribute>
+                <attribute name="confirm">Cela va annuler tous les documents générés (BL, achats, factures) et créer des retours de stock si nécessaire. Continuer ?</attribute>
+                <attribute name="groups">adi_simple_production_cost.group_ron_production_manager</attribute>
+            </button>
+
+            <!-- Smart button : Retours de stock -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_return_pickings"
+                        type="object" class="oe_stat_button" icon="fa-undo"
+                        invisible="return_picking_count == 0">
+                    <field name="return_picking_count" widget="statinfo" string="Retours"/>
+                </button>
+            </xpath>
+
+            <!-- Verrouiller les champs quand state != 'draft' -->
+            <field name="production_date" position="attributes">
+                <attribute name="readonly">state != 'draft'</attribute>
+            </field>
+
+            <field name="production_type" position="attributes">
+                <attribute name="readonly">state != 'draft'</attribute>
+            </field>
+
+            <field name="consumption_line_ids" position="attributes">
+                <attribute name="readonly">state != 'draft'</attribute>
+            </field>
+
+            <field name="scrap_line_ids" position="attributes">
+                <attribute name="readonly">state != 'draft'</attribute>
+            </field>
+
+            <field name="paste_line_ids" position="attributes">
+                <attribute name="readonly">state != 'draft'</attribute>
+            </field>
+
+            <field name="finished_product_ids" position="attributes">
+                <attribute name="readonly">state != 'draft'</attribute>
+            </field>
+
+            <!-- Emballage SOLO/CLASSICO -->
+            <field name="emballage_solo_qty" position="attributes">
+                <attribute name="readonly">state != 'draft'</attribute>
+            </field>
+            <field name="emballage_solo_unit_cost" position="attributes">
+                <attribute name="readonly">state != 'draft'</attribute>
+            </field>
+            <field name="emballage_classico_qty" position="attributes">
+                <attribute name="readonly">state != 'draft'</attribute>
+            </field>
+            <field name="emballage_classico_unit_cost" position="attributes">
+                <attribute name="readonly">state != 'draft'</attribute>
+            </field>
+            <field name="film_solo_qty" position="attributes">
+                <attribute name="readonly">state != 'draft'</attribute>
+            </field>
+            <field name="film_solo_unit_cost" position="attributes">
+                <attribute name="readonly">state != 'draft'</attribute>
+            </field>
+            <field name="film_classico_qty" position="attributes">
+                <attribute name="readonly">state != 'draft'</attribute>
+            </field>
+            <field name="film_classico_unit_cost" position="attributes">
+                <attribute name="readonly">state != 'draft'</attribute>
+            </field>
+
+            <!-- Emballage SANDWICH GF -->
+            <field name="emballage_sandwich_qty" position="attributes">
+                <attribute name="readonly">state != 'draft'</attribute>
+            </field>
+            <field name="emballage_sandwich_unit_cost" position="attributes">
+                <attribute name="readonly">state != 'draft'</attribute>
+            </field>
+            <field name="film_sandwich_qty" position="attributes">
+                <attribute name="readonly">state != 'draft'</attribute>
+            </field>
+            <field name="film_sandwich_unit_cost" position="attributes">
+                <attribute name="readonly">state != 'draft'</attribute>
+            </field>
+
+        </field>
+    </record>
+
+</odoo>

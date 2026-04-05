@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Reusable stamp block -->
+    <template id="stamp_block" name="Invoice Stamp Block">
+        <t t-set="company" t-value="o.company_id"/>
+        <t t-if="company.stamp_show and company.stamp_image">
+            <t t-set="dims" t-value="company._get_stamp_dimensions()"/>
+            <t t-set="w" t-value="dims[0]"/>
+            <t t-set="h" t-value="dims[1]"/>
+            <div style="text-align: right; margin-top: 15px; page-break-inside: avoid;">
+                <img t-att-src="image_data_uri(company.stamp_image)"
+                     t-attf-style="max-width: #{w}cm; max-height: #{h}cm; width: auto; height: auto; object-fit: contain;"
+                     alt="Cachet"/>
+            </div>
+        </t>
+    </template>
+
+    <!-- Inherit standard account.report_invoice_document -->
+    <template id="report_invoice_stamp_standard"
+              inherit_id="account.report_invoice_document"
+              name="Stamp on Standard Invoice">
+        <xpath expr="//div[@name='qr_code_placeholder']" position="before">
+            <t t-call="adi_invoice_stamp.stamp_block"/>
+        </xpath>
+    </template>
+
+    <!-- Inherit adi_dz_reports custom invoice -->
+    <template id="report_invoice_stamp_adi"
+              inherit_id="adi_dz_reports.adi_report_invoice_document"
+              name="Stamp on ADI Invoice">
+        <xpath expr="//p[@name='montant_en_lettre']" position="after">
+            <t t-call="adi_invoice_stamp.stamp_block"/>
+        </xpath>
+    </template>
+</odoo>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_stamp" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.stamp</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="account.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//app[@string='Invoicing']" position="inside">
+                <block title="Cachet et Signature" name="stamp_settings">
+                    <setting id="stamp_setting" string="Cachet / Signature sur les factures"
+                             help="Ajouter automatiquement un cachet ou une signature scannée sur les rapports de factures PDF.">
+                        <field name="stamp_show"/>
+                        <div class="content-group" invisible="not stamp_show">
+                            <div class="row mt16">
+                                <label for="stamp_image" class="col-lg-3 o_light_label"/>
+                                <field name="stamp_image" widget="image" class="oe_avatar"
+                                       options="{'size': [150, 150]}"/>
+                            </div>
+                            <div class="row mt8">
+                                <label for="stamp_size_mode" class="col-lg-3 o_light_label"/>
+                                <field name="stamp_size_mode"/>
+                            </div>
+                            <div class="row mt8" invisible="stamp_size_mode != 'custom'">
+                                <label for="stamp_width" class="col-lg-3 o_light_label"/>
+                                <field name="stamp_width" class="col-lg-2"/>
+                                <span class="ms-1">cm</span>
+                            </div>
+                            <div class="row mt8" invisible="stamp_size_mode != 'custom'">
+                                <label for="stamp_height" class="col-lg-3 o_light_label"/>
+                                <field name="stamp_height" class="col-lg-2"/>
+                                <span class="ms-1">cm</span>
+                            </div>
+                        </div>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+</odoo>
