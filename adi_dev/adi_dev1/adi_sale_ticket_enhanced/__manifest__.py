@@ -11,10 +11,12 @@
     'license': 'AGPL-3',
     'depends': [
         'sale',
+        'stock',
     ],
     'data': [
         'reports/sale_ticket_report.xml',
         'reports/report_templates.xml',
+        'views/product_views.xml',
     ],
     'installable': True,
     'auto_install': False,

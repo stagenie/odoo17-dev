@@ -22,31 +22,31 @@
                     </div>
 
                     <!-- Lignes de commande avec N° de ligne -->
-                    <table style="width: 100%; margin-bottom: 8px; border-collapse: collapse; font-size: 9px;">
+                    <table style="width: 100%; margin-bottom: 8px; border-collapse: collapse; font-size: 9px; table-layout: fixed;">
                         <thead>
                             <tr style="border-bottom: 1px solid #000;">
-                                <th style="padding: 2px 1px; width: 8%; text-align: center;">N°</th>
-                                <th style="padding: 2px 2px; width: 37%; text-align: left;">Article</th>
-                                <th style="padding: 2px 1px; width: 13%; text-align: right;">Qté</th>
-                                <th style="padding: 2px 1px; width: 20%; text-align: right;">PU</th>
-                                <th style="padding: 2px 1px; width: 22%; text-align: right;">Montant</th>
+                                <th style="padding: 1px 1px; width: 7%; text-align: center;">N°</th>
+                                <th style="padding: 1px 2px; width: 47%; text-align: left;">Article</th>
+                                <th style="padding: 1px 1px; width: 8%; text-align: right;">Qté</th>
+                                <th style="padding: 1px 1px; width: 18%; text-align: right;">PU</th>
+                                <th style="padding: 1px 1px; width: 20%; text-align: right;">Montant</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr t-foreach="o.order_line" t-as="line" style="border-bottom: 1px dotted #ccc;">
-                                <td style="padding: 2px 1px; text-align: center;">
+                            <tr t-foreach="o.order_line" t-as="line" style="border-bottom: 1px dotted #ccc; line-height: 1.0;">
+                                <td style="padding: 1px 1px; text-align: center;">
                                     <span t-esc="line_index + 1"/>
                                 </td>
-                                <td style="padding: 1px 2px; line-height: 1.0; word-break: break-word;">
+                                <td style="padding: 1px 2px; max-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                                     <span t-field="line.product_id.name"/>
                                 </td>
-                                <td style="padding: 2px 1px; text-align: right;">
+                                <td style="padding: 1px 1px; text-align: right;">
                                     <span t-field="line.product_uom_qty" t-options='{"widget": "integer"}'/>
                                 </td>
-                                <td style="padding: 2px 1px; text-align: right;">
+                                <td style="padding: 1px 1px; text-align: right;">
                                     <span t-field="line.price_unit" t-options='{"widget": "float", "precision": 2}'/>
                                 </td>
-                                <td style="padding: 2px 1px; text-align: right;">
+                                <td style="padding: 1px 1px; text-align: right;">
                                     <span t-field="line.price_subtotal" t-options='{"widget": "float", "precision": 2}'/>
                                 </td>
                             </tr>

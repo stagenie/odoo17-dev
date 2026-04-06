@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Afficher la liste des produits en mode liste par défaut (menu Inventaire) -->
+    <record id="product.product_template_action_all" model="ir.actions.act_window">
+        <field name="view_mode">tree,kanban,form</field>
+    </record>
+
+    <!-- Afficher la liste des produits en mode liste par défaut (menu Ventes) -->
+    <record id="sale.product_template_action" model="ir.actions.act_window">
+        <field name="view_mode">tree,kanban,form,activity</field>
+        <field name="view_id" eval="False"/>
+    </record>
+
+    <!-- Afficher la liste des produits en mode liste par défaut (menu Inventaire) -->
+    <record id="stock.product_template_action_product" model="ir.actions.act_window">
+        <field name="view_mode">tree,kanban,form</field>
+    </record>
+</odoo>
