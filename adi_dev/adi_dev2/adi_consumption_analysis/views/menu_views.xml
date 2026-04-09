@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ===== Menu : Analyse des Consommations ===== -->
+    <menuitem id="menu_ron_consumption_analysis"
+              name="Analyse Consommations"
+              parent="adi_simple_production_cost.spc_production_menu_reports"
+              action="action_ron_consumption_analysis"
+              sequence="20"/>
+
+    <!-- ===== Menu : Imprimer Rapport Consommation ===== -->
+    <menuitem id="menu_ron_print_consumption_report"
+              name="Imprimer Rapport Consommation"
+              parent="adi_simple_production_cost.spc_production_menu_reports"
+              action="action_ron_print_consumption_report_wizard"
+              sequence="30"/>
+
+</odoo>

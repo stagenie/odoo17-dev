@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ==================== VUE PIVOT ==================== -->
+    <record id="view_ron_consumption_analysis_pivot" model="ir.ui.view">
+        <field name="name">ron.consumption.analysis.pivot</field>
+        <field name="model">ron.consumption.analysis</field>
+        <field name="arch" type="xml">
+            <pivot string="Analyse des Consommations"
+                   sample="1"
+                   display_quantity="1">
+                <field name="product_id" type="row"/>
+                <field name="production_date" interval="month" type="col"/>
+                <field name="weight_kg" type="measure"/>
+                <field name="total_cost" type="measure"/>
+                <field name="quantity" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- ==================== VUE GRAPH ==================== -->
+    <record id="view_ron_consumption_analysis_graph" model="ir.ui.view">
+        <field name="name">ron.consumption.analysis.graph</field>
+        <field name="model">ron.consumption.analysis</field>
+        <field name="arch" type="xml">
+            <graph string="Analyse des Consommations"
+                   type="bar"
+                   sample="1"
+                   stacked="1">
+                <field name="product_id"/>
+                <field name="production_date" interval="month"/>
+                <field name="weight_kg" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- ==================== VUE TREE ==================== -->
+    <record id="view_ron_consumption_analysis_tree" model="ir.ui.view">
+        <field name="name">ron.consumption.analysis.tree</field>
+        <field name="model">ron.consumption.analysis</field>
+        <field name="arch" type="xml">
+            <tree string="Consommations" create="false" edit="false" delete="false">
+                <field name="production_date"/>
+                <field name="production_id"/>
+                <field name="production_type"/>
+                <field name="product_id"/>
+                <field name="product_category_id" optional="hide"/>
+                <field name="quantity" sum="Total Qté"/>
+                <field name="product_uom_id" optional="show"/>
+                <field name="weight_kg" sum="Total Kg"/>
+                <field name="unit_cost" optional="hide"/>
+                <field name="total_cost" sum="Total Coût"/>
+                <field name="total_cartons_produced" optional="hide" sum="Cartons"/>
+                <field name="consumption_per_carton" optional="hide"/>
+                <field name="currency_id" invisible="1"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ==================== VUE SEARCH ==================== -->
+    <record id="view_ron_consumption_analysis_search" model="ir.ui.view">
+        <field name="name">ron.consumption.analysis.search</field>
+        <field name="model">ron.consumption.analysis</field>
+        <field name="arch" type="xml">
+            <search string="Recherche Consommations">
+                <field name="product_id" string="Matière Première"/>
+                <field name="production_id"/>
+                <field name="product_category_id"/>
+                <field name="production_date"/>
+
+                <!-- Filtre Date (Mois / Année / Intervalle personnalisé) -->
+                <filter name="filter_date_production"
+                        string="Date de Production"
+                        date="production_date"
+                        default_period="this_month"/>
+
+                <separator/>
+
+                <!-- Filtres Période rapides -->
+                <filter name="filter_today"
+                        string="Aujourd'hui"
+                        domain="[('production_date', '=', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter name="filter_this_week"
+                        string="Cette Semaine"
+                        domain="[('production_date', '&gt;=', (context_today() - datetime.timedelta(days=context_today().weekday())).strftime('%Y-%m-%d'))]"/>
+                <filter name="filter_last_month"
+                        string="Mois Précédent"
+                        domain="[
+                            ('production_date', '&gt;=', ((context_today().replace(day=1)) - relativedelta(months=1)).strftime('%Y-%m-%d')),
+                            ('production_date', '&lt;', (context_today().replace(day=1)).strftime('%Y-%m-%d'))
+                        ]"/>
+
+                <separator/>
+
+                <!-- Filtres Type de Production -->
+                <filter name="filter_solo_classico"
+                        string="SOLO / CLASSICO"
+                        domain="[('production_type', '=', 'solo_classico')]"/>
+                <filter name="filter_sandwich_gf"
+                        string="Sandwich GF"
+                        domain="[('production_type', '=', 'sandwich_gf')]"/>
+
+                <separator/>
+
+                <!-- État -->
+                <filter name="filter_state_done"
+                        string="Terminées"
+                        domain="[('production_state', '=', 'done')]"/>
+                <filter name="filter_state_confirmed"
+                        string="Confirmées"
+                        domain="[('production_state', 'in', ('confirmed', 'validated', 'done'))]"/>
+
+                <!-- Groupement -->
+                <group expand="1" string="Regrouper Par">
+                    <filter name="group_product"
+                            string="Matière Première"
+                            context="{'group_by': 'product_id'}"/>
+                    <filter name="group_category"
+                            string="Catégorie"
+                            context="{'group_by': 'product_category_id'}"/>
+                    <filter name="group_production_type"
+                            string="Type de Production"
+                            context="{'group_by': 'production_type'}"/>
+                    <filter name="group_day"
+                            string="Jour"
+                            context="{'group_by': 'production_date:day'}"/>
+                    <filter name="group_week"
+                            string="Semaine"
+                            context="{'group_by': 'production_date:week'}"/>
+                    <filter name="group_month"
+                            string="Mois"
+                            context="{'group_by': 'production_date:month'}"/>
+                    <filter name="group_year"
+                            string="Année"
+                            context="{'group_by': 'production_date:year'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ==================== ACTION ==================== -->
+    <record id="action_ron_consumption_analysis" model="ir.actions.act_window">
+        <field name="name">Analyse des Consommations</field>
+        <field name="res_model">ron.consumption.analysis</field>
+        <field name="view_mode">pivot,graph,tree</field>
+        <field name="search_view_id" ref="view_ron_consumption_analysis_search"/>
+        <field name="context">{
+            'search_default_filter_date_production': 1,
+            'search_default_group_product': 1,
+            'search_default_group_month': 1,
+        }</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Aucune consommation à analyser.
+            </p>
+            <p>
+                Cette vue permet d'analyser les consommations de matières premières
+                par période (jour, mois, année), par produit ou par type de production.
+                Utilisez les boutons <b>Pivot</b> et <b>Graph</b> pour explorer les données,
+                ou le wizard <b>Imprimer Rapport Consommation</b> pour générer un PDF.
+            </p>
+        </field>
+    </record>
+
+</odoo>

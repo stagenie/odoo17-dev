@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ========== Action Rapport ========== -->
+    <record id="action_report_consumption_period" model="ir.actions.report">
+        <field name="name">Rapport Consommations par Période</field>
+        <field name="model">ron.print.consumption.report.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_consumption_analysis.report_consumption_period_document</field>
+        <field name="report_file">adi_consumption_analysis.report_consumption_period_document</field>
+        <field name="print_report_name">'Consommations_%s_%s' % (data.get('date_from'), data.get('date_to'))</field>
+    </record>
+
+    <!-- ========== Template Rapport ========== -->
+    <template id="report_consumption_period_document">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="page">
+                    <!-- En-tête -->
+                    <div class="text-center mb-4">
+                        <h2 style="margin-bottom: 5px;">RAPPORT DE CONSOMMATIONS</h2>
+                        <h4 style="color: #666;">Matières Premières par Période</h4>
+                    </div>
+
+                    <!-- Informations Période -->
+                    <table class="table table-sm mb-3" style="background-color: #f8f9fa;">
+                        <tr>
+                            <td style="width: 25%;">
+                                <strong>Du :</strong>
+                                <span t-esc="data.get('date_from')" t-options="{'widget': 'date'}"/>
+                            </td>
+                            <td style="width: 25%;">
+                                <strong>Au :</strong>
+                                <span t-esc="data.get('date_to')" t-options="{'widget': 'date'}"/>
+                            </td>
+                            <td style="width: 25%;">
+                                <strong>Type :</strong>
+                                <span t-esc="data.get('production_type')"/>
+                            </td>
+                            <td style="width: 25%;">
+                                <strong>Société :</strong>
+                                <span t-esc="data.get('company_name')"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="4">
+                                <strong>Portée :</strong>
+                                <t t-if="data.get('all_products')">Tous les articles consommés</t>
+                                <t t-else="">Articles sélectionnés</t>
+                                <t t-if="data.get('only_done')"> — Productions terminées uniquement</t>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- Tableau des Consommations -->
+                    <h5 style="background-color: #0d6efd; color: white; padding: 8px 12px; margin-bottom: 0;">
+                        CONSOMMATIONS PAR ARTICLE
+                    </h5>
+                    <table class="table table-sm table-bordered">
+                        <thead style="background-color: #e9ecef;">
+                            <tr>
+                                <th style="width: 5%;" class="text-center">#</th>
+                                <th style="width: 12%;">Réf.</th>
+                                <th style="width: 30%;">Article</th>
+                                <th style="width: 13%;" class="text-end">Quantité</th>
+                                <th style="width: 10%;">UdM</th>
+                                <th style="width: 15%;" class="text-end">Poids (kg)</th>
+                                <th style="width: 15%;" class="text-end">Coût Total</th>
+                                <th t-if="data.get('include_mp_per_finished')"
+                                    style="width: 15%;" class="text-end">Kg / Carton</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-set="idx" t-value="0"/>
+                            <t t-foreach="data.get('lines') or []" t-as="line">
+                                <t t-set="idx" t-value="idx + 1"/>
+                                <tr>
+                                    <td class="text-center"><t t-esc="idx"/></td>
+                                    <td><t t-esc="line.get('product_default_code')"/></td>
+                                    <td><t t-esc="line.get('product_name')"/></td>
+                                    <td class="text-end">
+                                        <t t-esc="'{:,.2f}'.format(line.get('quantity') or 0.0)"/>
+                                    </td>
+                                    <td><t t-esc="line.get('uom_name')"/></td>
+                                    <td class="text-end">
+                                        <t t-esc="'{:,.2f}'.format(line.get('weight_kg') or 0.0)"/>
+                                    </td>
+                                    <td class="text-end">
+                                        <t t-esc="'{:,.2f}'.format(line.get('total_cost') or 0.0)"/>
+                                        <t t-esc="data.get('currency_symbol')"/>
+                                    </td>
+                                    <td t-if="data.get('include_mp_per_finished')" class="text-end">
+                                        <t t-esc="'{:,.4f}'.format(line.get('mp_per_carton') or 0.0)"/>
+                                    </td>
+                                </tr>
+                            </t>
+                            <t t-if="not data.get('lines')">
+                                <tr>
+                                    <td colspan="8" class="text-center text-muted">
+                                        <em>Aucune consommation trouvée pour cette période.</em>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                        <tfoot t-if="data.get('lines')" style="background-color: #f8f9fa;">
+                            <tr style="font-weight: bold;">
+                                <td colspan="3" class="text-end">TOTAL</td>
+                                <td class="text-end">
+                                    <t t-esc="'{:,.2f}'.format(data.get('grand_total_qty') or 0.0)"/>
+                                </td>
+                                <td></td>
+                                <td class="text-end">
+                                    <t t-esc="'{:,.2f}'.format(data.get('grand_total_weight') or 0.0)"/>
+                                </td>
+                                <td class="text-end">
+                                    <t t-esc="'{:,.2f}'.format(data.get('grand_total_cost') or 0.0)"/>
+                                    <t t-esc="data.get('currency_symbol')"/>
+                                </td>
+                                <td t-if="data.get('include_mp_per_finished')"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                    <!-- Résumé -->
+                    <div class="row mt-4" t-if="data.get('lines')">
+                        <div class="col-6">
+                            <table class="table table-sm table-bordered">
+                                <tr>
+                                    <td><strong>Nombre d'articles</strong></td>
+                                    <td class="text-end">
+                                        <t t-esc="data.get('line_count')"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Total cartons produits</strong></td>
+                                    <td class="text-end">
+                                        <t t-esc="'{:,.2f}'.format(data.get('total_cartons') or 0.0)"/>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-6">
+                            <table class="table table-sm table-bordered">
+                                <tr style="background-color: #e9ecef;">
+                                    <td><strong>Total Poids Consommé</strong></td>
+                                    <td class="text-end">
+                                        <strong>
+                                            <t t-esc="'{:,.2f}'.format(data.get('grand_total_weight') or 0.0)"/> kg
+                                        </strong>
+                                    </td>
+                                </tr>
+                                <tr style="background-color: #e9ecef;">
+                                    <td><strong>Total Coût</strong></td>
+                                    <td class="text-end">
+                                        <strong>
+                                            <t t-esc="'{:,.2f}'.format(data.get('grand_total_cost') or 0.0)"/>
+                                            <t t-esc="data.get('currency_symbol')"/>
+                                        </strong>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+
+</odoo>

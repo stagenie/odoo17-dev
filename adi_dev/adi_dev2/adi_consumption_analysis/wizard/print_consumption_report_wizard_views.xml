@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Vue Formulaire Wizard -->
+    <record id="view_ron_print_consumption_report_wizard_form" model="ir.ui.view">
+        <field name="name">ron.print.consumption.report.wizard.form</field>
+        <field name="model">ron.print.consumption.report.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Rapport Consommations par Période">
+                <sheet>
+                    <group>
+                        <group string="Période">
+                            <field name="date_from"/>
+                            <field name="date_to"/>
+                        </group>
+                        <group string="Filtres">
+                            <field name="production_type"/>
+                            <field name="only_done"/>
+                            <field name="include_mp_per_finished"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <group string="Articles">
+                        <field name="all_products"/>
+                        <field name="product_ids"
+                               widget="many2many_tags"
+                               options="{'no_create': True}"
+                               invisible="all_products"
+                               required="not all_products"/>
+                    </group>
+                </sheet>
+                <footer>
+                    <button name="action_print_report"
+                            string="Imprimer PDF"
+                            type="object"
+                            class="btn-primary"/>
+                    <button name="action_open_analysis"
+                            string="Voir Analyse (Pivot/Graph)"
+                            type="object"
+                            class="btn-secondary"/>
+                    <button string="Annuler" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action Wizard -->
+    <record id="action_ron_print_consumption_report_wizard" model="ir.actions.act_window">
+        <field name="name">Imprimer Rapport Consommation</field>
+        <field name="res_model">ron.print.consumption.report.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>
