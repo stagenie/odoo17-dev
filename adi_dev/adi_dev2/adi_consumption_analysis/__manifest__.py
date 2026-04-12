@@ -38,6 +38,9 @@ Exemple: Total Consommation de Farine - Mars 2026 - 200 Tonnes
         # Vues analyse
         'views/ron_consumption_analysis_views.xml',
 
+        # Héritage vues production journalière (ajout totaux)
+        'views/ron_daily_production_inherit_views.xml',
+
         # Wizard (doit être chargé avant les menus qui le référencent)
         'wizard/print_consumption_report_wizard_views.xml',
 

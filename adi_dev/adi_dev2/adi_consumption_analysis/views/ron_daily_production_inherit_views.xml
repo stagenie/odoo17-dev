@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Héritage de la vue liste Productions Journalières -->
+    <!-- Ajout des totaux (sum) sur les colonnes numériques/montants -->
+    <record id="ron_daily_production_view_tree_inherit" model="ir.ui.view">
+        <field name="name">ron.daily.production.tree.inherit.consumption</field>
+        <field name="model">ron.daily.production</field>
+        <field name="inherit_id" ref="adi_simple_production_cost.ron_daily_production_view_tree"/>
+        <field name="arch" type="xml">
+
+            <field name="total_consumption_weight" position="attributes">
+                <attribute name="sum">Total Poids Conso.</attribute>
+            </field>
+
+            <field name="good_weight" position="attributes">
+                <attribute name="sum">Total Poids Bon</attribute>
+            </field>
+
+            <field name="total_cartons_produced" position="attributes">
+                <attribute name="sum">Total Cartons</attribute>
+            </field>
+
+            <field name="qty_solo_cartons" position="attributes">
+                <attribute name="sum">Total SOLO</attribute>
+            </field>
+
+            <field name="qty_classico_cartons" position="attributes">
+                <attribute name="sum">Total CLASSICO</attribute>
+            </field>
+
+            <field name="qty_sandwich_cartons" position="attributes">
+                <attribute name="sum">Total Sandwich</attribute>
+            </field>
+
+            <field name="total_consumption_cost" position="attributes">
+                <attribute name="sum">Total Coût MP</attribute>
+            </field>
+
+            <field name="total_packaging_cost" position="attributes">
+                <attribute name="sum">Total Coût Emb.</attribute>
+            </field>
+
+            <field name="total_good_cost" position="attributes">
+                <attribute name="sum">Total Coût</attribute>
+            </field>
+
+        </field>
+    </record>
+
+</odoo>
