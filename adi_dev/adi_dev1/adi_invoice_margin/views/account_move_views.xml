@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ================================================================
+         Form view — extend account.view_move_form
+         Add margin fields in the totals footer, visible only on
+         customer invoices and credit notes.
+         ================================================================ -->
+    <record id="view_move_form_inherit_margin" model="ir.ui.view">
+        <field name="name">account.move.form.inherit.margin</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <!-- Insert margin rows just before the payment widget inside
+                 the .oe_subtotal_footer group. -->
+            <xpath expr="//field[@name='invoice_payments_widget']" position="before">
+                <field name="currency_id" invisible="1"/>
+                <field
+                    name="margin"
+                    string="Marge"
+                    widget="monetary"
+                    options="{'currency_field': 'currency_id'}"
+                    invisible="move_type not in ('out_invoice', 'out_refund')"
+                />
+                <field
+                    name="margin_percent"
+                    string="Marge (%)"
+                    invisible="move_type not in ('out_invoice', 'out_refund')"
+                />
+            </xpath>
+
+            <!-- Invoice lines tree: add purchase_price and margin columns
+                 as optional-hide so they do not clutter by default.
+                 Target only the tree subview's price_subtotal (not kanban). -->
+            <xpath expr="//field[@name='invoice_line_ids']/tree/field[@name='price_subtotal']" position="after">
+                <field
+                    name="purchase_price"
+                    string="Coût"
+                    optional="hide"
+                    column_invisible="parent.move_type not in ('out_invoice', 'out_refund')"
+                />
+                <field
+                    name="margin"
+                    string="Marge"
+                    optional="hide"
+                    column_invisible="parent.move_type not in ('out_invoice', 'out_refund')"
+                />
+                <field
+                    name="margin_percent"
+                    string="Marge (%)"
+                    optional="hide"
+                    column_invisible="parent.move_type not in ('out_invoice', 'out_refund')"
+                />
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ================================================================
+         Tree (list) view — extend account.view_invoice_tree
+         Add margin and margin_percent as optional-hide columns.
+         ================================================================ -->
+    <record id="view_invoice_tree_inherit_margin" model="ir.ui.view">
+        <field name="name">account.invoice.tree.inherit.margin</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_invoice_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='amount_total_signed']" position="after">
+                <field
+                    name="margin"
+                    string="Marge"
+                    optional="hide"
+                />
+                <field
+                    name="margin_percent"
+                    string="Marge (%)"
+                    optional="hide"
+                />
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ================================================================
+         Search view — extend account.view_account_invoice_filter
+         Add filter for negative margin invoices.
+         ================================================================ -->
+    <record id="view_account_invoice_filter_inherit_margin" model="ir.ui.view">
+        <field name="name">account.invoice.filter.inherit.margin</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_account_invoice_filter"/>
+        <field name="arch" type="xml">
+            <!-- Append negative-margin filter after the existing separator
+                 that follows the date filters. -->
+            <xpath expr="//search/filter[@name='late']" position="after">
+                <separator/>
+                <filter
+                    name="negative_margin"
+                    string="Marge négative"
+                    domain="[('margin', '&lt;', 0), ('move_type', 'in', ('out_invoice', 'out_refund'))]"
+                />
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

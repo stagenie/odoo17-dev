@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ================================================================
+         Pivot view — extend account.view_account_invoice_report_pivot
+         Add margin_percent as an available measure.
+         (price_margin is already available; margin_percent is the new field
+         we added via _select() override.)
+         ================================================================ -->
+    <record id="view_invoice_report_pivot_inherit_margin" model="ir.ui.view">
+        <field name="name">account.invoice.report.pivot.inherit.margin</field>
+        <field name="model">account.invoice.report</field>
+        <field name="inherit_id" ref="account.view_account_invoice_report_pivot"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='price_subtotal']" position="after">
+                <field name="margin" type="measure" string="Marge"/>
+                <field name="margin_percent" type="measure" string="Marge (%)"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ================================================================
+         Graph view — extend account.view_account_invoice_report_graph
+         Add price_margin as an available measure.
+         ================================================================ -->
+    <record id="view_invoice_report_graph_inherit_margin" model="ir.ui.view">
+        <field name="name">account.invoice.report.graph.inherit.margin</field>
+        <field name="model">account.invoice.report</field>
+        <field name="inherit_id" ref="account.view_account_invoice_report_graph"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='price_subtotal']" position="after">
+                <field name="margin" type="measure" string="Marge"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
