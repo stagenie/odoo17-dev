@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Action report -->
+    <record id="action_report_general_situation" model="ir.actions.report">
+        <field name="name">Situation Générale</field>
+        <field name="model">general.situation</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_general_situation.report_general_situation_document</field>
+        <field name="report_file">adi_general_situation.report_general_situation_document</field>
+        <field name="paperformat_id" ref="base.paperformat_euro"/>
+        <field name="print_report_name">'Situation_%s_%s' % (object.date_from, object.date_to)</field>
+    </record>
+
+    <!-- Template principal du rapport PDF -->
+    <template id="report_general_situation_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <div class="page">
+
+                        <!-- ───────────────────────────────────── EN-TÊTE ── -->
+                        <div class="text-center" style="margin-bottom: 30px;">
+                            <h1 style="font-size: 28px; font-weight: bold; color: #212529; letter-spacing: 2px; margin-bottom: 8px;">
+                                SITUATION GÉNÉRALE
+                            </h1>
+                            <h4 style="color: #666; font-weight: normal; margin-bottom: 6px;">
+                                Du <span t-field="doc.date_from" t-options="{'widget': 'date'}"/>
+                                au <span t-field="doc.date_to" t-options="{'widget': 'date'}"/>
+                            </h4>
+                            <p style="color: #444; margin: 0;">
+                                Société : <strong><span t-field="doc.company_id.name"/></strong>
+                            </p>
+                        </div>
+
+                        <!-- ─────────────────────────────────────── BALANCE ── -->
+                        <h3 style="background: #0d6efd; color: white; padding: 10px 14px; border-radius: 4px; margin-bottom: 0; font-size: 16px; letter-spacing: 1px;">
+                            BALANCE
+                        </h3>
+
+                        <table style="width: 100%; font-size: 14px; border-collapse: collapse; margin-bottom: 0;">
+                            <tr style="border-bottom: 1px solid #dee2e6;">
+                                <td style="padding: 10px 14px; width: 60%; color: #333;">Trésorerie (Caisses)</td>
+                                <td style="padding: 10px 14px; text-align: right; font-size: 16px; font-weight: 500; color: #198754;">
+                                    +&#160;<span t-field="doc.cash_balance" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                                </td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #dee2e6;">
+                                <td style="padding: 10px 14px; color: #333;">Valeur Stock Actuel</td>
+                                <td style="padding: 10px 14px; text-align: right; font-size: 16px; font-weight: 500; color: #198754;">
+                                    +&#160;<span t-field="doc.stock_value" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                                </td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #dee2e6;">
+                                <td style="padding: 10px 14px; color: #333;">Créances Clients</td>
+                                <td style="padding: 10px 14px; text-align: right; font-size: 16px; font-weight: 500; color: #198754;">
+                                    +&#160;<span t-field="doc.receivables_total" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                                </td>
+                            </tr>
+                            <tr style="border-bottom: 2px solid #0d6efd;">
+                                <td style="padding: 10px 14px; color: #333;">Dettes Fournisseurs</td>
+                                <td style="padding: 10px 14px; text-align: right; font-size: 16px; font-weight: 500; color: #dc3545;">
+                                    −&#160;<span t-field="doc.payables_total" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- Total balance — vert si positif, rouge si négatif -->
+                        <t t-if="doc.balance_net >= 0">
+                            <div style="border: 3px solid #198754; border-radius: 8px; padding: 18px 24px; text-align: center; margin: 16px 0 28px 0; background: #f0fff4;">
+                                <div style="font-size: 15px; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">
+                                    Balance Nette
+                                </div>
+                                <div style="font-size: 36px; font-weight: bold; color: #198754;">
+                                    <span t-field="doc.balance_net" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                                </div>
+                            </div>
+                        </t>
+                        <t t-else="">
+                            <div style="border: 3px solid #dc3545; border-radius: 8px; padding: 18px 24px; text-align: center; margin: 16px 0 28px 0; background: #fff5f5;">
+                                <div style="font-size: 15px; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">
+                                    Balance Nette
+                                </div>
+                                <div style="font-size: 36px; font-weight: bold; color: #dc3545;">
+                                    <span t-field="doc.balance_net" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                                </div>
+                            </div>
+                        </t>
+
+                        <!-- ─────────────────────────────────────── BÉNÉFICE ── -->
+                        <h3 style="background: #fd7e14; color: white; padding: 10px 14px; border-radius: 4px; margin-bottom: 0; font-size: 16px; letter-spacing: 1px;">
+                            BÉNÉFICE
+                        </h3>
+
+                        <table style="width: 100%; font-size: 14px; border-collapse: collapse; margin-bottom: 0;">
+                            <tr style="border-bottom: 1px solid #dee2e6;">
+                                <td style="padding: 10px 14px; width: 60%; color: #333;">Marge Brute (Factures)</td>
+                                <td style="padding: 10px 14px; text-align: right; font-size: 16px; font-weight: 500; color: #198754;">
+                                    +&#160;<span t-field="doc.gross_margin" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                                </td>
+                            </tr>
+                            <tr style="border-bottom: 2px solid #fd7e14;">
+                                <td style="padding: 10px 14px; color: #333;">Total Frais (Dépenses)</td>
+                                <td style="padding: 10px 14px; text-align: right; font-size: 16px; font-weight: 500; color: #dc3545;">
+                                    −&#160;<span t-field="doc.expenses_total" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- Total bénéfice — vert si positif, rouge si négatif -->
+                        <t t-if="doc.profit_net >= 0">
+                            <div style="border: 3px solid #198754; border-radius: 8px; padding: 18px 24px; text-align: center; margin: 16px 0 28px 0; background: #f0fff4;">
+                                <div style="font-size: 15px; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">
+                                    Bénéfice Net
+                                </div>
+                                <div style="font-size: 36px; font-weight: bold; color: #198754;">
+                                    <span t-field="doc.profit_net" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                                </div>
+                            </div>
+                        </t>
+                        <t t-else="">
+                            <div style="border: 3px solid #dc3545; border-radius: 8px; padding: 18px 24px; text-align: center; margin: 16px 0 28px 0; background: #fff5f5;">
+                                <div style="font-size: 15px; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">
+                                    Bénéfice Net
+                                </div>
+                                <div style="font-size: 36px; font-weight: bold; color: #dc3545;">
+                                    <span t-field="doc.profit_net" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                                </div>
+                            </div>
+                        </t>
+
+                        <!-- ──────────────────────────────────────── PIED DE PAGE ── -->
+                        <div style="margin-top: 40px; border-top: 1px solid #dee2e6; padding-top: 10px; font-size: 11px; color: #999; text-align: right;">
+                            Imprimé le
+                            <span t-esc="time.strftime('%d/%m/%Y')"/>
+                            par <span t-esc="user.name"/>
+                        </div>
+
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+</odoo>

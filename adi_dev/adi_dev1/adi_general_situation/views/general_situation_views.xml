@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ================================================================
+         Form view — Situation Générale (plein écran, target='current')
+         ================================================================ -->
+    <record id="view_general_situation_form" model="ir.ui.view">
+        <field name="name">general.situation.form</field>
+        <field name="model">general.situation</field>
+        <field name="arch" type="xml">
+            <form string="Situation Générale">
+
+                <sheet>
+
+                    <!-- ─── Titre principal ────────────────────────────── -->
+                    <div class="oe_title text-center mb-3">
+                        <h1 style="font-size: 32px; font-weight: 600;">
+                            Situation Générale
+                        </h1>
+                    </div>
+
+                    <!-- ─── 1. Filtres de période ──────────────────────── -->
+                    <group>
+                        <group string="Période">
+                            <field name="period_preset"/>
+                            <field name="date_from"
+                                   readonly="period_preset != 'custom'"/>
+                            <field name="date_to"
+                                   readonly="period_preset != 'custom'"/>
+                        </group>
+                        <group string="Société">
+                            <field name="company_id"
+                                   groups="base.group_multi_company"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="last_computed" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <!-- ─── 2. Boutons d'action (après les filtres) ────── -->
+                    <div class="text-center my-4">
+                        <button name="action_calculate"
+                                string="🔄 Calculer"
+                                type="object"
+                                class="btn btn-primary btn-lg me-3"
+                                style="min-width: 180px; font-size: 16px;"/>
+                        <button name="action_print_pdf"
+                                string="🖨 Imprimer PDF"
+                                type="object"
+                                class="btn btn-secondary btn-lg"
+                                style="min-width: 180px; font-size: 16px;"/>
+                    </div>
+
+                    <!-- ─── 3. Cartes Balance / Bénéfice (côte-à-côte) ─── -->
+                    <div class="row mt-3">
+
+                        <!-- ╔══════════════ BALANCE ══════════════╗ -->
+                        <div class="col-md-6 col-12 mb-3">
+                            <h3 class="mb-2"
+                                style="background-color: #0d6efd; color: white;
+                                       padding: 12px 16px; border-radius: 6px;
+                                       font-size: 22px; text-align: center;">
+                                BALANCE
+                            </h3>
+                            <div class="border rounded p-3 bg-light">
+                                <table class="table table-borderless mb-0"
+                                       style="font-size: 18px;">
+                                    <tr>
+                                        <td class="text-muted">
+                                            Trésorerie (Caisses)
+                                        </td>
+                                        <td class="text-end fw-semibold text-success">
+                                            +
+                                            <field name="cash_balance"
+                                                   nolabel="1"
+                                                   widget="monetary"
+                                                   readonly="1"
+                                                   class="oe_inline"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted">
+                                            Valeur Stock Actuel
+                                        </td>
+                                        <td class="text-end fw-semibold text-success">
+                                            +
+                                            <field name="stock_value"
+                                                   nolabel="1"
+                                                   widget="monetary"
+                                                   readonly="1"
+                                                   class="oe_inline"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted">
+                                            Créances Clients
+                                        </td>
+                                        <td class="text-end fw-semibold text-success">
+                                            +
+                                            <field name="receivables_total"
+                                                   nolabel="1"
+                                                   widget="monetary"
+                                                   readonly="1"
+                                                   class="oe_inline"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted">
+                                            Dettes Fournisseurs
+                                        </td>
+                                        <td class="text-end fw-semibold text-danger">
+                                            −
+                                            <field name="payables_total"
+                                                   nolabel="1"
+                                                   widget="monetary"
+                                                   readonly="1"
+                                                   class="oe_inline"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2"><hr class="my-2"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold"
+                                            style="font-size: 20px;">
+                                            BALANCE NETTE
+                                        </td>
+                                        <td class="text-end fw-bold text-success"
+                                            style="font-size: 36px;">
+                                            <field name="balance_net"
+                                                   nolabel="1"
+                                                   widget="monetary"
+                                                   readonly="1"
+                                                   class="oe_inline"/>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- ╔══════════════ BÉNÉFICE ══════════════╗ -->
+                        <div class="col-md-6 col-12 mb-3">
+                            <h3 class="mb-2"
+                                style="background-color: #fd7e14; color: white;
+                                       padding: 12px 16px; border-radius: 6px;
+                                       font-size: 22px; text-align: center;">
+                                BÉNÉFICE
+                            </h3>
+                            <div class="border rounded p-3 bg-light">
+                                <table class="table table-borderless mb-0"
+                                       style="font-size: 18px;">
+                                    <tr>
+                                        <td class="text-muted">
+                                            Marge Brute (Factures)
+                                        </td>
+                                        <td class="text-end fw-semibold text-success">
+                                            +
+                                            <field name="gross_margin"
+                                                   nolabel="1"
+                                                   widget="monetary"
+                                                   readonly="1"
+                                                   class="oe_inline"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted">
+                                            Total Frais (Dépenses)
+                                        </td>
+                                        <td class="text-end fw-semibold text-danger">
+                                            −
+                                            <field name="expenses_total"
+                                                   nolabel="1"
+                                                   widget="monetary"
+                                                   readonly="1"
+                                                   class="oe_inline"/>
+                                        </td>
+                                    </tr>
+                                    <!-- Lignes vides pour aligner verticalement
+                                         avec la carte Balance qui en a 4 -->
+                                    <tr><td colspan="2">&#160;</td></tr>
+                                    <tr><td colspan="2">&#160;</td></tr>
+                                    <tr>
+                                        <td colspan="2"><hr class="my-2"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold"
+                                            style="font-size: 20px;">
+                                            BÉNÉFICE NET
+                                        </td>
+                                        <td class="text-end fw-bold text-success"
+                                            style="font-size: 36px;">
+                                            <field name="profit_net"
+                                                   nolabel="1"
+                                                   widget="monetary"
+                                                   readonly="1"
+                                                   class="oe_inline"/>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ================================================================
+         Action — ouvre un nouvel enregistrement TransientModel
+         ================================================================ -->
+    <record id="action_general_situation" model="ir.actions.act_window">
+        <field name="name">Situation Générale</field>
+        <field name="res_model">general.situation</field>
+        <field name="view_mode">form</field>
+        <field name="target">current</field>
+        <field name="context">{}</field>
+    </record>
+
+    <!-- ================================================================
+         Menu
+         ================================================================ -->
+    <menuitem id="menu_general_situation_root"
+              name="Situation Générale"
+              web_icon="adi_general_situation,static/description/icon.png"
+              sequence="50"/>
+
+    <menuitem id="menu_general_situation_main"
+              name="Calculer la Situation"
+              parent="menu_general_situation_root"
+              action="action_general_situation"
+              sequence="10"/>
+
+</odoo>
