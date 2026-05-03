@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Héritage de la vue formulaire wizard pour ajouter content_scope -->
+    <record id="view_ron_print_consumption_report_wizard_form_packaging"
+            model="ir.ui.view">
+        <field name="name">ron.print.consumption.report.wizard.form.packaging</field>
+        <field name="model">ron.print.consumption.report.wizard</field>
+        <field name="inherit_id"
+               ref="adi_consumption_analysis.view_ron_print_consumption_report_wizard_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Insérer content_scope + compute_net_cost avant production_type
+                 (dans le groupe Filtres) -->
+            <xpath expr="//field[@name='production_type']" position="before">
+                <field name="content_scope"/>
+                <field name="compute_net_cost"
+                       invisible="content_scope not in ('all', 'recoverables_only')"/>
+            </xpath>
+
+            <!-- Désactiver include_mp_per_finished en mode packaging_only / recoverables_only -->
+            <xpath expr="//field[@name='include_mp_per_finished']"
+                   position="attributes">
+                <attribute name="invisible">content_scope in ('packaging_only', 'recoverables_only')</attribute>
+            </xpath>
+
+            <!-- Masquer le bloc Articles : on cible le <group> parent du champ
+                 all_products (qui n'existe que dans ce groupe) -->
+            <xpath expr="//field[@name='all_products']/.." position="attributes">
+                <attribute name="invisible">content_scope in ('packaging_only', 'recoverables_only')</attribute>
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>

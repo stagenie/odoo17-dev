@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ====== Tree : ajouter colonnes catégorie + sous-type ====== -->
+    <record id="view_ron_consumption_analysis_tree_packaging" model="ir.ui.view">
+        <field name="name">ron.consumption.analysis.tree.packaging</field>
+        <field name="model">ron.consumption.analysis</field>
+        <field name="inherit_id"
+               ref="adi_consumption_analysis.view_ron_consumption_analysis_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='product_id']" position="before">
+                <field name="consumption_category"
+                       optional="show"
+                       widget="badge"
+                       decoration-info="consumption_category == 'raw_material'"
+                       decoration-warning="consumption_category == 'packaging'"
+                       decoration-success="consumption_category == 'film'"
+                       decoration-danger="consumption_category == 'scrap_recoverable'"
+                       decoration-muted="consumption_category == 'paste_recoverable'"/>
+                <field name="consumption_subtype" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ====== Search : ajouter filtres et group_by catégorie ====== -->
+    <record id="view_ron_consumption_analysis_search_packaging" model="ir.ui.view">
+        <field name="name">ron.consumption.analysis.search.packaging</field>
+        <field name="model">ron.consumption.analysis</field>
+        <field name="inherit_id"
+               ref="adi_consumption_analysis.view_ron_consumption_analysis_search"/>
+        <field name="arch" type="xml">
+
+            <!-- Filtres rapides catégorie après les filtres type production -->
+            <xpath expr="//filter[@name='filter_sandwich_gf']" position="after">
+                <separator/>
+                <filter name="filter_cat_raw_material"
+                        string="Matières Premières"
+                        domain="[('consumption_category', '=', 'raw_material')]"/>
+                <filter name="filter_cat_packaging"
+                        string="Emballages"
+                        domain="[('consumption_category', '=', 'packaging')]"/>
+                <filter name="filter_cat_film"
+                        string="Films"
+                        domain="[('consumption_category', '=', 'film')]"/>
+                <filter name="filter_cat_packaging_film"
+                        string="Emballages + Films"
+                        domain="[('consumption_category', 'in', ('packaging', 'film'))]"/>
+                <separator/>
+                <filter name="filter_cat_scrap_recoverable"
+                        string="Rebuts Récupérables"
+                        domain="[('consumption_category', '=', 'scrap_recoverable')]"/>
+                <filter name="filter_cat_paste_recoverable"
+                        string="Pâte Récupérable"
+                        domain="[('consumption_category', '=', 'paste_recoverable')]"/>
+                <filter name="filter_cat_recoverables"
+                        string="Tous Récupérables"
+                        domain="[('consumption_category', 'in', ('scrap_recoverable', 'paste_recoverable'))]"/>
+            </xpath>
+
+            <!-- Group by catégorie + sous-type -->
+            <xpath expr="//filter[@name='group_product']" position="before">
+                <filter name="group_consumption_category"
+                        string="Catégorie de Consommation"
+                        context="{'group_by': 'consumption_category'}"/>
+                <filter name="group_consumption_subtype"
+                        string="Sous-type (Emb./Film)"
+                        context="{'group_by': 'consumption_subtype'}"/>
+            </xpath>
+
+        </field>
+    </record>
+
+    <!-- ====== Override de l'action : groupement par défaut + scope par défaut ======
+         On surcharge l'action existante du module de base pour que, dès
+         l'ouverture du menu "Analyse des Consommations", l'utilisateur
+         visualise les données regroupées d'abord par catégorie
+         (Matière Première / Emballage / Film), puis par produit, puis
+         par mois. Aucun filtre catégoriel n'est appliqué par défaut →
+         tous les produits (MP + emballages + films) sont visibles.
+    -->
+    <record id="adi_consumption_analysis.action_ron_consumption_analysis"
+            model="ir.actions.act_window">
+        <field name="context">{
+            'search_default_filter_date_production': 1,
+            'search_default_group_consumption_category': 1,
+            'search_default_group_product': 1,
+            'search_default_group_month': 1,
+        }</field>
+    </record>
+
+</odoo>

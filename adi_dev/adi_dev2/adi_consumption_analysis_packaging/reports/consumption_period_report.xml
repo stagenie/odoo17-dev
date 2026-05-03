@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ====== Héritage du template du rapport pour ajouter Emballages/Films ====== -->
+    <template id="report_consumption_period_document_packaging"
+              inherit_id="adi_consumption_analysis.report_consumption_period_document">
+
+        <!-- 1) Section MP : conditionnelle sur show_raw_material
+             (backward-compatible : si la clé n'existe pas, on affiche par défaut) -->
+        <xpath expr="//h5[contains(., 'CONSOMMATIONS PAR ARTICLE')]"
+               position="attributes">
+            <attribute name="t-if">data.get('show_raw_material', True)</attribute>
+        </xpath>
+
+        <xpath expr="//h5[contains(., 'CONSOMMATIONS PAR ARTICLE')]/following-sibling::table[1]"
+               position="attributes">
+            <attribute name="t-if">data.get('show_raw_material', True)</attribute>
+        </xpath>
+
+        <!-- 2) Insérer la section Emballages/Films juste après le tableau MP -->
+        <xpath expr="//h5[contains(., 'CONSOMMATIONS PAR ARTICLE')]/following-sibling::table[1]"
+               position="after">
+
+            <!-- Section Emballages & Films (visible uniquement si scope inclut packaging) -->
+            <t t-if="data.get('show_packaging')">
+                <h5 style="background-color: #fd7e14; color: white; padding: 8px 12px; margin-top: 20px; margin-bottom: 0;">
+                    EMBALLAGES &amp; FILMS
+                </h5>
+                <table class="table table-sm table-bordered">
+                    <thead style="background-color: #e9ecef;">
+                        <tr>
+                            <th style="width: 5%;" class="text-center">#</th>
+                            <th style="width: 20%;">Catégorie</th>
+                            <th style="width: 35%;">Type</th>
+                            <th style="width: 13%;" class="text-end">Quantité</th>
+                            <th style="width: 13%;" class="text-end">Coût Unitaire</th>
+                            <th style="width: 14%;" class="text-end">Coût Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-set="pidx" t-value="0"/>
+                        <t t-foreach="data.get('packaging_lines') or []" t-as="pline">
+                            <t t-set="pidx" t-value="pidx + 1"/>
+                            <tr>
+                                <td class="text-center"><t t-esc="pidx"/></td>
+                                <td>
+                                    <t t-if="pline.get('category') == 'packaging'">Emballage</t>
+                                    <t t-elif="pline.get('category') == 'film'">Film</t>
+                                    <t t-else=""><t t-esc="pline.get('category')"/></t>
+                                </td>
+                                <td><t t-esc="pline.get('subtype')"/></td>
+                                <td class="text-end">
+                                    <t t-esc="'{:,.2f}'.format(pline.get('quantity') or 0.0)"/>
+                                </td>
+                                <td class="text-end">
+                                    <t t-esc="'{:,.2f}'.format(pline.get('unit_cost') or 0.0)"/>
+                                    <t t-esc="data.get('currency_symbol')"/>
+                                </td>
+                                <td class="text-end">
+                                    <t t-esc="'{:,.2f}'.format(pline.get('total_cost') or 0.0)"/>
+                                    <t t-esc="data.get('currency_symbol')"/>
+                                </td>
+                            </tr>
+                        </t>
+                        <t t-if="not data.get('packaging_lines')">
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">
+                                    <em>Aucun emballage ou film consommé sur cette période.</em>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                    <tfoot t-if="data.get('packaging_lines')" style="background-color: #f8f9fa;">
+                        <tr style="font-weight: bold;">
+                            <td colspan="3" class="text-end">TOTAL EMBALLAGES &amp; FILMS</td>
+                            <td class="text-end">
+                                <t t-esc="'{:,.2f}'.format(data.get('packaging_total_qty') or 0.0)"/>
+                            </td>
+                            <td></td>
+                            <td class="text-end">
+                                <t t-esc="'{:,.2f}'.format(data.get('packaging_total_cost') or 0.0)"/>
+                                <t t-esc="data.get('currency_symbol')"/>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </t>
+
+            <!-- Section Récupérables (Rebuts + Pâte) -->
+            <t t-if="data.get('show_recoverable')">
+                <h5 style="background-color: #198754; color: white; padding: 8px 12px; margin-top: 20px; margin-bottom: 0;">
+                    RÉCUPÉRABLES (Rebuts &amp; Pâte)
+                </h5>
+                <table class="table table-sm table-bordered">
+                    <thead style="background-color: #e9ecef;">
+                        <tr>
+                            <th style="width: 5%;" class="text-center">#</th>
+                            <th style="width: 25%;">Type</th>
+                            <th style="width: 35%;">Produit</th>
+                            <th style="width: 12%;" class="text-end">Poids (kg)</th>
+                            <th style="width: 11%;" class="text-end">Coût/Kg</th>
+                            <th style="width: 12%;" class="text-end">Coût Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-set="ridx" t-value="0"/>
+                        <t t-foreach="data.get('recoverable_lines') or []" t-as="rline">
+                            <t t-set="ridx" t-value="ridx + 1"/>
+                            <tr>
+                                <td class="text-center"><t t-esc="ridx"/></td>
+                                <td><t t-esc="rline.get('type_label')"/></td>
+                                <td>
+                                    <t t-if="rline.get('product_default_code')">
+                                        [<t t-esc="rline.get('product_default_code')"/>]
+                                    </t>
+                                    <t t-esc="rline.get('product_name') or '—'"/>
+                                </td>
+                                <td class="text-end">
+                                    <t t-esc="'{:,.2f}'.format(rline.get('weight_kg') or 0.0)"/>
+                                </td>
+                                <td class="text-end">
+                                    <t t-esc="'{:,.2f}'.format(rline.get('cost_per_kg') or 0.0)"/>
+                                    <t t-esc="data.get('currency_symbol')"/>
+                                </td>
+                                <td class="text-end">
+                                    <t t-esc="'{:,.2f}'.format(rline.get('total_cost') or 0.0)"/>
+                                    <t t-esc="data.get('currency_symbol')"/>
+                                </td>
+                            </tr>
+                        </t>
+                        <t t-if="not data.get('recoverable_lines')">
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">
+                                    <em>Aucun rebut ni pâte récupérable enregistré sur cette période.</em>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                    <tfoot t-if="data.get('recoverable_lines')" style="background-color: #f8f9fa;">
+                        <tr style="font-weight: bold;">
+                            <td colspan="3" class="text-end">TOTAL RÉCUPÉRABLES</td>
+                            <td class="text-end">
+                                <t t-esc="'{:,.2f}'.format(data.get('recoverable_total_weight') or 0.0)"/>
+                            </td>
+                            <td></td>
+                            <td class="text-end">
+                                <t t-esc="'{:,.2f}'.format(data.get('recoverable_total_cost') or 0.0)"/>
+                                <t t-esc="data.get('currency_symbol')"/>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </t>
+
+            <!-- Bloc Grand Total combiné (scope 'consumption' ou 'all') -->
+            <t t-if="data.get('content_scope') in ('consumption', 'all') and (data.get('lines') or data.get('packaging_lines') or data.get('recoverable_lines'))">
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <table class="table table-sm table-bordered" style="background-color: #d1e7dd;">
+                            <!-- Conso brute = MP + Emballages/Films -->
+                            <tr>
+                                <td style="width: 70%;" class="text-end">
+                                    Conso Brute (Matières Premières + Emballages/Films)
+                                </td>
+                                <td class="text-end">
+                                    <t t-esc="'{:,.2f}'.format(data.get('gross_total_cost') or 0.0)"/>
+                                    <t t-esc="data.get('currency_symbol')"/>
+                                </td>
+                            </tr>
+                            <!-- Récupérables : ligne déductible si compute_net_cost actif -->
+                            <tr t-if="data.get('recoverable_lines')">
+                                <td class="text-end">
+                                    <t t-if="data.get('compute_net_cost')">
+                                        − Récupérables (Rebuts + Pâte)
+                                    </t>
+                                    <t t-else="">
+                                        Récupérables (Rebuts + Pâte) <em class="text-muted">— informatif</em>
+                                    </t>
+                                </td>
+                                <td class="text-end">
+                                    <t t-if="data.get('compute_net_cost')">−</t>
+                                    <t t-esc="'{:,.2f}'.format(data.get('recoverable_total_cost') or 0.0)"/>
+                                    <t t-esc="data.get('currency_symbol')"/>
+                                </td>
+                            </tr>
+                            <!-- Total final : Net si calcul actif, sinon brut -->
+                            <tr style="font-weight: bold; background-color: #b6dfc2;">
+                                <td class="text-end">
+                                    <t t-if="data.get('compute_net_cost') and data.get('recoverable_lines')">
+                                        COÛT NET (Conso Brute − Récupérables)
+                                    </t>
+                                    <t t-else="">
+                                        GRAND TOTAL (Matières Premières + Emballages/Films)
+                                    </t>
+                                </td>
+                                <td class="text-end">
+                                    <t t-esc="'{:,.2f}'.format(data.get('net_total_cost') or 0.0)"/>
+                                    <t t-esc="data.get('currency_symbol')"/>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </t>
+
+        </xpath>
+
+        <!-- 3) Mettre à jour la zone "Portée" en en-tête pour refléter le scope.
+             On cible le td qui contient le t t-if portant sur all_products (unique). -->
+        <xpath expr="//t[contains(@t-if, 'all_products')]/.." position="inside">
+            <t t-if="data.get('content_scope') == 'consumption'">
+                <span class="ms-2"
+                      style="display: inline-block;
+                             background-color: #fff3cd;
+                             color: #000000;
+                             font-size: 14px;
+                             font-weight: bold;
+                             padding: 6px 14px;
+                             border: 1px solid #856404;
+                             border-radius: 6px;">
+                    Consommation Globale (MP + Emballages/Films)
+                </span>
+            </t>
+            <t t-elif="data.get('content_scope') == 'all'">
+                <span class="badge text-bg-info ms-2">Rapport Complet (MP + Emb./Films + Récupérables)</span>
+                <t t-if="data.get('compute_net_cost')">
+                    <span class="badge text-bg-success ms-1">Coût Net activé</span>
+                </t>
+            </t>
+            <t t-elif="data.get('content_scope') == 'packaging_only'">
+                <span class="badge text-bg-warning ms-2">Emballages/Films uniquement</span>
+            </t>
+            <t t-elif="data.get('content_scope') == 'raw_material'">
+                <span class="badge text-bg-secondary ms-2">Matières Premières uniquement</span>
+            </t>
+            <t t-elif="data.get('content_scope') == 'recoverables_only'">
+                <span class="badge text-bg-success ms-2">Rebuts/Pâte récupérables uniquement</span>
+            </t>
+        </xpath>
+
+    </template>
+
+</odoo>
