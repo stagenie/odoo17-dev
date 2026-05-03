@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_depense_report_wizard_user,depense.report.wizard.user,model_depense_report_wizard,adi_expenses.group_view_own_expenses,1,1,1,1
+access_depense_report_wizard_manager,depense.report.wizard.manager,model_depense_report_wizard,adi_expenses.group_view_all_expenses,1,1,1,1

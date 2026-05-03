@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+
+        <!-- ============================================================
+             Form : ajouter header (boutons + statusbar), nouveaux champs
+             et le chatter
+             ============================================================ -->
+        <record id="view_depense_form_treasury" model="ir.ui.view">
+            <field name="name">depense.form.treasury</field>
+            <field name="model">depenses.depense</field>
+            <field name="inherit_id" ref="adi_expenses.view_depense_form"/>
+            <field name="arch" type="xml">
+
+                <!-- 1) Insérer un header avant <sheet> -->
+                <xpath expr="//sheet" position="before">
+                    <header>
+                        <button name="action_post" type="object"
+                                string="Comptabiliser"
+                                class="oe_highlight"
+                                invisible="state != 'draft'"/>
+                        <button name="action_cancel" type="object"
+                                string="Annuler"
+                                invisible="state != 'posted'"/>
+                        <button name="action_draft" type="object"
+                                string="Remettre en brouillon"
+                                invisible="state != 'cancel'"/>
+                        <field name="state" widget="statusbar"
+                               statusbar_visible="draft,posted"/>
+                    </header>
+                </xpath>
+
+                <!-- 2) Titre = référence (sous le header, avant le groupe principal) -->
+                <xpath expr="//sheet/group" position="before">
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                </xpath>
+
+                <!-- 3a) Caisse juste après "montant" (champ central du frais) -->
+                <xpath expr="//field[@name='montant']" position="after">
+                    <field name="caisse_id"
+                           readonly="state != 'draft'"/>
+                </xpath>
+
+                <!-- 3b) Le reste des champs trésorerie après "description" -->
+                <xpath expr="//field[@name='description']" position="after">
+                    <field name="partner_id"
+                           readonly="state != 'draft'"/>
+                    <field name="motif_id"
+                           readonly="state != 'draft'"/>
+                    <field name="treasury_operation_id"
+                           invisible="state == 'draft'"
+                           readonly="1"/>
+                    <field name="treasury_closing_id"
+                           invisible="state == 'draft'"
+                           readonly="1"/>
+                </xpath>
+
+                <!-- 4) Ajouter le chatter après <sheet> -->
+                <xpath expr="//sheet" position="after">
+                    <chatter/>
+                </xpath>
+
+            </field>
+        </record>
+
+        <!-- ============================================================
+             Tree : décoration selon état + colonnes caisse/partner/state
+             ============================================================ -->
+        <record id="view_depense_tree_treasury" model="ir.ui.view">
+            <field name="name">depense.tree.treasury</field>
+            <field name="model">depenses.depense</field>
+            <field name="inherit_id" ref="adi_expenses.view_depense_tree"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//tree" position="attributes">
+                    <attribute name="decoration-success">state == 'posted'</attribute>
+                    <attribute name="decoration-muted">state == 'cancel'</attribute>
+                </xpath>
+
+                <xpath expr="//field[@name='date']" position="before">
+                    <field name="name" readonly="1"/>
+                </xpath>
+
+                <!-- Total des montants en bas du tableau (pied de liste + groupements) -->
+                <xpath expr="//field[@name='montant']" position="attributes">
+                    <attribute name="sum">Total Montant</attribute>
+                </xpath>
+
+                <xpath expr="//field[@name='categorie']" position="after">
+                    <field name="caisse_id"/>
+                    <field name="partner_id" optional="show"/>
+                    <field name="motif_id" optional="show"/>
+                </xpath>
+
+                <xpath expr="//field[@name='description']" position="after">
+                    <field name="state" widget="badge"
+                           decoration-success="state == 'posted'"
+                           decoration-info="state == 'draft'"
+                           decoration-muted="state == 'cancel'"/>
+                </xpath>
+
+            </field>
+        </record>
+
+        <!-- ============================================================
+             Search : champs et filtres trésorerie
+             ============================================================ -->
+        <record id="view_depense_search_treasury" model="ir.ui.view">
+            <field name="name">depense.search.treasury</field>
+            <field name="model">depenses.depense</field>
+            <field name="inherit_id" ref="adi_expenses.view_depense_search"/>
+            <field name="arch" type="xml">
+
+                <!-- Champs de recherche complémentaires -->
+                <xpath expr="//field[@name='categorie']" position="after">
+                    <field name="caisse_id"/>
+                    <field name="partner_id"/>
+                    <field name="motif_id"/>
+                </xpath>
+
+                <!-- Filtres rapides sur l'état (avant les groupements existants) -->
+                <xpath expr="//filter[@name='group_by_categorie']" position="before">
+                    <filter string="À comptabiliser" name="filter_draft"
+                            domain="[('state', '=', 'draft')]"/>
+                    <filter string="Comptabilisés" name="filter_posted"
+                            domain="[('state', '=', 'posted')]"/>
+                    <filter string="Annulés" name="filter_cancel"
+                            domain="[('state', '=', 'cancel')]"/>
+                    <separator/>
+                    <filter string="Par Caisse" name="group_by_caisse"
+                            context="{'group_by':'caisse_id'}"/>
+                    <filter string="Par Motif" name="group_by_motif"
+                            context="{'group_by':'motif_id'}"/>
+                    <filter string="Par État" name="group_by_state"
+                            context="{'group_by':'state'}"/>
+                </xpath>
+
+            </field>
+        </record>
+
+    </data>
+</odoo>

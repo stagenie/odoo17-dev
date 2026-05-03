@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!--
+            Motif de trésorerie dédié aux frais ADI.
+            noupdate="1" : modifications utilisateur préservées lors des mises à jour.
+        -->
+        <record id="category_frais_adi" model="treasury.operation.category">
+            <field name="name">Frais ADI</field>
+            <field name="code">FRAIS_ADI</field>
+            <field name="operation_type">out</field>
+            <field name="sequence">50</field>
+        </record>
+    </data>
+</odoo>

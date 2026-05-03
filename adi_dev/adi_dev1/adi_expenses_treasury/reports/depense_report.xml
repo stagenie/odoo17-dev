@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ============================================================
+         Report Action : PDF A4 portrait
+         ============================================================ -->
+    <record id="action_report_depense_state" model="ir.actions.report">
+        <field name="name">État de Sortie des Frais</field>
+        <field name="model">depense.report.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">adi_expenses_treasury.report_depense_state_document</field>
+        <field name="report_file">adi_expenses_treasury.report_depense_state_document</field>
+        <field name="paperformat_id" ref="base.paperformat_euro"/>
+        <field name="print_report_name">'Etat_Frais_%s_%s' % (data.get('date_from'), data.get('date_to'))</field>
+    </record>
+
+    <!-- ============================================================
+         Template QWeb : tableau A4 portrait simple
+         ============================================================ -->
+    <template id="report_depense_state_document">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="page">
+
+                    <!-- En-tête -->
+                    <div class="text-center mb-3">
+                        <h2 style="margin-bottom: 5px;">ÉTAT DE SORTIE DES FRAIS</h2>
+                        <h5 style="color: #666;">
+                            Du <span t-esc="data.get('date_from')" t-options="{'widget': 'date'}"/>
+                            au <span t-esc="data.get('date_to')" t-options="{'widget': 'date'}"/>
+                        </h5>
+                    </div>
+
+                    <!-- Bloc Filtres appliqués -->
+                    <table class="table table-sm mb-3" style="background-color: #f8f9fa; font-size: 11px;">
+                        <tr>
+                            <td style="width: 18%;"><strong>Caisses :</strong></td>
+                            <td style="width: 32%;"><t t-esc="data.get('caisses_label')"/></td>
+                            <td style="width: 18%;"><strong>État :</strong></td>
+                            <td style="width: 32%;"><t t-esc="data.get('state_label')"/></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Catégories :</strong></td>
+                            <td><t t-esc="data.get('categories_label')"/></td>
+                            <td><strong>Motifs :</strong></td>
+                            <td><t t-esc="data.get('motifs_label')"/></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Société :</strong></td>
+                            <td colspan="3"><t t-esc="data.get('company_name')"/></td>
+                        </tr>
+                    </table>
+
+                    <!-- Tableau des frais -->
+                    <table class="table table-sm table-bordered" style="font-size: 10px;">
+                        <thead style="background-color: #e9ecef;">
+                            <tr>
+                                <th style="width: 4%;" class="text-center">#</th>
+                                <th style="width: 10%;">Date</th>
+                                <th style="width: 12%;">Référence</th>
+                                <th style="width: 13%;">Caisse</th>
+                                <th style="width: 13%;">Catégorie</th>
+                                <th style="width: 13%;">Motif</th>
+                                <th style="width: 13%;">Partenaire</th>
+                                <th style="width: 10%;">État</th>
+                                <th style="width: 12%;" class="text-end">Montant</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-set="idx" t-value="0"/>
+                            <t t-foreach="data.get('lines') or []" t-as="line">
+                                <t t-set="idx" t-value="idx + 1"/>
+                                <tr>
+                                    <td class="text-center"><t t-esc="idx"/></td>
+                                    <td>
+                                        <span t-esc="line.get('date')"
+                                              t-options="{'widget': 'date'}"/>
+                                    </td>
+                                    <td><t t-esc="line.get('name')"/></td>
+                                    <td><t t-esc="line.get('caisse')"/></td>
+                                    <td><t t-esc="line.get('categorie')"/></td>
+                                    <td><t t-esc="line.get('motif')"/></td>
+                                    <td><t t-esc="line.get('partner')"/></td>
+                                    <td><t t-esc="line.get('state')"/></td>
+                                    <td class="text-end">
+                                        <t t-esc="'{:,.2f}'.format(line.get('montant') or 0.0)"/>
+                                        <t t-esc="data.get('currency_symbol')"/>
+                                    </td>
+                                </tr>
+                                <tr t-if="line.get('description')">
+                                    <td></td>
+                                    <td colspan="8" style="font-style: italic; color: #555; padding-left: 15px;">
+                                        <t t-esc="line.get('description')"/>
+                                    </td>
+                                </tr>
+                            </t>
+                            <t t-if="not data.get('lines')">
+                                <tr>
+                                    <td colspan="9" class="text-center text-muted">
+                                        <em>Aucun frais trouvé pour les filtres sélectionnés.</em>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                        <tfoot t-if="data.get('lines')" style="background-color: #f8f9fa;">
+                            <tr style="font-weight: bold;">
+                                <td colspan="8" class="text-end">TOTAL GÉNÉRAL</td>
+                                <td class="text-end">
+                                    <t t-esc="'{:,.2f}'.format(data.get('total') or 0.0)"/>
+                                    <t t-esc="data.get('currency_symbol')"/>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                    <!-- Résumé bas de page -->
+                    <div class="row mt-3" t-if="data.get('lines')">
+                        <div class="col-6">
+                            <table class="table table-sm table-bordered" style="font-size: 11px;">
+                                <tr>
+                                    <td><strong>Nombre de frais</strong></td>
+                                    <td class="text-end">
+                                        <t t-esc="data.get('line_count')"/>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-6">
+                            <table class="table table-sm table-bordered" style="background-color: #d1e7dd; font-size: 11px;">
+                                <tr style="font-weight: bold;">
+                                    <td>TOTAL</td>
+                                    <td class="text-end">
+                                        <t t-esc="'{:,.2f}'.format(data.get('total') or 0.0)"/>
+                                        <t t-esc="data.get('currency_symbol')"/>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+            </t>
+        </t>
+    </template>
+
+</odoo>

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ============================================================
+         Vue Formulaire du Wizard
+         ============================================================ -->
+    <record id="view_depense_report_wizard_form" model="ir.ui.view">
+        <field name="name">depense.report.wizard.form</field>
+        <field name="model">depense.report.wizard</field>
+        <field name="arch" type="xml">
+            <form string="État de Sortie des Frais">
+                <sheet>
+                    <group>
+                        <group string="Période">
+                            <field name="date_from"/>
+                            <field name="date_to"/>
+                        </group>
+                        <group string="État">
+                            <field name="state_filter"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+
+                    <group string="Caisses">
+                        <field name="all_caisses"/>
+                        <field name="caisse_ids"
+                               widget="many2many_tags"
+                               options="{'no_create': True}"
+                               invisible="all_caisses"
+                               required="not all_caisses"/>
+                    </group>
+
+                    <group string="Catégories de Frais">
+                        <field name="all_categories"/>
+                        <field name="categorie_ids"
+                               widget="many2many_tags"
+                               options="{'no_create': True}"
+                               invisible="all_categories"
+                               required="not all_categories"/>
+                    </group>
+
+                    <group string="Motifs (Trésorerie)">
+                        <field name="all_motifs"/>
+                        <field name="motif_ids"
+                               widget="many2many_tags"
+                               options="{'no_create': True}"
+                               invisible="all_motifs"
+                               required="not all_motifs"/>
+                    </group>
+                </sheet>
+                <footer>
+                    <button name="action_print_report"
+                            string="Imprimer PDF"
+                            type="object"
+                            class="btn-primary"/>
+                    <button name="action_view_filtered"
+                            string="Voir la liste filtrée"
+                            type="object"
+                            class="btn-secondary"/>
+                    <button string="Annuler" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action ouvrant le wizard en popup -->
+    <record id="action_depense_report_wizard" model="ir.actions.act_window">
+        <field name="name">État de Sortie des Frais</field>
+        <field name="res_model">depense.report.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <!-- Menu : sous "Gestion des Dépenses" -->
+    <menuitem id="menu_depense_report_wizard"
+              name="État de Sortie (PDF)"
+              parent="adi_expenses.menu_depenses_root"
+              action="action_depense_report_wizard"
+              sequence="20"/>
+
+</odoo>
