@@ -1,3 +1,7 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_general_situation_user,general.situation.user,model_general_situation,base.group_user,1,1,1,1
 access_general_situation_admin,general.situation.admin,model_general_situation,account.group_account_manager,1,1,1,1
+access_general_situation_cash_line_user,general.situation.cash.line.user,model_general_situation_cash_line,base.group_user,1,1,1,1
+access_general_situation_cash_line_admin,general.situation.cash.line.admin,model_general_situation_cash_line,account.group_account_manager,1,1,1,1
+access_general_situation_stock_line_user,general.situation.stock.line.user,model_general_situation_stock_line,base.group_user,1,1,1,1
+access_general_situation_stock_line_admin,general.situation.stock.line.admin,model_general_situation_stock_line,account.group_account_manager,1,1,1,1

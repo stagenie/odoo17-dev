@@ -77,6 +77,25 @@
                                                    class="oe_inline"/>
                                         </td>
                                     </tr>
+                                    <tr invisible="not cash_line_ids">
+                                        <td colspan="2" style="padding: 0 0 8px 24px;">
+                                            <field name="cash_line_ids"
+                                                   nolabel="1"
+                                                   readonly="1">
+                                                <tree create="false" delete="false"
+                                                      edit="false"
+                                                      decoration-muted="balance == 0">
+                                                    <field name="code"/>
+                                                    <field name="name"/>
+                                                    <field name="balance"
+                                                           widget="monetary"
+                                                           sum="Total"/>
+                                                    <field name="currency_id"
+                                                           invisible="1"/>
+                                                </tree>
+                                            </field>
+                                        </td>
+                                    </tr>
                                     <tr>
                                         <td class="text-muted">
                                             Valeur Stock Actuel
@@ -88,6 +107,25 @@
                                                    widget="monetary"
                                                    readonly="1"
                                                    class="oe_inline"/>
+                                        </td>
+                                    </tr>
+                                    <tr invisible="not stock_line_ids">
+                                        <td colspan="2" style="padding: 0 0 8px 24px;">
+                                            <field name="stock_line_ids"
+                                                   nolabel="1"
+                                                   readonly="1">
+                                                <tree create="false" delete="false"
+                                                      edit="false"
+                                                      decoration-muted="value == 0">
+                                                    <field name="code"/>
+                                                    <field name="name"/>
+                                                    <field name="value"
+                                                           widget="monetary"
+                                                           sum="Total"/>
+                                                    <field name="currency_id"
+                                                           invisible="1"/>
+                                                </tree>
+                                            </field>
                                         </td>
                                     </tr>
                                     <tr>

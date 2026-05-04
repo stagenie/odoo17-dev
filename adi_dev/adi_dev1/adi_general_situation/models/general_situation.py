@@ -115,6 +115,21 @@ class GeneralSituation(models.TransientModel):
     )
 
     # ------------------------------------------------------------------
+    # Détails (One2many)
+    # ------------------------------------------------------------------
+
+    cash_line_ids = fields.One2many(
+        'general.situation.cash.line',
+        'situation_id',
+        string='Détail caisses',
+    )
+    stock_line_ids = fields.One2many(
+        'general.situation.stock.line',
+        'situation_id',
+        string='Détail entrepôts',
+    )
+
+    # ------------------------------------------------------------------
     # Métadonnées
     # ------------------------------------------------------------------
 
@@ -192,8 +207,22 @@ class GeneralSituation(models.TransientModel):
         """
         self.ensure_one()
 
-        self.cash_balance = self._compute_cash_balance_value()
-        self.stock_value = self._compute_stock_value_value()
+        cash_total, cash_lines_vals = self._compute_cash_balance_value()
+        self.cash_balance = cash_total
+        self.cash_line_ids.unlink()
+        if cash_lines_vals:
+            self.env['general.situation.cash.line'].create([
+                dict(vals, situation_id=self.id) for vals in cash_lines_vals
+            ])
+
+        stock_total, stock_lines_vals = self._compute_stock_value_value()
+        self.stock_value = stock_total
+        self.stock_line_ids.unlink()
+        if stock_lines_vals:
+            self.env['general.situation.stock.line'].create([
+                dict(vals, situation_id=self.id) for vals in stock_lines_vals
+            ])
+
         self.receivables_total = self._compute_partner_balance('asset_receivable')
         self.payables_total = abs(self._compute_partner_balance('liability_payable'))
         self.gross_margin = self._compute_gross_margin_value()
@@ -230,7 +259,7 @@ class GeneralSituation(models.TransientModel):
     # ------------------------------------------------------------------
 
     def _compute_cash_balance_value(self):
-        """Retourne le solde total de trésorerie au plus tard à `date_to`.
+        """Retourne (total, [{cash_id, name, code, balance}, ...]) à `date_to`.
 
         Si `date_to >= today`, on utilise la valeur live `current_balance`
         (déjà calculée par adi_treasury, plus rapide).
@@ -252,7 +281,13 @@ class GeneralSituation(models.TransientModel):
 
         # Cas live : pas de reconstruction nécessaire
         if not self.date_to or self.date_to >= today:
-            return sum(caisses.mapped('current_balance'))
+            lines = [{
+                'cash_id': c.id,
+                'name': c.name,
+                'code': c.code,
+                'balance': c.current_balance,
+            } for c in caisses]
+            return sum(c.current_balance for c in caisses), lines
 
         # Cas historique : reconstruction par caisse
         Closing = self.env['treasury.cash.closing']
@@ -260,6 +295,7 @@ class GeneralSituation(models.TransientModel):
         end_of_day = datetime.combine(self.date_to, datetime.max.time())
 
         total = 0.0
+        lines = []
         for caisse in caisses:
             last_closing = Closing.search([
                 ('cash_id', '=', caisse.id),
@@ -295,14 +331,25 @@ class GeneralSituation(models.TransientModel):
                     balance -= op.amount
 
             total += balance
+            lines.append({
+                'cash_id': caisse.id,
+                'name': caisse.name,
+                'code': caisse.code,
+                'balance': balance,
+            })
 
-        return total
+        return total, lines
 
     def _compute_stock_value_value(self):
-        """Retourne la valeur totale du stock jusqu'à date_to (inclus).
+        """Retourne (total, [{warehouse_id, name, code, value}, ...]) à date_to.
 
-        Filtre manuellement par create_date ≤ fin de journée de date_to
-        car _read_group n'interprète pas le contexte to_date.
+        Le total provient de stock.valuation.layer (filtré par create_date ≤
+        fin de journée de date_to) pour rester cohérent avec l'historique.
+
+        Le détail par entrepôt utilise stock.quant.value (snapshot courant)
+        car la valuation_layer n'a pas de lien direct avec un entrepôt.
+        Les quants sont regroupés via location_id.warehouse_id et limités
+        aux emplacements internes.
         """
         # Fin de journée de date_to : dernier instant du jour (23:59:59)
         date_to_end = fields.Datetime.to_datetime(self.date_to) + timedelta(
@@ -315,7 +362,31 @@ class GeneralSituation(models.TransientModel):
             ],
             aggregates=['value:sum'],
         )
-        return groups[0][0] or 0.0 if groups else 0.0
+        total = (groups[0][0] or 0.0) if groups else 0.0
+
+        # Détail par entrepôt — snapshot courant (sudo pour contourner les
+        # restrictions de groupe sur stock.quant.value).
+        warehouses = self.env['stock.warehouse'].search([
+            ('company_id', '=', self.company_id.id),
+        ])
+        Quant = self.env['stock.quant'].sudo()
+        lines = []
+        for wh in warehouses:
+            quants = Quant.search([
+                ('company_id', '=', self.company_id.id),
+                ('location_id.warehouse_id', '=', wh.id),
+                ('location_id.usage', '=', 'internal'),
+            ])
+            wh_value = sum(quants.mapped('value'))
+            if wh_value:
+                lines.append({
+                    'warehouse_id': wh.id,
+                    'name': wh.name,
+                    'code': wh.code,
+                    'value': wh_value,
+                })
+
+        return total, lines
 
     def _compute_partner_balance(self, account_type):
         """Retourne SUM(debit − credit) au date_to pour un account_type donné.
