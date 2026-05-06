@@ -342,8 +342,8 @@ class TestGeneralSituationCalculations(TransactionCase):
         self.assertEqual(wizard.balance_net, wizard.cash_balance
                          + wizard.stock_value
                          + wizard.receivables_total
-                         - wizard.payables_total,
-                         "balance_net doit respecter la formule")
+                         + wizard.payables_total,
+                         "balance_net doit respecter la formule algébrique")
         self.assertEqual(wizard.profit_net, 0.0,
                          "profit_net doit être 0 quand marge=0 et frais=0")
 
@@ -369,23 +369,22 @@ class TestGeneralSituationCalculations(TransactionCase):
         self.assertAlmostEqual(wizard.profit_net, 25.0, places=2,
                                msg="profit_net doit être gross_margin - expenses_total = 25")
 
-    def test_payables_displayed_as_positive(self):
-        """payables_total doit être positif (valeur absolue de la balance comptable).
+    def test_balance_net_algebraic_formula(self):
+        """payables_total et receivables_total sont des soldes signés.
 
-        On vérifie que la formule de balance_net soustrait bien payables_total
-        (qui est déjà positif), sans double négation.
+        La formule de balance_net les somme algébriquement, sans abs() : un
+        solde fournisseur positif (avance versée) ajoute à l'actif net,
+        un solde négatif (dette) le réduit ; pareil côté clients.
         """
         wizard = self._make_wizard()
         wizard.action_calculate()
 
-        self.assertGreaterEqual(wizard.payables_total, 0.0,
-                                "payables_total ne doit jamais être négatif")
         self.assertAlmostEqual(
             wizard.balance_net,
             wizard.cash_balance + wizard.stock_value
-            + wizard.receivables_total - wizard.payables_total,
+            + wizard.receivables_total + wizard.payables_total,
             places=2,
-            msg="balance_net = cash + stock + créances - dettes",
+            msg="balance_net = cash + stock + recv_signé + pay_signé",
         )
 
     def test_company_isolation(self):

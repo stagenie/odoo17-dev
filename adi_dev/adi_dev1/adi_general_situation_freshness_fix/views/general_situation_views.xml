@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ================================================================
+         Étend la sous-tree des caisses (inline dans la fiche Situation)
+         pour ajouter colonnes Solde clôturé, Mouvements en cours, Date
+         dernière clôture, Jours depuis. La décoration colore la ligne
+         selon le champ `freshness`.
+         ================================================================ -->
+    <record id="view_general_situation_form_freshness"
+            model="ir.ui.view">
+        <field name="name">general.situation.form.freshness</field>
+        <field name="model">general.situation</field>
+        <field name="inherit_id"
+               ref="adi_general_situation.view_general_situation_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Active la coloration ligne par fraîcheur. -->
+            <xpath expr="//field[@name='cash_line_ids']/tree"
+                   position="attributes">
+                <attribute name="decoration-success">freshness == 'fresh'</attribute>
+                <attribute name="decoration-warning">freshness == 'stale'</attribute>
+                <attribute name="decoration-danger">freshness == 'very_stale'</attribute>
+                <attribute name="decoration-muted">freshness == 'never' or balance == 0</attribute>
+            </xpath>
+
+            <!-- Insère les colonnes de ventilation et de fraîcheur
+                 juste avant la colonne `balance` (qui devient le
+                 « solde théorique » résultat). -->
+            <xpath expr="//field[@name='cash_line_ids']/tree/field[@name='balance']"
+                   position="before">
+                <field name="closing_balance"
+                       widget="monetary"
+                       sum="Clôturé"
+                       optional="show"/>
+                <field name="pending_delta"
+                       widget="monetary"
+                       sum="En cours"
+                       optional="show"/>
+                <field name="last_closing_date"
+                       optional="show"/>
+                <field name="days_since_closing"
+                       optional="show"/>
+                <field name="freshness"
+                       optional="hide"/>
+            </xpath>
+
+            <!-- Renomme la colonne `balance` pour clarifier que
+                 c'est la somme (clôturé + en cours). -->
+            <xpath expr="//field[@name='cash_line_ids']/tree/field[@name='balance']"
+                   position="attributes">
+                <attribute name="string">Solde théorique</attribute>
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>

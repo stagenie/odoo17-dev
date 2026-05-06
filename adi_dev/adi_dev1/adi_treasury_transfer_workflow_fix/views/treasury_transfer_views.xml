@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ================================================================
+         Renomme « Confirmer » en « Effectuer le transfert » et y
+         attache la dialog de confirmation, puisque ce bouton fait
+         maintenant tout (draft → done).
+
+         Le bouton action_done existant reste visible uniquement
+         pour les transferts déjà en état 'confirm' (legacy).
+         ================================================================ -->
+    <record id="view_treasury_transfer_form_workflow_fix"
+            model="ir.ui.view">
+        <field name="name">treasury.transfer.form.workflow.fix</field>
+        <field name="model">treasury.transfer</field>
+        <field name="inherit_id"
+               ref="adi_treasury.view_treasury_transfer_form"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//header/button[@name='action_confirm']"
+                   position="attributes">
+                <attribute name="string">Effectuer le transfert</attribute>
+                <attribute name="confirm">Êtes-vous sûr de vouloir effectuer ce transfert ?</attribute>
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>

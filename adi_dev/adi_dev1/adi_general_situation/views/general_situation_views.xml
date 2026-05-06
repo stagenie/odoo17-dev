@@ -130,10 +130,14 @@
                                     </tr>
                                     <tr>
                                         <td class="text-muted">
-                                            Créances Clients
+                                            Solde Net Clients
+                                            <span class="text-muted small d-block"
+                                                  style="font-size: 12px;">
+                                                + créances · − avances reçues
+                                            </span>
                                         </td>
-                                        <td class="text-end fw-semibold text-success">
-                                            +
+                                        <td class="text-end fw-semibold"
+                                            style="font-size: 18px;">
                                             <field name="receivables_total"
                                                    nolabel="1"
                                                    widget="monetary"
@@ -143,10 +147,14 @@
                                     </tr>
                                     <tr>
                                         <td class="text-muted">
-                                            Dettes Fournisseurs
+                                            Solde Net Fournisseurs
+                                            <span class="text-muted small d-block"
+                                                  style="font-size: 12px;">
+                                                − dettes · + avances versées
+                                            </span>
                                         </td>
-                                        <td class="text-end fw-semibold text-danger">
-                                            −
+                                        <td class="text-end fw-semibold"
+                                            style="font-size: 18px;">
                                             <field name="payables_total"
                                                    nolabel="1"
                                                    widget="monetary"

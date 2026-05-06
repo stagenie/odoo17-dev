@@ -92,15 +92,25 @@
                                 </tr>
                             </t>
                             <tr style="border-bottom: 1px solid #dee2e6;">
-                                <td style="padding: 10px 14px; color: #333;">Créances Clients</td>
-                                <td style="padding: 10px 14px; text-align: right; font-size: 16px; font-weight: 500; color: #198754;">
-                                    +&#160;<span t-field="doc.receivables_total" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                                <td style="padding: 10px 14px; color: #333;">
+                                    Solde Net Clients
+                                    <span style="display: block; font-size: 11px; color: #888;">
+                                        + créances · − avances reçues
+                                    </span>
+                                </td>
+                                <td t-att-style="'padding: 10px 14px; text-align: right; font-size: 16px; font-weight: 500; color: ' + ('#198754' if doc.receivables_total &gt;= 0 else '#dc3545') + ';'">
+                                    <span t-field="doc.receivables_total" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
                                 </td>
                             </tr>
                             <tr style="border-bottom: 2px solid #0d6efd;">
-                                <td style="padding: 10px 14px; color: #333;">Dettes Fournisseurs</td>
-                                <td style="padding: 10px 14px; text-align: right; font-size: 16px; font-weight: 500; color: #dc3545;">
-                                    −&#160;<span t-field="doc.payables_total" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                                <td style="padding: 10px 14px; color: #333;">
+                                    Solde Net Fournisseurs
+                                    <span style="display: block; font-size: 11px; color: #888;">
+                                        − dettes · + avances versées
+                                    </span>
+                                </td>
+                                <td t-att-style="'padding: 10px 14px; text-align: right; font-size: 16px; font-weight: 500; color: ' + ('#198754' if doc.payables_total &gt;= 0 else '#dc3545') + ';'">
+                                    <span t-field="doc.payables_total" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
                                 </td>
                             </tr>
                         </table>

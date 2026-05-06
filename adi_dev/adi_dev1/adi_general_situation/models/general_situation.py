@@ -79,14 +79,20 @@ class GeneralSituation(models.TransientModel):
         readonly=True,
     )
     receivables_total = fields.Monetary(
-        string='Créances Clients',
+        string='Solde Net Clients',
         currency_field='currency_id',
         readonly=True,
+        help="Somme algébrique débit−crédit sur les comptes clients. "
+             "Positif : créances dues par les clients (actif). "
+             "Négatif : avances reçues des clients (passif).",
     )
     payables_total = fields.Monetary(
-        string='Dettes Fournisseurs',
+        string='Solde Net Fournisseurs',
         currency_field='currency_id',
         readonly=True,
+        help="Somme algébrique débit−crédit sur les comptes fournisseurs. "
+             "Négatif : dettes envers les fournisseurs (passif). "
+             "Positif : avances versées aux fournisseurs (actif).",
     )
     balance_net = fields.Monetary(
         string='Balance Nette',
@@ -150,9 +156,20 @@ class GeneralSituation(models.TransientModel):
         """
         if self.period_preset == 'custom':
             return
+        rng = self._get_preset_range(self.period_preset)
+        if rng:
+            self.date_from, self.date_to = rng
 
+    @staticmethod
+    def _get_preset_range(preset):
+        """Retourne (date_from, date_to) pour un preset, ou None pour 'custom'.
+
+        Centralise la map preset → plage afin que `_onchange_period_preset`
+        et `action_calculate` partagent la même source de vérité.
+        """
+        if preset == 'custom':
+            return None
         today = date.today()
-
         mapping = {
             'today': (today, today),
             'this_week': (
@@ -167,7 +184,7 @@ class GeneralSituation(models.TransientModel):
                 today.replace(day=1) - relativedelta(months=1),
                 today.replace(day=1) - timedelta(days=1),
             ),
-            'this_quarter': self._quarter_range(today),
+            'this_quarter': GeneralSituation._quarter_range(today),
             'this_year': (
                 date(today.year, 1, 1),
                 date(today.year, 12, 31),
@@ -177,8 +194,7 @@ class GeneralSituation(models.TransientModel):
                 date(today.year - 1, 12, 31),
             ),
         }
-
-        self.date_from, self.date_to = mapping[self.period_preset]
+        return mapping.get(preset)
 
     # ------------------------------------------------------------------
     # Contrainte
@@ -207,6 +223,19 @@ class GeneralSituation(models.TransientModel):
         """
         self.ensure_one()
 
+        # Resync des dates depuis le preset : robuste face aux cas où
+        # _onchange_period_preset n'a pas été persisté côté serveur (champs
+        # readonly, dirty-state mal détecté, etc.). Ainsi la partie Bénéfice
+        # (qui dépend de date_from ET date_to) reste toujours alignée sur
+        # le preset choisi.
+        # Écriture atomique : éviter qu'un assign séquentiel
+        # (date_from puis date_to) ne déclenche transitoirement la contrainte
+        # `_check_dates` lors d'un saut de plage qui inverse l'ordre.
+        if self.period_preset and self.period_preset != 'custom':
+            rng = self._get_preset_range(self.period_preset)
+            if rng:
+                self.write({'date_from': rng[0], 'date_to': rng[1]})
+
         cash_total, cash_lines_vals = self._compute_cash_balance_value()
         self.cash_balance = cash_total
         self.cash_line_ids.unlink()
@@ -223,8 +252,11 @@ class GeneralSituation(models.TransientModel):
                 dict(vals, situation_id=self.id) for vals in stock_lines_vals
             ])
 
+        # Soldes algébriques signés (sans abs) : un + sur fournisseurs
+        # signifie une avance versée (actif), un − sur clients une avance
+        # reçue (passif). La formule balance_net les somme directement.
         self.receivables_total = self._compute_partner_balance('asset_receivable')
-        self.payables_total = abs(self._compute_partner_balance('liability_payable'))
+        self.payables_total = self._compute_partner_balance('liability_payable')
         self.gross_margin = self._compute_gross_margin_value()
         self.expenses_total = self._compute_expenses_total_value()
 
@@ -232,7 +264,7 @@ class GeneralSituation(models.TransientModel):
             self.cash_balance
             + self.stock_value
             + self.receivables_total
-            - self.payables_total
+            + self.payables_total
         )
         self.profit_net = self.gross_margin - self.expenses_total
         self.last_computed = fields.Datetime.now()
