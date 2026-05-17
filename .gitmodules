@@ -1,0 +1,8 @@
+[submodule "content/apps/free"]
+	path = content/apps/free
+	url = https://github.com/stagenie/odooskills-odoo-apps.git
+	branch = 17.0
+[submodule "content/apps/pro"]
+	path = content/apps/pro
+	url = https://github.com/stagenie/odooskills-odoo-apps-pro.git
+	branch = 17.0
