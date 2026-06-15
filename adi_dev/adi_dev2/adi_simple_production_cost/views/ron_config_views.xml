@@ -74,8 +74,11 @@
                                 <group string="Emballage">
                                     <field name="product_emballage_sandwich_id" placeholder="Emballage Sandwich GF"/>
                                 </group>
-                                <group string="Film">
-                                    <field name="product_film_sandwich_id" placeholder="Film Sandwich GF"/>
+                                <group string="Films">
+                                    <field name="product_film_ondule_sandwich_id" placeholder="Film Ondulé 350 G"/>
+                                    <field name="product_film_emballage_sandwich_id" placeholder="Film Emballage 350 G"/>
+                                    <field name="product_film_sandwich_id" placeholder="Film Sandwich GT (legacy)"
+                                           invisible="not product_film_sandwich_id"/>
                                 </group>
                             </group>
 

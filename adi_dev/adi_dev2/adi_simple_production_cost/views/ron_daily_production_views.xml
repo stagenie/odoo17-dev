@@ -219,7 +219,18 @@
                                     <field name="emballage_sandwich_unit_cost" string="Prix Unitaire"/>
                                     <field name="emballage_sandwich_cost" string="Coût Total" readonly="1"/>
                                 </group>
-                                <group string="Film Sandwich GF">
+                                <group string="Film Ondulé 350 G">
+                                    <field name="film_ondule_qty" string="Quantité (kg)"/>
+                                    <field name="film_ondule_unit_cost" string="Prix/kg"/>
+                                    <field name="film_ondule_cost" string="Coût Total" readonly="1"/>
+                                </group>
+                                <group string="Film Emballage 350 G">
+                                    <field name="film_emballage_qty" string="Quantité (kg)"/>
+                                    <field name="film_emballage_unit_cost" string="Prix/kg"/>
+                                    <field name="film_emballage_cost" string="Coût Total" readonly="1"/>
+                                </group>
+                                <group string="Film Sandwich GT (Legacy)"
+                                       invisible="film_sandwich_qty == 0 and film_sandwich_cost == 0">
                                     <field name="film_sandwich_qty" string="Quantité (kg)"/>
                                     <field name="film_sandwich_unit_cost" string="Prix/kg"/>
                                     <field name="film_sandwich_cost" string="Coût Total" readonly="1"/>

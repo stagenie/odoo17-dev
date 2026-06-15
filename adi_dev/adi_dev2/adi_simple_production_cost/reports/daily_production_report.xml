@@ -240,7 +240,15 @@
                                                 <td class="text-end"><t t-esc="'%.2f' % doc.emballage_sandwich_cost"/> <t t-esc="doc.currency_id.symbol"/></td>
                                             </tr>
                                             <tr>
-                                                <td>Film plastique</td>
+                                                <td>Film Ondulé 350 G</td>
+                                                <td class="text-end"><t t-esc="'%.2f' % doc.film_ondule_cost"/> <t t-esc="doc.currency_id.symbol"/></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Film Emballage 350 G</td>
+                                                <td class="text-end"><t t-esc="'%.2f' % doc.film_emballage_cost"/> <t t-esc="doc.currency_id.symbol"/></td>
+                                            </tr>
+                                            <tr t-if="doc.film_sandwich_cost">
+                                                <td>Film Sandwich GT (legacy)</td>
                                                 <td class="text-end"><t t-esc="'%.2f' % doc.film_sandwich_cost"/> <t t-esc="doc.currency_id.symbol"/></td>
                                             </tr>
                                         </tbody>

@@ -200,9 +200,25 @@ class RonProductionConfig(models.Model):
 
     product_film_sandwich_id = fields.Many2one(
         'product.product',
-        string='Film Sandwich GF',
+        string='Film Sandwich GF (Legacy)',
         domain="[('type', '=', 'product')]",
-        help="Produit film plastique pour Sandwich Grand Format"
+        help="ANCIEN film unique Sandwich GF (Film Sandwich GT). "
+             "Conservé pour les anciennes productions. "
+             "Remplacé par Film Ondulé + Film Emballage pour les nouvelles."
+    )
+
+    # Nouveau découpage Sandwich GF : 2 films distincts
+    product_film_ondule_sandwich_id = fields.Many2one(
+        'product.product',
+        string='Film Ondulé 350 G',
+        domain="[('type', '=', 'product')]",
+        help="Produit film ondulé 350 G pour Sandwich Grand Format"
+    )
+    product_film_emballage_sandwich_id = fields.Many2one(
+        'product.product',
+        string='Film Emballage 350 G',
+        domain="[('type', '=', 'product')]",
+        help="Produit film emballage 350 G pour Sandwich Grand Format"
     )
 
     currency_id = fields.Many2one(

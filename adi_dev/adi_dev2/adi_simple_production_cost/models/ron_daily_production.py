@@ -192,17 +192,52 @@ class RonDailyProduction(models.Model):
         currency_field='currency_id'
     )
 
+    # Ancien film unique (legacy - anciennes productions Sandwich GF)
     film_sandwich_qty = fields.Float(
         string='Qté Film Sandwich (kg)',
-        help="Quantité de film Sandwich GF consommé en kg"
+        help="LEGACY - Quantité de film Sandwich GF (ancien film unique) consommé en kg"
     )
     film_sandwich_unit_cost = fields.Monetary(
         string='Prix/kg Film Sandwich',
         currency_field='currency_id',
-        help="Prix au kg du film Sandwich GF"
+        help="LEGACY - Prix au kg de l'ancien film unique Sandwich GF"
     )
     film_sandwich_cost = fields.Monetary(
         string='Coût Film Sandwich',
+        compute='_compute_packaging_costs',
+        store=True,
+        currency_field='currency_id'
+    )
+
+    # Nouveau découpage Sandwich GF : Film Ondulé 350 G
+    film_ondule_qty = fields.Float(
+        string='Qté Film Ondulé 350 G (kg)',
+        help="Quantité de film ondulé 350 G consommé en kg"
+    )
+    film_ondule_unit_cost = fields.Monetary(
+        string='Prix/kg Film Ondulé 350 G',
+        currency_field='currency_id',
+        help="Prix au kg du film ondulé 350 G"
+    )
+    film_ondule_cost = fields.Monetary(
+        string='Coût Film Ondulé 350 G',
+        compute='_compute_packaging_costs',
+        store=True,
+        currency_field='currency_id'
+    )
+
+    # Nouveau découpage Sandwich GF : Film Emballage 350 G
+    film_emballage_qty = fields.Float(
+        string='Qté Film Emballage 350 G (kg)',
+        help="Quantité de film emballage 350 G consommé en kg"
+    )
+    film_emballage_unit_cost = fields.Monetary(
+        string='Prix/kg Film Emballage 350 G',
+        currency_field='currency_id',
+        help="Prix au kg du film emballage 350 G"
+    )
+    film_emballage_cost = fields.Monetary(
+        string='Coût Film Emballage 350 G',
         compute='_compute_packaging_costs',
         store=True,
         currency_field='currency_id'
@@ -472,6 +507,10 @@ class RonDailyProduction(models.Model):
                 vals['emballage_sandwich_unit_cost'] = config.product_emballage_sandwich_id.standard_price
             if 'film_sandwich_unit_cost' not in vals and config.product_film_sandwich_id:
                 vals['film_sandwich_unit_cost'] = config.product_film_sandwich_id.standard_price
+            if 'film_ondule_unit_cost' not in vals and config.product_film_ondule_sandwich_id:
+                vals['film_ondule_unit_cost'] = config.product_film_ondule_sandwich_id.standard_price
+            if 'film_emballage_unit_cost' not in vals and config.product_film_emballage_sandwich_id:
+                vals['film_emballage_unit_cost'] = config.product_film_emballage_sandwich_id.standard_price
 
         return super().create(vals)
 
@@ -499,6 +538,10 @@ class RonDailyProduction(models.Model):
                 self.emballage_sandwich_unit_cost = config.product_emballage_sandwich_id.standard_price
             if config.product_film_sandwich_id:
                 self.film_sandwich_unit_cost = config.product_film_sandwich_id.standard_price
+            if config.product_film_ondule_sandwich_id:
+                self.film_ondule_unit_cost = config.product_film_ondule_sandwich_id.standard_price
+            if config.product_film_emballage_sandwich_id:
+                self.film_emballage_unit_cost = config.product_film_emballage_sandwich_id.standard_price
 
     @api.depends('consumption_line_ids', 'consumption_line_ids.total_cost',
                  'consumption_line_ids.weight_kg')
@@ -545,6 +588,8 @@ class RonDailyProduction(models.Model):
         'film_classico_qty', 'film_classico_unit_cost',
         'emballage_sandwich_qty', 'emballage_sandwich_unit_cost',
         'film_sandwich_qty', 'film_sandwich_unit_cost',
+        'film_ondule_qty', 'film_ondule_unit_cost',
+        'film_emballage_qty', 'film_emballage_unit_cost',
     )
     def _compute_packaging_costs(self):
         """Calcule les coûts d'emballage par type."""
@@ -558,6 +603,8 @@ class RonDailyProduction(models.Model):
             # Coûts individuels SANDWICH
             rec.emballage_sandwich_cost = rec.emballage_sandwich_qty * rec.emballage_sandwich_unit_cost
             rec.film_sandwich_cost = rec.film_sandwich_qty * rec.film_sandwich_unit_cost
+            rec.film_ondule_cost = rec.film_ondule_qty * rec.film_ondule_unit_cost
+            rec.film_emballage_cost = rec.film_emballage_qty * rec.film_emballage_unit_cost
 
             # Totaux par catégorie
             rec.total_emballage_cost = (rec.emballage_solo_cost +
@@ -565,7 +612,9 @@ class RonDailyProduction(models.Model):
                                         rec.emballage_sandwich_cost)
             rec.total_film_cost = (rec.film_solo_cost +
                                    rec.film_classico_cost +
-                                   rec.film_sandwich_cost)
+                                   rec.film_sandwich_cost +
+                                   rec.film_ondule_cost +
+                                   rec.film_emballage_cost)
 
             # Total général
             rec.total_packaging_cost = rec.total_emballage_cost + rec.total_film_cost
@@ -606,7 +655,8 @@ class RonDailyProduction(models.Model):
                  'good_weight', 'production_type',
                  'emballage_solo_cost', 'film_solo_cost',
                  'emballage_classico_cost', 'film_classico_cost',
-                 'emballage_sandwich_cost', 'film_sandwich_cost')
+                 'emballage_sandwich_cost', 'film_sandwich_cost',
+                 'film_ondule_cost', 'film_emballage_cost')
     def _compute_finished_totals(self):
         """Calcule les coûts par produit fini.
 
@@ -689,8 +739,12 @@ class RonDailyProduction(models.Model):
             # MODE SANDWICH GF - Calcul direct (sans ratio)
             elif rec.production_type == 'sandwich_gf':
                 if qty_sandwich > 0:
-                    # Coût emballage Sandwich
-                    pkg_sandwich = rec.emballage_sandwich_cost + rec.film_sandwich_cost
+                    # Coût emballage Sandwich = carton + films
+                    # (legacy film unique + nouveaux Film Ondulé + Film Emballage 350 G)
+                    pkg_sandwich = (rec.emballage_sandwich_cost +
+                                    rec.film_sandwich_cost +
+                                    rec.film_ondule_cost +
+                                    rec.film_emballage_cost)
 
                     # Coût total = Matières (poids bon) + Emballages
                     total_cost = rec.good_material_cost + pkg_sandwich
@@ -893,6 +947,10 @@ class RonDailyProduction(models.Model):
                 emballages_to_check.append((config.product_emballage_sandwich_id, self.emballage_sandwich_qty))
             if config.product_film_sandwich_id and self.film_sandwich_qty > 0:
                 emballages_to_check.append((config.product_film_sandwich_id, self.film_sandwich_qty))
+            if config.product_film_ondule_sandwich_id and self.film_ondule_qty > 0:
+                emballages_to_check.append((config.product_film_ondule_sandwich_id, self.film_ondule_qty))
+            if config.product_film_emballage_sandwich_id and self.film_emballage_qty > 0:
+                emballages_to_check.append((config.product_film_emballage_sandwich_id, self.film_emballage_qty))
 
         for product, qty in emballages_to_check:
             quant = self.env['stock.quant'].search([
@@ -1292,6 +1350,10 @@ class RonDailyProduction(models.Model):
                 emballages_to_consume.append((config.product_emballage_sandwich_id, self.emballage_sandwich_qty))
             if config.product_film_sandwich_id and self.film_sandwich_qty > 0:
                 emballages_to_consume.append((config.product_film_sandwich_id, self.film_sandwich_qty))
+            if config.product_film_ondule_sandwich_id and self.film_ondule_qty > 0:
+                emballages_to_consume.append((config.product_film_ondule_sandwich_id, self.film_ondule_qty))
+            if config.product_film_emballage_sandwich_id and self.film_emballage_qty > 0:
+                emballages_to_consume.append((config.product_film_emballage_sandwich_id, self.film_emballage_qty))
 
         if not emballages_to_consume:
             _logger.info("Pas d'emballage à consommer - BL Emballage non créé")
